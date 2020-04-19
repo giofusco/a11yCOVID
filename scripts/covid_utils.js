@@ -80,7 +80,9 @@ function playPulse(freqs) {
 		// for cross browser compatibility
 	// create web audio api context
 	var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
+	var gainNode = audioCtx.createGain();
+	gainNode.gain.value = 0.1;
+	// gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
 	// create Oscillator node
 	var oscillator = audioCtx.createOscillator();
 	
@@ -88,8 +90,9 @@ function playPulse(freqs) {
 	
 	oscillator.connect(audioCtx.destination);
 	for (i = 0; i < freqs.length; i++)
-		oscillator.frequency.setValueAtTime(freqs[i], audioCtx.currentTime + i*0.05);
-	// osc.connect(amp).connect(audioCtx.destination);
+		oscillator.frequency.setValueAtTime(freqs[i], audioCtx.currentTime + i * 0.05);
+		// gainNode.gain.setValueAtTime(0.005, audioCtx.currentTime + i * 0.05);
+		oscillator.connect(gainNode).connect(audioCtx.destination);
 	oscillator.start();
 	oscillator.stop(audioCtx.currentTime + freqs.length*.05);
 }
