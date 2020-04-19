@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="eng">
+<meta charset="UTF-8">
+<style>
+
+</style>
+
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+  <script src="./scripts/covid_utils.js"></script>
+  <link rel="stylesheet" href="style.css">
+	<title>Son of COVID-19</title>
+</head>
+
+<body>
+
+<script type="text/javascript">
+window.onload = function() {
+   setup_list_of_countries('country_select');
+   setup_summary('summary', 'summary_table');
+}
+</script>
+
+<header>
+  <h1>Sonified COVID-19 Pandemic Data Experiment</h1>
+  <p>by Giovanni Fusco @ The Smith-Kettlewell Eye Research Institute, San Francisco, CA</p>
+</header>
+
+<p></p>
+<nav>
+<form name="country_form" id="country_form" action="/view">
+  <legend>Jump to</legend>
+    <label for="country_select">Country:</label>
+    <select id="country_select" aria-controls="country" name="country_select">
+      <option value="">Select a country&hellip;</option>
+    </select>
+    <input type="submit" value="Go">
+  </form>
+</nav>
+
+<main>
+
+<article>
+  <!-- <h2>Son of Covid</h2>
+  <p> 
+    Son of Covid was born in an effort to try to make COVID-19 pandemic related data accessible to individuals with visual impairment. 
+    <br>
+    Data are presented both in tabular form and by means of sonified plots.
+  </p> -->
+
+  <h2>World Summary</h2>
+  <div id='summary'> </div>
+  
+  <!-- chart section -->
+  <div id="chart_section" style="width: 65%;">
+    <!-- progress bar -->
+    <div id="fetching_progress_section">
+      <label for="fetching_progress">Fetching data, please wait...</label>
+      <progress id="fetching_progress" max="1" value="0" style="width: 50%"></progress>
+    </div>
+    <!-- the actual plot -->
+    <canvas id="active_cases_chart"
+      aria-label="A plot of the number of active cases of COVID-19 in the World from the beginning of the epidemic to today" role="img">
+      <!-- fallback text -->
+      <p role="region" aria-live="polite" id="active_cases_chart_fallback">Please wait while we fetch the data</p>
+   </canvas>
+    <!-- button to trigger sonification -->
+    <div role="region" id="sonify_button_section" aria-live="polite"></div>
+  </div>
+  <br>
+  <!-- <div id='summary_table'> </div> -->
+  
+</article>
+
+<!-- <aside>
+  <p>yo mama</p>
+</aside> -->
+</main>
+
+<footer>
+  <p>© The Smith-Kettlewell Eye Research Institute, April 2020</p>
+</footer>
+</body>
+</html>

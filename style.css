@@ -1,0 +1,77 @@
+/* || General setup */
+
+html, body {
+    margin: 0;
+    padding: 0;
+  }
+  
+  html {
+    font-size: 22px;
+    background-color: #ffffff;
+  }
+  
+  body {
+    width: 80%;
+    margin: 0 auto;
+  }
+
+
+  /* || Table style */
+
+table {
+  border-collapse: collapse;
+}
+
+table, td, th {
+  border: 1px solid black;
+  text-align: center;
+}
+
+nav, article, aside, footer {
+    background-color: white;
+    padding: 1%;
+  }
+
+/* || main layout */
+
+main {
+    display: flex;
+  }
+  
+  article {
+    flex: 4;
+  }
+  
+  aside {
+    flex: 1;
+    margin-left: 10px;
+    background-color: #e4e4e4;
+  }
+  
+  aside li {
+    padding-bottom: 10px;
+  }
+  
+  footer {
+    margin-top: 10px;
+  }
+
+  table#world_table {
+    width:70%; 
+    margin-left:15%; 
+    margin-right:15%;
+  }
+
+  canvas{
+    width: 90%;
+		-moz-user-select: none;
+		-webkit-user-select: none;
+    -ms-user-select: none;
+    align-content: center;
+  }
+  
+  h1{
+    text-align: center;
+  }
+
+
