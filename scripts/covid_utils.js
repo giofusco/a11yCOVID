@@ -149,7 +149,7 @@ function generate_world_active_plot() {
 	x_labels = [];
 	data = [];
 	keys = Object.keys(timeline_active)
-	for (k = 0; k < keys.length;k++) {
+	for (k = 0; k < keys.length-1;k++) {
 		var date = new Date(Number(keys[k]));
 		data[data.length] = timeline_active[keys[k]]
 		x_labels[x_labels.length] = `${date.getMonth()+1}-${date.getDate()}-${date.getYear()}`;
