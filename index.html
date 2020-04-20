@@ -6,6 +6,7 @@
 </style>
 
 <head>
+  <script src="https://d3js.org/d3-dsv.v1.min.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
   <script src="./scripts/covid_utils.js"></script>
@@ -17,8 +18,9 @@
 
 <script type="text/javascript">
 window.onload = function() {
-   setup_list_of_countries('country_select');
-   setup_summary('summary', 'summary_table');
+  //  setup_list_of_countries('country_select');
+  //  setup_summary('summary', 'summary_table');
+   reconstruct_world_timeline_JHU();
 }
 </script>
 

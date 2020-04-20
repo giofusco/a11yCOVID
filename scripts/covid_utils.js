@@ -10,7 +10,7 @@ let api_url = 'https://api.covid19api.com/';
 let day_one_country_url = api_url + 'dayone/country/';
 var country_summaries;
 var timeline_active = new Object();
-
+var countries = [];
 
 
 const global_table_headers =
@@ -72,18 +72,16 @@ function sonify(data, f0, n_octaves) {
 	
 
 }
-
-	    
-	
 	
 function playPulse(freqs) {
 		// for cross browser compatibility
 	// create web audio api context
 	var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 	var gainNode = audioCtx.createGain();
-	gainNode.gain.value = 0.5;
+	
   	gainNode.gain.minValue = 0;
-  	gainNode.gain.maxValue = 1;
+	gainNode.gain.maxValue = 1;
+	gainNode.gain.value = 0.5;
 	// gainNode.gain.setValueAtTime(0.005, audioCtx.currentTime);
 	// create Oscillator node
 	var oscillator = audioCtx.createOscillator();
@@ -102,6 +100,84 @@ function playPulse(freqs) {
 	
 		
 
+function reconstruct_world_timeline_JHU() {
+	
+	var settings = {
+		"crossDomain": true,
+		"url": "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv",
+		"method": "GET",
+		"dataType" : "text"
+	}
+	
+	$.ajax(settings).then(
+		function (res) {
+			var data = d3.csvParse(res);
+			for (d = 0; d < data.length; d++) {
+				if (data[d]['Country/Region'] != undefined) {
+					if (!countries.hasOwnProperty(data[d]['Country/Region']))
+						countries[data[d]['Country/Region']] = [];
+					if (!countries.hasOwnProperty(data[d]['Country/Region']['confirmed']))
+						countries[data[d]['Country/Region']]["confirmed"] = [];
+					countries[data[d]['Country/Region']]['confirmed'][countries[data[d]['Country/Region']].length] = data[d];
+				}
+					
+			}
+
+			console.log( "[OK] JHU CONFIRMED_GLOBAL" )
+		}, function() {
+		  console.log( "[X] JHU" );
+	});
+
+	var settings = {
+		"crossDomain": true,
+		"url": "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv",
+		"method": "GET",
+		"dataType" : "text"
+	}
+	
+	$.ajax(settings).then(
+		function (res) {
+			var data = d3.csvParse(res);
+			for (d = 0; d < data.length; d++) {
+				if (data[d]['Country/Region'] != undefined) {
+					if (!countries.hasOwnProperty(data[d]['Country/Region']))
+						countries[data[d]['Country/Region']] = [];
+					if (!countries.hasOwnProperty(data[d]['Country/Region']['deaths']))
+						countries[data[d]['Country/Region']]["deaths"] = [];
+					countries[data[d]['Country/Region']]['deaths'][countries[data[d]['Country/Region']].length] = data[d];
+				}
+					
+			}
+		  	console.log( "[OK] JHU DEATHS_GLOBAL" );
+		}, function() {
+		  console.log( "[X] JHU" );
+	});
+
+	var settings = {
+		"crossDomain": true,
+		"url": "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv",
+		"method": "GET",
+		"dataType" : "text"
+	}
+	
+	$.ajax(settings).then(
+		function (res) {
+			var data = d3.csvParse(res);
+			for (d = 0; d < data.length; d++) {
+				if (data[d]['Country/Region'] != undefined) {
+					if (!countries.hasOwnProperty(data[d]['Country/Region']))
+						countries[data[d]['Country/Region']] = [];
+					if (!countries.hasOwnProperty(data[d]['Country/Region']['recovered']))
+						countries[data[d]['Country/Region']]['recovered'] = [];
+					countries[data[d]['Country/Region']]['recovered'][countries[data[d]['Country/Region']].length] = data[d];
+				}
+			}
+			console.log( "[OK] JHU RECOVERED_GLOBAL" );
+		}, function() {
+		  console.log( "[X] JHU" );
+	});
+	console.log(countries)
+}
 
 function reconstruct_world_timeline(countries) {
 // https://stackoverflow.com/questions/21819905/jquery-ajax-calls-in-for-loop	
