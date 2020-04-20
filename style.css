@@ -40,6 +40,8 @@ main {
   
   article {
     flex: 4;
+    display: grid;
+    columns: 2;
   }
   
   aside {
