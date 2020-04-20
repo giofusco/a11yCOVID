@@ -11,6 +11,7 @@ let day_one_country_url = api_url + 'dayone/country/';
 var country_summaries;
 var timeline_active = new Object();
 var countries = [];
+var world = [];
 
 
 const global_table_headers =
@@ -101,29 +102,38 @@ function playPulse(freqs) {
 		
 
 function reconstruct_world_timeline_JHU() {
-	
+	var njobs = 3;
+	var progress = document.getElementById('fetching_progress');
+	var cnt = 0;
+	progress.max = njobs;
+	progress.value = 0;
+
 	var settings = {
 		"crossDomain": true,
 		"url": "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv",
 		"method": "GET",
 		"dataType" : "text"
 	}
-	
+	var cinit = 0;
 	$.ajax(settings).then(
 		function (res) {
 			var data = d3.csvParse(res);
 			for (d = 0; d < data.length; d++) {
-				if (data[d]['Country/Region'] != undefined) {
-					if (!countries.hasOwnProperty(data[d]['Country/Region']))
+				if (typeof(data[d]['Country/Region']) !== 'undefined') {
+					if (typeof(countries[data[d]['Country/Region']]) === 'undefined') {
 						countries[data[d]['Country/Region']] = [];
-					if (!countries.hasOwnProperty(data[d]['Country/Region']['confirmed']))
+					}
+					if (typeof(countries[data[d]['Country/Region']]['confirmed']) === 'undefined') {
 						countries[data[d]['Country/Region']]["confirmed"] = [];
-					countries[data[d]['Country/Region']]['confirmed'][countries[data[d]['Country/Region']].length] = data[d];
+					}
+					countries[data[d]['Country/Region']]['confirmed'][countries[data[d]['Country/Region']]["confirmed"].length] = data[d];
 				}
-					
 			}
-
-			console.log( "[OK] JHU CONFIRMED_GLOBAL" )
+			progress.value += 1;
+			console.log("[OK] JHU CONFIRMED_GLOBAL")
+			njobs--;
+			if (njobs == 0)
+				calculate_cases();
 		}, function() {
 		  console.log( "[X] JHU" );
 	});
@@ -139,16 +149,21 @@ function reconstruct_world_timeline_JHU() {
 		function (res) {
 			var data = d3.csvParse(res);
 			for (d = 0; d < data.length; d++) {
-				if (data[d]['Country/Region'] != undefined) {
-					if (!countries.hasOwnProperty(data[d]['Country/Region']))
+				if (typeof(data[d]['Country/Region']) !== 'undefined') {
+					if (typeof(countries[data[d]['Country/Region']]) === 'undefined') {
 						countries[data[d]['Country/Region']] = [];
-					if (!countries.hasOwnProperty(data[d]['Country/Region']['deaths']))
+					}
+					if (typeof(countries[data[d]['Country/Region']]['deaths']) === 'undefined') {
 						countries[data[d]['Country/Region']]["deaths"] = [];
-					countries[data[d]['Country/Region']]['deaths'][countries[data[d]['Country/Region']].length] = data[d];
+					}
+					countries[data[d]['Country/Region']]['deaths'][countries[data[d]['Country/Region']]["deaths"].length] = data[d];
 				}
-					
 			}
-		  	console.log( "[OK] JHU DEATHS_GLOBAL" );
+			progress.value += 1;
+			console.log("[OK] JHU CONFIRMED_GLOBAL")
+			njobs--;
+			if (njobs == 0)
+				calculate_cases();
 		}, function() {
 		  console.log( "[X] JHU" );
 	});
@@ -164,19 +179,102 @@ function reconstruct_world_timeline_JHU() {
 		function (res) {
 			var data = d3.csvParse(res);
 			for (d = 0; d < data.length; d++) {
-				if (data[d]['Country/Region'] != undefined) {
-					if (!countries.hasOwnProperty(data[d]['Country/Region']))
+				if (typeof(data[d]['Country/Region']) !== 'undefined') {
+					if (typeof(countries[data[d]['Country/Region']]) === 'undefined') {
 						countries[data[d]['Country/Region']] = [];
-					if (!countries.hasOwnProperty(data[d]['Country/Region']['recovered']))
-						countries[data[d]['Country/Region']]['recovered'] = [];
-					countries[data[d]['Country/Region']]['recovered'][countries[data[d]['Country/Region']].length] = data[d];
+					}
+					if (typeof(countries[data[d]['Country/Region']]['recovered']) === 'undefined') {
+						countries[data[d]['Country/Region']]["recovered"] = [];
+					}
+					countries[data[d]['Country/Region']]['recovered'][countries[data[d]['Country/Region']]["recovered"].length] = data[d];
 				}
 			}
-			console.log( "[OK] JHU RECOVERED_GLOBAL" );
+			progress.value += 1;
+			console.log("[OK] JHU CONFIRMED_GLOBAL")
+			njobs--;
+			if (njobs == 0)
+				calculate_cases();
 		}, function() {
 		  console.log( "[X] JHU" );
 	});
+
 	console.log(countries)
+	// calculate_active_cases();
+}
+
+function calculate_cases() {
+	console.log(countries)
+	world['recovered_timeline'] = [];
+	world['deaths_timeline'] = [];
+	world['recovered_timeline'] = [];
+	for (c in countries){
+		// console.log(c)
+		let recovered = countries[c]['recovered'];
+		let deaths = countries[c]['deaths'];
+		let confirmed = countries[c]['confirmed'];
+		var confirmed_timeline = [];
+		var deaths_timeline = [];
+		var recovered_timeline = [];
+		var active_timeline = [];
+		countries[c]['dates'] = Object.keys(recovered[0]);
+		countries[c]['dates'].shift()
+		countries[c]['dates'].shift()
+		countries[c]['dates'].shift()
+		countries[c]['dates'].shift()
+
+		// accumulate cases across multiple regions, if any
+		for (i = 0; i < recovered.length; i++) {
+			var keys = Object.keys(recovered[i]);
+			for (k in keys) {
+				if (k > 3) {
+					if (i == 0) {
+						confirmed_timeline[confirmed_timeline.length] = Number(confirmed[i][keys[k]]);
+						deaths_timeline[deaths_timeline.length] = Number(deaths[i][keys[k]]);
+						recovered_timeline[recovered_timeline.length] = Number(recovered[i][keys[k]]);
+						active_timeline[active_timeline.length] = Number(confirmed[i][keys[k]]) - (Number(deaths[i][keys[k]]) + Number(recovered[i][keys[k]]));
+					}
+					else {
+						confirmed_timeline[confirmed_timeline.length] += Number(confirmed[i][keys[k]]);
+						deaths_timeline[deaths_timeline.length] += Number(deaths[i][keys[k]]);
+						recovered_timeline[recovered_timeline.length] += Number(recovered[i][keys[k]]);
+						active_timeline[active_timeline.length] += Number(confirmed[i][keys[k]]) - (Number(deaths[i][keys[k]]) + Number(recovered[i][keys[k]]));
+					}
+				}
+			}
+		}
+		countries[c]['confirmed_timeline'] = confirmed_timeline;
+		countries[c]['deaths_timeline'] = deaths_timeline;
+		countries[c]['recovered_timeline'] = recovered_timeline;
+		countries[c]['active_timeline'] = active_timeline;
+		
+	}
+	console.log(countries)
+	world['dates'] = countries['Italy']['dates'];
+	world['confirmed_timeline'] = [];
+	world['deaths_timeline'] = [];
+	world['recovered_timeline'] = [];
+	world['active_timeline'] = [];
+
+	//init arrays
+	for (i = 0; i < world['dates'].length; i++){
+		world['confirmed_timeline'][i] = 0;
+		world['deaths_timeline'][i] = 0;
+		world['recovered_timeline'][i] = 0;
+		world['active_timeline'][i] = 0;
+	}
+
+	for (c in countries) {
+		for (i = 0; i < world['dates'].length; i++) {
+			world['confirmed_timeline'][i] += countries[c]['confirmed_timeline'][i];
+			world['deaths_timeline'][i] += countries[c]['deaths_timeline'][i];
+			world['recovered_timeline'][i] += countries[c]['recovered_timeline'][i];
+			world['active_timeline'][i] += countries[c]['active_timeline'][i];
+		}
+	}
+	console.log(world)
+	generate_world_active_plot();
+	add_button('Sonify plot', 'sonify_button_section', 'sonify_active_button', 'sonify(world[\'active_timeline\'], 220, 4);');
+						document.getElementById('fetching_progress_section').remove();
 }
 
 function reconstruct_world_timeline(countries) {
@@ -186,7 +284,6 @@ function reconstruct_world_timeline(countries) {
 	
 	progress.max = cnt;
 	progress.value = 0;
-
 	
 	for (i = 0; i < countries.length; i++) {
 		
@@ -226,22 +323,25 @@ function reconstruct_world_timeline(countries) {
 }
 
 function generate_world_active_plot() {
-	timeline_active = sortKeys(timeline_active);
-	x_labels = [];
-	data = [];
-	keys = Object.keys(timeline_active)
-	for (k = 0; k < keys.length-1;k++) {
-		var date = new Date(Number(keys[k]));
-		data[data.length] = timeline_active[keys[k]]
-		x_labels[x_labels.length] = `${date.getMonth()+1}-${date.getDate()}-${date.getYear()}`;
-	}
+
+
+
+	// timeline_active = sortKeys(timeline_active);
+	// x_labels = [];
+	// data = [];
+	// keys = Object.keys(timeline_active)
+	// for (k = 0; k < keys.length-1;k++) {
+	// 	var date = new Date(Number(keys[k]));
+	// 	data[data.length] = timeline_active[keys[k]]
+	// 	x_labels[x_labels.length] = `${date.getMonth()+1}-${date.getDate()}-${date.getYear()}`;
+	// }
 	var ctx = $('#active_cases_chart');
 	var data = {
-		labels: x_labels,
+		labels: world['dates'],
 		datasets: [
 			{
 				label: "Active Cases in the World",
-				data: data,
+				data: world["active_timeline"],
 				backgroundColor: "black",
 				borderColor: "black",
 				fill: false,

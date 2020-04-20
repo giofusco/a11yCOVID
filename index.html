@@ -19,7 +19,7 @@
 <script type="text/javascript">
 window.onload = function() {
   //  setup_list_of_countries('country_select');
-  //  setup_summary('summary', 'summary_table');
+   setup_summary('summary', 'summary_table');
    reconstruct_world_timeline_JHU();
 }
 </script>
@@ -58,7 +58,7 @@ window.onload = function() {
   <div id="chart_section" style="width: 65%;">
     <!-- progress bar -->
     <div id="fetching_progress_section">
-      <label for="fetching_progress">Fetching data, please wait...</label>
+      <label for="fetching_progress">Fetching data, please wait... If this takes too long, try refreshing the page.</label>
       <progress id="fetching_progress" max="1" value="0" style="width: 50%"></progress>
     </div>
     <!-- the actual plot -->
