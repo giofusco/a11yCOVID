@@ -8,6 +8,7 @@ html, body {
   html {
     font-size: 22px;
     background-color: #ffffff;
+    width: 80%;
   }
   
   body {
@@ -75,5 +76,4 @@ main {
   h1{
     text-align: center;
   }
-
 

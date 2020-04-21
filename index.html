@@ -6,31 +6,35 @@
 </style>
 
 <head>
-  <script src="https://d3js.org/d3-dsv.v1.min.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+  <script src="https://d3js.org/d3-dsv.v1.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
   <script src="./scripts/covid_utils.js"></script>
   <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
 	<title>Son of COVID-19</title>
 </head>
 
 <body>
-
+  
 <script type="text/javascript">
 window.onload = function() {
   //  setup_list_of_countries('country_select');
-   setup_summary('summary', 'summary_table');
-   reconstruct_world_timeline_JHU();
+   //setup_summary('summary', 'summary_table');
+   fetch_and_prepare_data_JHU();
 }
 </script>
 
 <header>
   <h1>Sonified COVID-19 Pandemic Data Experiment</h1>
-  <p>by Giovanni Fusco @ The Smith-Kettlewell Eye Research Institute, San Francisco, CA</p>
 </header>
-
+<a href="#main">Skip to main content</a>
 <p></p>
 <nav>
+  
 <form name="country_form" id="country_form" action="/view">
   <legend>Jump to</legend>
     <label for="country_select">Country:</label>
@@ -41,44 +45,45 @@ window.onload = function() {
   </form>
 </nav>
 
-<main>
+<main id="main" role="main">
 
-<article>
-  <!-- <h2>Son of Covid</h2>
-  <p> 
-    Son of Covid was born in an effort to try to make COVID-19 pandemic related data accessible to individuals with visual impairment. 
-    <br>
-    Data are presented both in tabular form and by means of sonified plots.
-  </p> -->
+<article id='main_article'>
+  <section id="progress_section">
+     <!-- progress bar -->
+      <div id="fetching_progress_section">
+        <label for="fetching_progress">Fetching data, please wait... If this takes too long, try refreshing the page.</label>
+        <progress id="fetching_progress" max="1" value="0" style="width: 50%"></progress>
+      </div>
+  </section>
+  <!-- <section> -->
+    <!-- <h2>World Summmary</h2> -->
+    <!-- <div id='summary'> </div> -->
+    <!-- chart section -->
+    <!-- <div id="chart_section" style="width: 65%;"> -->
+     
+      <!-- the actual plot -->
+      <!-- <canvas id="active_cases_chart" -->
+        <!-- aria-label="A plot of the number of active cases of COVID-19 in the World from the beginning of the epidemic to today" role="img"> -->
+        <!-- fallback text -->
+        <!-- <p role="region" aria-live="polite" id="active_cases_chart_fallback">There will be a summary here</div></p> -->
+     <!-- </canvas> -->
+      <!-- button to trigger sonification -->
+      <!-- <div id="sonify_button_section"> -->
+     <!-- </div> -->
+    <!-- </div> -->
+    <!-- <br> -->
+    <!-- <div id='summary_table'> </div> -->
+  <!-- </section> -->
+<!-- <section> -->
+ <!-- <h2>United States</h2>  -->
+ <!-- </section> -->
 
-  <h2>World Summary</h2>
-  <div id='summary'> </div>
-  
-  <!-- chart section -->
-  <div id="chart_section" style="width: 65%;">
-    <!-- progress bar -->
-    <div id="fetching_progress_section">
-      <label for="fetching_progress">Fetching data, please wait... If this takes too long, try refreshing the page.</label>
-      <progress id="fetching_progress" max="1" value="0" style="width: 50%"></progress>
-    </div>
-    <!-- the actual plot -->
-    <canvas id="active_cases_chart"
-      aria-label="A plot of the number of active cases of COVID-19 in the World from the beginning of the epidemic to today" role="img">
-      <!-- fallback text -->
-      <p role="region" aria-live="polite" id="active_cases_chart_fallback">Please wait while we fetch the data</p>
-   </canvas>
-    <!-- button to trigger sonification -->
-    <div role="region" id="sonify_button_section" aria-live="polite"></div>
-  </div>
-  <br>
-  <!-- <div id='summary_table'> </div> -->
-  
 </article>
 
 </main>
 
 <footer>
-  <p>© The Smith-Kettlewell Eye Research Institute, April 2020</p>
+  <p>by Giovanni Fusco © The Smith-Kettlewell Eye Research Institute, April 2020</p>
 </footer>
 </body>
 </html>
