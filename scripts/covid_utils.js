@@ -21,6 +21,8 @@ var data_ready = false;
 $(document).bind('dataReadyEvent', function (e) {
 	console.log('Data loaded, creating page');
 	document.getElementById('fetching_progress_section').remove(); // remove progress bar because we are done loading
+	document.getElementById('update_timestamp').innerHTML = `
+	<p align='center'><small><em> last updated on ${timestamp_to_date(Date.parse(country_summaries.update_date))}</em></small></p>`
 	create_summary_section('World', 'main_article');
 	create_summary_section('US', 'main_article');
 	create_summary_section('IT', 'main_article');
@@ -59,13 +61,29 @@ function create_summary_section(country_code, container_id) {
 	// console.log(country_code)
 	// console.log(country_name)
 
-	canvas_active.id = `canvas_active_${country_name}`
-	canvas_confirmed.id = `canvas_new_confirmed_${country_name}`
-	canvas_deaths.id = `canvas_deaths_confirmed_${country_name}`
+	canvas_active.id = `canvas_active_${country_code}`
+	canvas_confirmed.id = `canvas_new_confirmed_${country_code}`
+	canvas_deaths.id = `canvas_deaths_confirmed_${country_code}`
+
 	
-	section.innerHTML = `<h2>${country_name}</h2>`;
+// 	<div class="row">
+//     <div class="col-6 col-sm-4">.col-6 .col-sm-4</div>
+//     <div class="col-6 col-sm-4">.col-6 .col-sm-4</div>
+  
+//     <!-- Force next columns to break to new line at md breakpoint and up -->
+//     <div class="w-100 d-none d-md-block"></div>
+  
+//     <div class="col-6 col-sm-4">.col-6 .col-sm-4</div>
+//     <div class="col-6 col-sm-4">.col-6 .col-sm-4</div>
+//   </div>
+	section.innerHTML = `  <hr><h2>${country_name}</h2>`;
+	var row1 = document.createElement('div');
+	row1.className = 'row';
+	var summary_cell = document.createElement('div');
+	summary_cell.className = 'col'
+	
 	var summary_paragraph = document.createElement('p'); 
-	summary_paragraph.innerHTML = `<p align='right'><small>Last updated on ${timestamp_to_date(Date.parse(country_summaries.update_date))}</small></p>
+	summary_paragraph.innerHTML = `<h3>Brief</h3>
 	Currently there are
 	${(country_summaries[country_code].TotalConfirmed - (country_summaries[country_code].TotalDeaths + country_summaries[country_code].TotalRecovered)).toLocaleString()} 
 	<strong>active cases</strong> in ${country_name}. <br>
@@ -75,35 +93,47 @@ function create_summary_section(country_code, container_id) {
 	Unfortunately there have been ${country_summaries[country_code].NewDeaths.toLocaleString()} <strong>deaths</strong> today so far, 
 	bringing the <strong>total deaths</strong> to ${country_summaries[country_code].TotalDeaths.toLocaleString()}.`;
 
-	section.appendChild(summary_paragraph);	
+	summary_cell.appendChild(summary_paragraph);
+	
+		
+
+	var active_plot_cell = document.createElement('div');
+	active_plot_cell.className = 'col-7'
+
+
 	canvas_active.setAttribute('aria-label', `This plot shows the evolution of the global number of active cases of COVID-19 
 								from the beginning of the epidemic to the latest update.` );
 								canvas_active.innerHTML = `<p role="region" aria-live="polite"
 								id="active_cases_chart_fallback">Soon I'll work to generate better captioning for plots.</p>`;
-	generate_line_plot(canvas_active, `Active CODVID-19 Cases in ${country_name}`, 1, 'black', 'orange', false, countries[country_name]['active_timeline']);
-	section.appendChild(canvas_active);
-	section.appendChild(document.createElement('br'));
-	add_button(`Sonify ${country_name} Active Cases Plot`, section, `sonify_active_${country_name}_button_id`, `sonify(countries['${country_name}']['active_timeline'], 220, 3);`);
-	section.appendChild(document.createElement('br'));
-	section.appendChild(document.createElement('br'));
-	section.appendChild(document.createElement('br'));
+	generate_line_plot(canvas_active, `Active CODVID-19 Cases in ${country_name}`, 1, 'black', 'salmon', false, countries[country_name]['active_timeline']);
+	active_plot_cell.appendChild(canvas_active);
+	active_plot_cell.appendChild(document.createElement('br'));
+	add_button(`Sonify ${country_name} Active Cases Plot`, active_plot_cell, `sonify_active_${country_name}_button_id`, `sonify(countries['${country_name}']['active_timeline'], 220, 3);`);
+	row1.appendChild(summary_cell)
+	row1.appendChild(active_plot_cell)
 	
+	section.appendChild(row1);
+	var row2 = document.createElement('div');
+	row2.className = 'row';
+
 	if (country_name !== 'World') {
-		// 
+		var confirmed_plot_cell = document.createElement('div');
+		confirmed_plot_cell.className = 'col'
 		canvas_confirmed.setAttribute('aria-label', `This plot shows the daily number of new COVID-19 
 		from the beginning of the epidemic to the latest update.` );
 		canvas_confirmed.innerHTML = `<p role="region" aria-live="polite"
 			id="confirmed_cases_chart_fallback">Soon I'll work to generate better captioning for plots.</p>`;
 		var conf_smoothed = moving_average(countries[`${country_name}`]['confirmed_daily'], 3);
-		generate_line_plot(canvas_confirmed, `Daily new CODVID-19 infections in  ${country_name}`, 1, 'black', 'teal', false, conf_smoothed);
+		generate_line_plot(canvas_confirmed, `Daily new CODVID-19 infections in  ${country_name}`, 1, 'black', 'teal', false,
+			countries[`${country_name}`]['confirmed_daily']);
 		
-		section.appendChild(canvas_confirmed);
-		section.appendChild(document.createElement('br'));
-		add_button(`Sonify ${country_name} Daily New Cases Plot`, section, `sonify_confirmed_${country_name}_button_id`,
+		confirmed_plot_cell.appendChild(canvas_confirmed);
+		confirmed_plot_cell.appendChild(document.createElement('br'));
+		add_button(`Sonify ${country_name} Daily New Cases Plot`, confirmed_plot_cell, `sonify_confirmed_${country_name}_button_id`,
 			`sonify(moving_average(countries['${country_name}']['confirmed_daily'], 3), 220, 1);`);
-		section.appendChild(document.createElement('br'));
-		section.appendChild(document.createElement('br'));
-		section.appendChild(document.createElement('br'));
+	
+		var deaths_plot_cell = document.createElement('div');
+		deaths_plot_cell.className = 'col'
 		
 		canvas_deaths.setAttribute('aria-label', `This plot shows the daily number of COVID-19 
 		deaths from the beginning of the epidemic on 1/22/20 to the latest update.` );
@@ -112,16 +142,17 @@ function create_summary_section(country_code, container_id) {
 
 		var deaths_smoothed = moving_average(countries[country_name]['deaths_daily'], 3);
 		generate_line_plot(canvas_deaths, `Daily CODVID-19 deaths in  ${country_name}`, 1, 'black', 'gray', false, deaths_smoothed);
-		section.appendChild(canvas_deaths);
-		section.appendChild(document.createElement('br'));
-		add_button(`Sonify ${country_name} Daily Deaths Plot`, section, `sonify_deaths_${country_name}_button_id`,
+		deaths_plot_cell.appendChild(canvas_deaths);
+		deaths_plot_cell.appendChild(document.createElement('br'));
+		add_button(`Sonify ${country_name} Daily Deaths Plot`, deaths_plot_cell, `sonify_deaths_${country_name}_button_id`,
 			`sonify(moving_average(countries['${country_name}']['deaths_daily'], 3), 220, 1);`);
-		section.appendChild(document.createElement('br'));
-		section.appendChild(document.createElement('br'));
-		section.appendChild(document.createElement('br'));
+
+		row2.appendChild(confirmed_plot_cell)
+		row2.appendChild(deaths_plot_cell)
+		section.appendChild(row2);
 	}
 	
-	section.id = `${country_name}_summary`;
+	section.id = `${country_code}_summary`;
 	
 	container.appendChild(section);
 	container.appendChild(document.createElement('br'));

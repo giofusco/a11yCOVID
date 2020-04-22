@@ -6,6 +6,7 @@
 </style>
 
 <head>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
@@ -15,7 +16,7 @@
   <link rel="stylesheet" href="style.css">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-	<title>Son of COVID-19</title>
+	<title>A11Y COVID-19</title>
 </head>
 
 <body>
@@ -29,15 +30,23 @@ window.onload = function() {
 </script>
 
 <header>
-  <h1>Sonified COVID-19 Pandemic Data Experiment</h1>
+  <h1>A11Y COVID-19</h1>
+  <p align='center'> Accessible Pandemic Data Bulletin </p>
+  <p align='center'> by Giovanni Fusco @ The Smith-Kettlewell Eye Research Institute </p>
 </header>
-<a href="#main">Skip to main content</a>
-<p></p>
+<p id='update_timestamp'></p>
 <nav>
-  
+<br>
+<a href="#world_summary" aria-label="jump to World COVID statistics">World Stats</a>
+<a href="#US_summary" aria-label="jump to USA COVID statistics">USA </a>
+<a href="#IT_summary" aria-label="jump to Italy COVID statistics">Italy</a>
+<a href="#JP_summary" aria-label="jump to Japan COVID statistics">Japan</a>
+<a href="#CN_summary" aria-label="jump to China COVID statistics">China</a>
+<a href="#KR_summary" aria-label="jump to South Korea COVID statistics">South Korea</a>
+
+<br><br>
 <form name="country_form" id="country_form" action="/view">
-  <legend>Jump to</legend>
-    <label for="country_select">Country:</label>
+    <label for="country_select">Jump to Country:</label>
     <select id="country_select" aria-controls="country" name="country_select">
       <option value="">Select a country&hellip;</option>
     </select>
@@ -55,6 +64,9 @@ window.onload = function() {
         <progress id="fetching_progress" max="1" value="0" style="width: 50%"></progress>
       </div>
   </section>
+
+
+
   <!-- <section> -->
     <!-- <h2>World Summmary</h2> -->
     <!-- <div id='summary'> </div> -->
@@ -83,7 +95,12 @@ window.onload = function() {
 </main>
 
 <footer>
-  <p>by Giovanni Fusco © The Smith-Kettlewell Eye Research Institute, April 2020</p>
+  <small>
+    <hr>
+    <p align='center'>by Giovanni Fusco © The Smith-Kettlewell Eye Research Institute, April 2020</p>
+    <p align='center'> Data sourced from John Hopkins University @ https://github.com/CSSEGISandData/COVID-19</p>
+    <p align='center'> For the summaries: https://api.covid19api.com/</p>
+</small>
 </footer>
 </body>
 </html>

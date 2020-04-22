@@ -1,10 +1,23 @@
 /* || General setup */
 
-html, body {
-    margin: 0;
+  html, body {
+    margin:30px;
     padding: 0;
+    font-size: 20px;
+    background-color: #ffffff;
+    
+  }
+
+  h1{
+    text-align: center;
+  }
+
+  h2{
+    text-align: center;
+
   }
   
+  /*
   html {
     font-size: 22px;
     background-color: #ffffff;
@@ -17,7 +30,7 @@ html, body {
   }
 
 
-  /* || Table style */
+
 
 table {
   border-collapse: collapse;
@@ -33,7 +46,7 @@ nav, article, aside, footer {
     padding: 1%;
   }
 
-/* || main layout */
+
 
 main {
     display: flex;
@@ -86,7 +99,7 @@ main {
     display: flex;
     border-width: 2;
     box-shadow: inset;
-    /* color: black; */
+    
     padding: 5px 5px;
     text-align: center;
     text-decoration: none;
@@ -96,3 +109,7 @@ main {
     justify-content: center;
     margin: 0 auto;
   }
+  a{
+    margin: 10px;
+  } 
+  */
