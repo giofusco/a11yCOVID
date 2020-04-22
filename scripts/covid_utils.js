@@ -69,7 +69,7 @@ function create_summary_section(country_code, container_id) {
 	var row1 = document.createElement('div');
 	row1.className = 'row';
 	var summary_cell = document.createElement('div');
-	summary_cell.className = 'col'
+	summary_cell.className = 'col-lg'
 	
 	var summary_paragraph = document.createElement('p'); 
 	summary_paragraph.innerHTML = `<h3>Brief</h3>
@@ -93,7 +93,7 @@ function create_summary_section(country_code, container_id) {
 
 
 	var active_plot_cell = document.createElement('div');
-	active_plot_cell.className = 'col'
+	active_plot_cell.className = 'col-lg'
 
 
 	canvas_active.setAttribute('aria-label', `This plot shows the evolution of the number of active cases of COVID-19 
@@ -130,7 +130,7 @@ function create_summary_section(country_code, container_id) {
 		console.log(deaths_caption)
 		
 		var confirmed_plot_cell = document.createElement('div');
-		confirmed_plot_cell.className = 'col'
+		confirmed_plot_cell.className = 'col-lg'
 		
 		canvas_confirmed.setAttribute('aria-label', `This plot shows the daily number of new COVID-19 infections
 		from ${countries[country_name].dates[0].toLocaleString()} to the latest update.` );
@@ -147,7 +147,7 @@ function create_summary_section(country_code, container_id) {
 			`sonify(moving_average(countries['${country_name}']['confirmed_daily'], 3), 220, 1);`);
 	
 		var deaths_plot_cell = document.createElement('div');
-		deaths_plot_cell.className = 'col'
+		deaths_plot_cell.className = 'col-lg'
 		
 		canvas_deaths.setAttribute('aria-label', `This plot shows the daily number of COVID-19 
 		deaths from ${countries[country_name].dates[0].toLocaleString()} to the latest update.` );
