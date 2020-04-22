@@ -15,6 +15,7 @@ var countries = [];
 var country_name2iso = []
 var country_iso2name = []
 var world = [];
+var data_ready = false;
 
 // this function handles the event triggered after getting the data
 $(document).bind('dataReadyEvent', function (e) {
@@ -61,7 +62,7 @@ function create_summary_section(country_code, container_id) {
 	canvas_active.id = `canvas_active_${country_name}`
 	canvas_confirmed.id = `canvas_new_confirmed_${country_name}`
 	canvas_deaths.id = `canvas_deaths_confirmed_${country_name}`
-	console.log(countries);
+	
 	section.innerHTML = `<h2>${country_name}</h2>`;
 	var summary_paragraph = document.createElement('p'); 
 	summary_paragraph.innerHTML = `<p align='right'><small>Last updated on ${timestamp_to_date(Date.parse(country_summaries.update_date))}</small></p>
@@ -174,91 +175,101 @@ function playPulse(freqs) {
 }
 		
 function prepare_data() {
-	
-	for (c in countries){
-		let recovered = countries[c]['recovered'];
-		let deaths = countries[c]['deaths'];
-		let confirmed = countries[c]['confirmed'];
-		countries[c]['dates'] = Object.keys(recovered[0]);
-		countries[c]['dates'].shift() // removes non relevant keys by popping the first 4 elements
-		countries[c]['dates'].shift()
-		countries[c]['dates'].shift()
-		countries[c]['dates'].shift()
-		countries[c]['confirmed_timeline'] = [];
-		countries[c]['deaths_timeline'] = [];
-		countries[c]['recovered_timeline'] = [];
-		countries[c]['active_timeline'] = [];
+	console.log('PREPARE DATA')
+	if (!data_ready) {
+		data_ready = true;
+		// console.log(countries);
+		for (c in countries) {
+			let recovered = countries[c]['recovered'];
+			let deaths = countries[c]['deaths'];
+			let confirmed = countries[c]['confirmed'];
+			countries[c]['dates'] = Object.keys(recovered[0]);
+			countries[c]['dates'].shift() // removes non relevant keys by popping the first 4 elements
+			countries[c]['dates'].shift()
+			countries[c]['dates'].shift()
+			countries[c]['dates'].shift()
+			countries[c]['confirmed_timeline'] = [];
+			countries[c]['deaths_timeline'] = [];
+			countries[c]['recovered_timeline'] = [];
+			countries[c]['active_timeline'] = [];
 
-		countries[c]['confirmed_daily'] = [];
-		countries[c]['recovered_daily'] = [];
-		countries[c]['deaths_daily']= [] ;
+			countries[c]['confirmed_daily'] = [];
+			countries[c]['recovered_daily'] = [];
+			countries[c]['deaths_daily'] = [];
 
-		for (i = 0; i < countries[c]['dates'].length; i++){
-			countries[c]['confirmed_timeline'][i] = 0;
-			countries[c]['deaths_timeline'][i] = 0;
-			countries[c]['recovered_timeline'][i] = 0;
-			countries[c]['active_timeline'][i] = 0;
-		}
-		// accumulate cases across multiple regions, if any
-		for (i = 0; i < recovered.length; i++) {
-			var keys = (countries[c]['dates']);
-			for (k in keys) {
-				countries[c]['confirmed_timeline'][k] += Number(confirmed[i][keys[k]]);
-				countries[c]['deaths_timeline'][k] += Number(deaths[i][keys[k]]);
-				countries[c]['recovered_timeline'][k] += Number(recovered[i][keys[k]]);
-				countries[c]['active_timeline'][k] += Number(confirmed[i][keys[k]]) - (Number(deaths[i][keys[k]]) + Number(recovered[i][keys[k]]));
+			for (i = 0; i < countries[c]['dates'].length; i++) {
+				countries[c]['confirmed_timeline'][i] = 0;
+				countries[c]['deaths_timeline'][i] = 0;
+				countries[c]['recovered_timeline'][i] = 0;
+				countries[c]['active_timeline'][i] = 0;
+				countries[c]['confirmed_daily'][i] = 0;
+				countries[c]['deaths_daily'][i] = 0;
+				countries[c]['recovered_daily'][i] = 0;
+			}
+			// accumulate cases across multiple regions, if any
+			for (i = 0; i < recovered.length; i++) {
+				var keys = (countries[c]['dates']);
+				for (k in keys) {
+					
+					countries[c]['confirmed_timeline'][k] += Number(confirmed[i][keys[k]]);
+					countries[c]['deaths_timeline'][k] += Number(deaths[i][keys[k]]);
+					countries[c]['recovered_timeline'][k] += Number(recovered[i][keys[k]]);
+					countries[c]['active_timeline'][k] += Number(confirmed[i][keys[k]]) - (Number(deaths[i][keys[k]]) + Number(recovered[i][keys[k]]));
+				}
 			}
 		}
-	}
 
-	for (i = 0; i < countries[c]['dates'].length; i++) {
-		countries[c]['confirmed_daily'][i] = 0;
-		countries[c]['deaths_daily'][i] = 0;
-		countries[c]['recovered_daily'][i] = 0;
-	}
+		countries['World'] = [];
+		countries['World']['dates'] = countries['Italy']['dates'];
+		countries['World']['confirmed_timeline'] = [];
+		countries['World']['deaths_timeline'] = [];
+		countries['World']['recovered_timeline'] = [];
+		countries['World']['active_timeline'] = [];
 
-	countries['World'] = [];
-	countries['World']['dates'] = countries['Italy']['dates'];
-	countries['World']['confirmed_timeline'] = [];
-	countries['World']['deaths_timeline'] = [];
-	countries['World']['recovered_timeline'] = [];
-	countries['World']['active_timeline'] = [];
-
-	//init arrays
-	for (i = 0; i < countries['World']['dates'].length; i++){
-		countries['World']['confirmed_timeline'][i] = 0;
-		countries['World']['deaths_timeline'][i] = 0;
-		countries['World']['recovered_timeline'][i] = 0;
-		countries['World']['active_timeline'][i] = 0;
-	}
-	for (c in countries) {
+		//init arrays
 		for (i = 0; i < countries['World']['dates'].length; i++) {
-			countries['World']['confirmed_timeline'][i] += countries[c]['confirmed_timeline'][i];
-			countries['World']['deaths_timeline'][i] += countries[c]['deaths_timeline'][i];
-			countries['World']['recovered_timeline'][i] += countries[c]['recovered_timeline'][i];
-			countries['World']['active_timeline'][i] += countries[c]['active_timeline'][i];
-			if (c !== 'World') {
-				if (i == 0) {
-					// console.log(countries[c]['confirmed_daily'])
-					countries[c]['confirmed_daily'][i] = countries[c]['confirmed_timeline'][i];
-					countries[c]['deaths_daily'][i] = countries[c]['deaths_timeline'][i];
-					countries[c]['recovered_daily'][i] = countries[c]['recovered_timeline'][i];
-				}
-				else {
-					countries[c]['confirmed_daily'][i] = countries[c]['confirmed_timeline'][i] - countries[c]['confirmed_timeline'][i - 1];
-					countries[c]['deaths_daily'][i] = countries[c]['deaths_timeline'][i] - countries[c]['deaths_timeline'][i - 1];
-					countries[c]['recovered_daily'][i] = countries[c]['recovered_timeline'][i] - countries[c]['recovered_timeline'][i - 1];
+			countries['World']['confirmed_timeline'][i] = 0;
+			countries['World']['deaths_timeline'][i] = 0;
+			countries['World']['recovered_timeline'][i] = 0;
+			countries['World']['active_timeline'][i] = 0;
+		}
+		for (c in countries) {
+			console.log(c)
+			console.log(countries['World']['dates'])
+			for (i = 0; i < countries['World']['dates'].length; i++) {
+				
+				if (c !== 'World') {
+					countries['World']['confirmed_timeline'][i] += countries[c]['confirmed_timeline'][i];
+					countries['World']['deaths_timeline'][i] += countries[c]['deaths_timeline'][i];
+					countries['World']['recovered_timeline'][i] += countries[c]['recovered_timeline'][i];
+					countries['World']['active_timeline'][i] += countries[c]['active_timeline'][i];
+					if (i == 0) {
+						// console.log(countries[c]['confirmed_daily'])
+						countries[c]['confirmed_daily'][i] = countries[c]['confirmed_timeline'][i];
+						countries[c]['deaths_daily'][i] = countries[c]['deaths_timeline'][i];
+						countries[c]['recovered_daily'][i] = countries[c]['recovered_timeline'][i];
+					}
+					else {
+						countries[c]['confirmed_daily'][i] = countries[c]['confirmed_timeline'][i] - countries[c]['confirmed_timeline'][i - 1];
+						countries[c]['deaths_daily'][i] = countries[c]['deaths_timeline'][i] - countries[c]['deaths_timeline'][i - 1];
+						countries[c]['recovered_daily'][i] = countries[c]['recovered_timeline'][i] - countries[c]['recovered_timeline'][i - 1];
+					}
 				}
 			}
 		}
+		countries[country_iso2name['US']] = countries['US'];
+		// countries[country_iso2name['US']] = countries['US'];
+		country_name2iso['Korea (South)'] = 'KR';
+		country_name2iso['Korea (North)'] = 'KP';
+		countries[country_iso2name['KR']] = countries['Korea, South'];
+		countries[country_iso2name['KP']] = countries['Korea, North'];
+		delete countries['US'];
+		delete countries['Korea, South']
+		delete countries['Korea, North']
+		// notify that the data is ready to be used
+		
+		
 	}
-	countries[country_iso2name['US']] = countries['US'];
-	countries[country_iso2name['US']] = countries['US'];
-	country_name2iso['Korea (South)'] = 'KR';
-	country_name2iso['Korea (North)'] = 'KP';
-	countries[country_iso2name['KR']] = countries['Korea, South'];
-	countries[country_iso2name['KP']] = countries['Korea, North'];
-	// notify that the data is ready to be used
 	jQuery.event.trigger('dataReadyEvent');
 }
 
@@ -490,10 +501,6 @@ function fetch_and_prepare_data_JHU() {
 				let country_name = res.Countries[i].Country;
 				country_name2iso[country_name] = country_code;
 				country_iso2name[country_code] = country_name;
-
-				// country_name2iso[data[d]['Country_Region']] = data[d]['iso2'];
-				// country_iso2name[data[d]['iso2']] = data[d]['Country_Region'];
-				
 				country_summaries[country_code] = [];
 				country_summaries[country_code]['NewConfirmed'] = res.Countries[i].NewConfirmed;
 				country_summaries[country_code]['TotalConfirmed'] = res.Countries[i].TotalConfirmed;
