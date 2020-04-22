@@ -71,7 +71,7 @@ function create_summary_section(country_name, container_id) {
 	generate_line_plot(canvas_active, `Active CODVID-19 Cases in ${country_name}`, 4, 'orange', 'black', false, countries[country_name]['active_timeline']);
 
 	section.appendChild(canvas_active);
-	add_button(`Sonify ${country_name} Active Cases Plot`, section, `sonify_active_${country_name}_button_id`, `sonify(countries['${country_name}']['active_timeline'], 220, 4);`);
+	add_button(`Sonify ${country_name} Active Cases Plot`, section, `sonify_active_${country_name}_button_id`, `sonify(countries['${country_name}']['active_timeline'], 220, 3);`);
 	
 	
 	if (country_name !== 'World') {
@@ -112,6 +112,7 @@ function sonify(data, f0, n_octaves) {
 			d_min = values[v];
 		}
 	}
+	// d_max = 2*d_max;
 	var frequencies = [];
 	for (v = 0; v < values.length; v++) {
 		frequencies[v] = (((data[v] - d_min) * (f_max - f0)) / (d_max - d_min)) + f0;
@@ -119,44 +120,6 @@ function sonify(data, f0, n_octaves) {
 	playPulse(frequencies);
 }
 
-
-
-// function sonify(data, f0, n_octaves) {
-// 	// find d_max
-// 	let f_max = f0 * 2 ** n_octaves;
-// 	var d_max = -1;
-// 	var d_min = 1e9;
-// 	var values = Object.values(data);
-	
-// 	for (v = 0; v < values.length - 1; v++) {
-// 		// console.log(v)
-// 		if (values[v] > d_max) {
-// 			d_max = values[v];
-// 		}
-// 		if (values[v] < d_min) {
-// 			d_min = values[v];
-// 		}
-// 	}
-// 	var w = d_max / (n_octaves);
-// 	var frequencies = [];
-// 	for (v = 0; v < values.length - 1; v++) {
-// 		var bin_target = Math.floor(values[v] / w);
-// 		var base_pitch = f0 * 2 ** bin_target;
-// 		var rem = ((values[v] % w) / w) * (f0 * 2 ** (bin_target + 1) - f0 * 2 ** bin_target);
-// 		frequencies[v] = base_pitch + rem;
-// 	}
-// 	var freq_max = -1;
-// 	for (v = 0; v < frequencies.length; v++) {
-// 		if (frequencies[v] > freq_max) {
-// 			freq_max = frequencies[v];
-// 		}
-// 	}
-// 	for (f = 0; f < frequencies.length; f++){
-// 		frequencies[f] = (((frequencies[f] - f0) * (f_max - f0)) / (freq_max - f0)) + f0;
-// 	}
-// 	playPulse(frequencies);
-// }
-	
 function playPulse(freqs) {
 	console.log(freqs)
 		// for cross browser compatibility
@@ -301,7 +264,7 @@ function generate_line_plot(canvas_elem, title, thickness, color, bgcolor, fill,
 		}
 	};
 	var chart = new Chart(canvas_elem, {
-		type: "line",
+		type: "bar",
 		data: data,
 		options: options
 	});
