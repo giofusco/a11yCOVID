@@ -30,20 +30,21 @@ window.onload = function() {
 </script>
 
 <header>
+  
   <h1>A11Y COVID-19</h1>
+  <p><a href="#main" class="skip-main" aria-label="jump to">Main Content</a></p>
   <p align='center'> Accessible Pandemic Data Bulletin </p>
   <p align='center'> by Giovanni Fusco @ The Smith-Kettlewell Eye Research Institute </p>
 </header>
 <p id='update_timestamp'></p>
-<nav class='navbar'>
+<nav role='menubar'>
 <br>
-<a href="#world_summary" aria-label="jump to">Main Content</a>
-<a href="#US" aria-label="jump to USA">USA </a>
-<a href="#IT" aria-label="jump to Italy">Italy</a>
-<a href="#JP" aria-label="jump to Japan">Japan</a>
-<a href="#CN" aria-label="jump to China">China</a>
-<a href="#KR" aria-label="jump to South Korea">South Korea</a>
-<br><br>
+
+<a href="#US">USA </a>
+<a href="#IT">Italy</a>
+<a href="#JP">Japan</a>
+<a href="#CN">China</a>
+<a href="#KR">South Korea</a>
 <!-- <form name="country_form" id="country_form" action="/view">
     <label for="country_select">Jump to Country:</label>
     <select id="country_select" aria-controls="country" name="country_select">

@@ -65,7 +65,7 @@ function create_summary_section(country_code, container_id) {
 	canvas_confirmed.id = `canvas_new_confirmed_${country_code}`
 	canvas_deaths.id = `canvas_deaths_confirmed_${country_code}`
 
-	section.innerHTML = `  <hr><h2 id='${country_code}'>${country_name}</h2>`;
+	section.innerHTML = `  <hr><h2 id='${country_code}'>${country_name}</h2><br>`;
 	var row1 = document.createElement('div');
 	row1.className = 'row';
 	var summary_cell = document.createElement('div');
@@ -87,13 +87,13 @@ function create_summary_section(country_code, container_id) {
 	active_tml_stats = get_data_stats(countries[country_name]['active_timeline'], country_name);
 	console.log(active_tml_stats)
 
-	var active_tml_caption = `The values range from ${active_tml_stats.min_val.toLocaleString()} on ${active_tml_stats.min_key} 
+	var active_tml_caption = `The values range from ${active_tml_stats.min_val.toLocaleString()} on ${active_tml_stats.min_key.toLocaleString()} 
 	to ${active_tml_stats.max_val.toLocaleString()} on ${active_tml_stats.max_key.toLocaleString()}.
-	  The first ${active_tml_stats.first_val} active cases were recorded on ${active_tml_stats.first_key}`
+	  The first ${active_tml_stats.first_val.toLocaleString()} active cases were recorded on ${active_tml_stats.first_key.toLocaleString()}`
 
 
 	var active_plot_cell = document.createElement('div');
-	active_plot_cell.className = 'col-lg'
+	active_plot_cell.className = 'col-lg text-center'
 
 
 	canvas_active.setAttribute('aria-label', `This plot shows the evolution of the number of active cases of COVID-19 
@@ -101,9 +101,12 @@ function create_summary_section(country_code, container_id) {
 								canvas_active.innerHTML = `<p role="region" aria-live="polite"
 								id="active_cases_chart_fallback">${active_tml_caption}}</p>`;
 	generate_line_plot(canvas_active, `Active CODVID-19 Cases in ${country_name}`, 1, 'black', 'salmon', false, countries[country_name]['active_timeline']);
+	active_plot_cell.appendChild(document.createElement('br'));
 	active_plot_cell.appendChild(canvas_active);
 	active_plot_cell.appendChild(document.createElement('br'));
 	add_button(`Sonify ${country_name} Active Cases Plot`, active_plot_cell, `sonify_active_${country_name}_button_id`, `sonify(countries['${country_name}']['active_timeline'], 220, 3);`);
+	active_plot_cell.appendChild(document.createElement('br'));
+	active_plot_cell.appendChild(document.createElement('br'));
 	row1.appendChild(summary_cell)
 	row1.appendChild(active_plot_cell)
 	
@@ -121,16 +124,16 @@ function create_summary_section(country_code, container_id) {
 		to ${confirmed_stats.max_val.toLocaleString()} on ${confirmed_stats.max_key.toLocaleString()}.
 		  The first ${confirmed_stats.first_val.toLocaleString()} infections were recorded on ${confirmed_stats.first_key.toLocaleString()}`;
 
-		console.log(confirmed_caption)
+		// console.log(confirmed_caption)
 		
 		var deaths_caption = `The values range from ${deaths_stats.min_val.toLocaleString()} on ${deaths_stats.min_key.toLocaleString()} 
 		  to ${deaths_stats.max_val.toLocaleString()} on ${deaths_stats.max_key.toLocaleString()}.
 			The first ${deaths_stats.first_val.toLocaleString()} deaths were recorded on ${deaths_stats.first_key.toLocaleString()}`
 
-		console.log(deaths_caption)
+		// console.log(deaths_caption)
 		
 		var confirmed_plot_cell = document.createElement('div');
-		confirmed_plot_cell.className = 'col-lg'
+		confirmed_plot_cell.className = 'col-lg text-center'
 		
 		canvas_confirmed.setAttribute('aria-label', `This plot shows the daily number of new COVID-19 infections
 		from ${countries[country_name].dates[0].toLocaleString()} to the latest update.` );
@@ -145,9 +148,10 @@ function create_summary_section(country_code, container_id) {
 		confirmed_plot_cell.appendChild(document.createElement('br'));
 		add_button(`Sonify ${country_name} Daily New Cases Plot`, confirmed_plot_cell, `sonify_confirmed_${country_name}_button_id`,
 			`sonify(moving_average(countries['${country_name}']['confirmed_daily'], 3), 220, 1);`);
-	
+		confirmed_plot_cell.appendChild(document.createElement('br'));
+		confirmed_plot_cell.appendChild(document.createElement('br'));
 		var deaths_plot_cell = document.createElement('div');
-		deaths_plot_cell.className = 'col-lg'
+		deaths_plot_cell.className = 'col-lg text-center'
 		
 		canvas_deaths.setAttribute('aria-label', `This plot shows the daily number of COVID-19 
 		deaths from ${countries[country_name].dates[0].toLocaleString()} to the latest update.` );
