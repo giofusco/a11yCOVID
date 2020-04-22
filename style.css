@@ -19,6 +19,15 @@
     text-align: center;
 
   }
+
+  canvas{
+    
+		-moz-user-select: none;
+		-webkit-user-select: none;
+    -ms-user-select: none;
+    align-content: center;
+    width: 100%;
+  } 
   
   /*
   html {
@@ -81,13 +90,7 @@ main {
     margin-right:15%;
   }
 
-  canvas{
-    
-		-moz-user-select: none;
-		-webkit-user-select: none;
-    -ms-user-select: none;
-    align-content: center;
-  } 
+
   
   h1{
     text-align: center;

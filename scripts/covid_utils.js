@@ -65,18 +65,7 @@ function create_summary_section(country_code, container_id) {
 	canvas_confirmed.id = `canvas_new_confirmed_${country_code}`
 	canvas_deaths.id = `canvas_deaths_confirmed_${country_code}`
 
-	
-// 	<div class="row">
-//     <div class="col-6 col-sm-4">.col-6 .col-sm-4</div>
-//     <div class="col-6 col-sm-4">.col-6 .col-sm-4</div>
-  
-//     <!-- Force next columns to break to new line at md breakpoint and up -->
-//     <div class="w-100 d-none d-md-block"></div>
-  
-//     <div class="col-6 col-sm-4">.col-6 .col-sm-4</div>
-//     <div class="col-6 col-sm-4">.col-6 .col-sm-4</div>
-//   </div>
-	section.innerHTML = `  <hr><h2>${country_name}</h2>`;
+	section.innerHTML = `  <hr><h2 id='${country_code}'>${country_name}</h2>`;
 	var row1 = document.createElement('div');
 	row1.className = 'row';
 	var summary_cell = document.createElement('div');
@@ -95,16 +84,22 @@ function create_summary_section(country_code, container_id) {
 
 	summary_cell.appendChild(summary_paragraph);
 	
-		
+	active_tml_stats = get_data_stats(countries[country_name]['active_timeline'], country_name);
+	console.log(active_tml_stats)
+
+	var active_tml_caption = `The values range from ${active_tml_stats.min_val.toLocaleString()} on ${active_tml_stats.min_key} 
+	to ${active_tml_stats.max_val.toLocaleString()} on ${active_tml_stats.max_key.toLocaleString()}.
+	  The first ${active_tml_stats.first_val} active cases were recorded on ${active_tml_stats.first_key}`
+
 
 	var active_plot_cell = document.createElement('div');
-	active_plot_cell.className = 'col-7'
+	active_plot_cell.className = 'col'
 
 
-	canvas_active.setAttribute('aria-label', `This plot shows the evolution of the global number of active cases of COVID-19 
-								from the beginning of the epidemic to the latest update.` );
+	canvas_active.setAttribute('aria-label', `This plot shows the evolution of the number of active cases of COVID-19 
+								from ${countries[country_name].dates[0].toLocaleString()} to the latest update.` );
 								canvas_active.innerHTML = `<p role="region" aria-live="polite"
-								id="active_cases_chart_fallback">Soon I'll work to generate better captioning for plots.</p>`;
+								id="active_cases_chart_fallback">${active_tml_caption}}</p>`;
 	generate_line_plot(canvas_active, `Active CODVID-19 Cases in ${country_name}`, 1, 'black', 'salmon', false, countries[country_name]['active_timeline']);
 	active_plot_cell.appendChild(canvas_active);
 	active_plot_cell.appendChild(document.createElement('br'));
@@ -116,13 +111,32 @@ function create_summary_section(country_code, container_id) {
 	var row2 = document.createElement('div');
 	row2.className = 'row';
 
+	console.log(active_tml_caption)
+
 	if (country_name !== 'World') {
+		confirmed_stats = get_data_stats(countries[country_name]['confirmed_daily'], country_name);
+		deaths_stats = get_data_stats(countries[country_name]['deaths_daily'], country_name);
+
+		var confirmed_caption = `The values range from ${confirmed_stats.min_val.toLocaleString()} on ${confirmed_stats.min_key.toLocaleString()} 
+		to ${confirmed_stats.max_val.toLocaleString()} on ${confirmed_stats.max_key.toLocaleString()}.
+		  The first ${confirmed_stats.first_val.toLocaleString()} infections were recorded on ${confirmed_stats.first_key.toLocaleString()}`;
+
+		console.log(confirmed_caption)
+		
+		var deaths_caption = `The values range from ${deaths_stats.min_val.toLocaleString()} on ${deaths_stats.min_key.toLocaleString()} 
+		  to ${deaths_stats.max_val.toLocaleString()} on ${deaths_stats.max_key.toLocaleString()}.
+			The first ${deaths_stats.first_val.toLocaleString()} deaths were recorded on ${deaths_stats.first_key.toLocaleString()}`
+
+		console.log(deaths_caption)
+		
 		var confirmed_plot_cell = document.createElement('div');
 		confirmed_plot_cell.className = 'col'
-		canvas_confirmed.setAttribute('aria-label', `This plot shows the daily number of new COVID-19 
-		from the beginning of the epidemic to the latest update.` );
+		
+		canvas_confirmed.setAttribute('aria-label', `This plot shows the daily number of new COVID-19 infections
+		from ${countries[country_name].dates[0].toLocaleString()} to the latest update.` );
+		
 		canvas_confirmed.innerHTML = `<p role="region" aria-live="polite"
-			id="confirmed_cases_chart_fallback">Soon I'll work to generate better captioning for plots.</p>`;
+			id="confirmed_cases_chart_fallback"> ${confirmed_caption} </p>`;
 		var conf_smoothed = moving_average(countries[`${country_name}`]['confirmed_daily'], 3);
 		generate_line_plot(canvas_confirmed, `Daily new CODVID-19 infections in  ${country_name}`, 1, 'black', 'teal', false,
 			countries[`${country_name}`]['confirmed_daily']);
@@ -136,12 +150,12 @@ function create_summary_section(country_code, container_id) {
 		deaths_plot_cell.className = 'col'
 		
 		canvas_deaths.setAttribute('aria-label', `This plot shows the daily number of COVID-19 
-		deaths from the beginning of the epidemic on 1/22/20 to the latest update.` );
+		deaths from ${countries[country_name].dates[0].toLocaleString()} to the latest update.` );
 		canvas_deaths.innerHTML = `<p role="region" aria-live="polite"
-			id="confirmed_cases_chart_fallback">Soon I'll work to generate better captioning for plots.</p>`;
+			id="confirmed_cases_chart_fallback">${deaths_caption}</p>`;
 
 		var deaths_smoothed = moving_average(countries[country_name]['deaths_daily'], 3);
-		generate_line_plot(canvas_deaths, `Daily CODVID-19 deaths in  ${country_name}`, 1, 'black', 'gray', false, deaths_smoothed);
+		generate_line_plot(canvas_deaths, `Daily CODVID-19 deaths in  ${country_name}`, 1, 'black', 'gray', false, countries[country_name]['deaths_daily']);
 		deaths_plot_cell.appendChild(canvas_deaths);
 		deaths_plot_cell.appendChild(document.createElement('br'));
 		add_button(`Sonify ${country_name} Daily Deaths Plot`, deaths_plot_cell, `sonify_deaths_${country_name}_button_id`,
@@ -265,8 +279,8 @@ function prepare_data() {
 			countries['World']['active_timeline'][i] = 0;
 		}
 		for (c in countries) {
-			console.log(c)
-			console.log(countries['World']['dates'])
+			// console.log(c)
+			// console.log(countries['World']['dates'])
 			for (i = 0; i < countries['World']['dates'].length; i++) {
 				
 				if (c !== 'World') {
@@ -436,6 +450,41 @@ function moving_average(data, n) {
 		out_data[i] = 0.33 * (data[i] + data[i - 1] + data[i - 2]);
 	}
 	return out_data;
+}
+
+function get_data_stats(data, country_name) {
+	res = [];
+	var max_val = -1;
+	var min_val = 1e9;
+	var first_val = 0;
+	var first_key;
+	var first_non_zero = true;
+	var min_key;
+	var max_key;
+	var values = Object.values(data);
+	
+	for (v = 0; v < values.length - 1; v++) {
+		if (values[v] > 0 && first_non_zero) {
+			first_non_zero = false;
+			first_val = values[v];
+			first_key = countries[country_name].dates[v];
+		}
+		if (values[v] > max_val) {
+			max_val = values[v];
+			max_key = countries[country_name].dates[v];
+		}
+		if (values[v] < min_val) {
+			min_val = values[v];
+			min_key = countries[country_name].dates[v];
+		}
+	}
+	res.min_val = min_val;
+	res.min_key = min_key;
+	res.max_val = max_val;
+	res.max_key = max_key;
+	res.first_val = first_val;
+	res.first_key = first_key;
+	return res;
 }
 
 
