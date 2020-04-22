@@ -66,14 +66,33 @@ main {
   }
 
   canvas{
-    width: 90%;
+    
 		-moz-user-select: none;
 		-webkit-user-select: none;
     -ms-user-select: none;
     align-content: center;
-  }
+  } 
   
   h1{
     text-align: center;
   }
 
+  h2{
+    text-align: center;
+
+  }
+
+  button{
+    display: flex;
+    border-width: 2;
+    box-shadow: inset;
+    /* color: black; */
+    padding: 5px 5px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 18px;
+    align-content: center;
+    justify-content: center;
+    margin: 0 auto;
+  }
