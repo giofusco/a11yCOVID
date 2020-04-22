@@ -18,7 +18,7 @@ var world = [];
 
 // this function handles the event triggered after getting the data
 $(document).bind('dataReadyEvent', function (e) {
-	console.log('Data loaded, setting up plot and summary');
+	console.log('Data loaded, creating page');
 	document.getElementById('fetching_progress_section').remove(); // remove progress bar because we are done loading
 	create_summary_section('World', 'main_article');
 	create_summary_section('Italy', 'main_article');
@@ -41,7 +41,7 @@ const global_table_headers =
 	</tr>`;
 
 
-// use country_name = 'global' to get world stats
+// use country_name = 'World' to get world stats
 function create_summary_section(country_name, container_id) {
 	var container = document.getElementById(container_id);
 	var section = document.createElement('section');
@@ -52,7 +52,6 @@ function create_summary_section(country_name, container_id) {
 	
 	section.innerHTML = `<h2>${country_name}</h2>`;
 	var summary_paragraph = document.createElement('p'); 
-	console.log(country_summaries[country_name])
 	summary_paragraph.innerHTML =`<small>Last updated on ${timestamp_to_date(Date.parse(country_summaries[country_name].Date))}</small></p>
 	Currently there are
 	${(country_summaries[country_name].TotalConfirmed - (country_summaries[country_name].TotalDeaths + country_summaries[country_name].TotalRecovered)).toLocaleString()} 
@@ -62,7 +61,6 @@ function create_summary_section(country_name, container_id) {
 	<strong>Total recovered</strong> ${country_summaries[country_name].TotalRecovered.toLocaleString()}. <br>
 	Unfortunately there have been ${country_summaries[country_name].NewDeaths.toLocaleString()} <strong>deaths</strong> today so far, 
 	bringing the <strong>total deaths</strong> to ${country_summaries[country_name].TotalDeaths.toLocaleString()}.`;
-	//console.log(summary)
 
 	section.appendChild(summary_paragraph);	
 
@@ -74,29 +72,32 @@ function create_summary_section(country_name, container_id) {
 
 	section.appendChild(canvas_active);
 	add_button(`Sonify ${country_name} Active Cases Plot`, section, `sonify_active_${country_name}_button_id`, `sonify(countries['${country_name}']['active_timeline'], 220, 4);`);
+	
+	
+	if (country_name !== 'World') {
+		section.appendChild(canvas_confirmed);
+		canvas_confirmed.setAttribute('aria-label', `This plot shows the daily number of new COVID-19 
+		from the beginning of the epidemic to the latest update.` );
+		canvas_confirmed.innerHTML = `<p role="region" aria-live="polite"
+		id="active_cases_chart_fallback">Soon I'll work to generate better captioning for plots.</p>`;
 
-	
-	canvas_confirmed.setAttribute('aria-label', `This plot shows the daily number of new COVID-19 
-								from the beginning of the epidemic to the latest update.` );
-								canvas_confirmed.innerHTML = `<p role="region" aria-live="polite"
-								id="active_cases_chart_fallback">Soon I'll work to generate better captioning for plots.</p>`;
-	
-	generate_line_plot(canvas_confirmed, `Daily new CODVID-19 infections in  ${country_name}`, 4, 'red', 'black', false, countries[country_name]['confirmed_timeline']);
-	
-	section.appendChild(canvas_confirmed);
-	add_button(`Sonify ${country_name} Daily New Cases Plot`, section, `sonify_confirmed_${country_name}_button_id`, `sonify(countries['${country_name}']['confirmed_timeline'], 220, 3);`);
-	
+		var conf_smoothed = moving_average(countries[`${country_name}`]['confirmed_daily'], 3);
+		generate_line_plot(canvas_confirmed, `Daily new CODVID-19 infections in  ${country_name}`, 4, 'red', 'black', false, conf_smoothed);
+
+
+		console.log("Smooth!" + conf_smoothed)
+		add_button(`Sonify ${country_name} Daily New Cases Plot`, section, `sonify_confirmed_${country_name}_button_id`,
+			`sonify(moving_average(countries['${country_name}']['confirmed_daily'], 3), 220, 1);`);
+	}
 	
 	section.id = `${country_name}_summary`;
 	
-	// var summary = prepare_summary(country_name)
 	container.appendChild(section);
 }
 
 
 
 function sonify(data, f0, n_octaves) {
-	// find d_max
 	let f_max = f0 * 2 ** n_octaves;
 	var d_max = -1;
 	var d_min = 1e9;
@@ -111,27 +112,53 @@ function sonify(data, f0, n_octaves) {
 			d_min = values[v];
 		}
 	}
-	var w = d_max / (n_octaves);
 	var frequencies = [];
-	for (v = 0; v < values.length - 1; v++) {
-		var bin_target = Math.floor(values[v] / w);
-		var base_pitch = f0 * 2 ** bin_target;
-		var rem = ((values[v] % w) / w) * (f0 * 2 ** (bin_target + 1) - f0 * 2 ** bin_target);
-		frequencies[v] = base_pitch + rem;
-	}
-	var freq_max = -1;
-	for (v = 0; v < frequencies.length; v++) {
-		if (frequencies[v] > freq_max) {
-			freq_max = frequencies[v];
-		}
-	}
-	for (f = 0; f < frequencies.length; f++){
-		frequencies[f] = (((frequencies[f] - f0) * (f_max - f0)) / (freq_max - f0)) + f0;
+	for (v = 0; v < values.length; v++) {
+		frequencies[v] = (((data[v] - d_min) * (f_max - f0)) / (d_max - d_min)) + f0;
 	}
 	playPulse(frequencies);
 }
+
+
+
+// function sonify(data, f0, n_octaves) {
+// 	// find d_max
+// 	let f_max = f0 * 2 ** n_octaves;
+// 	var d_max = -1;
+// 	var d_min = 1e9;
+// 	var values = Object.values(data);
+	
+// 	for (v = 0; v < values.length - 1; v++) {
+// 		// console.log(v)
+// 		if (values[v] > d_max) {
+// 			d_max = values[v];
+// 		}
+// 		if (values[v] < d_min) {
+// 			d_min = values[v];
+// 		}
+// 	}
+// 	var w = d_max / (n_octaves);
+// 	var frequencies = [];
+// 	for (v = 0; v < values.length - 1; v++) {
+// 		var bin_target = Math.floor(values[v] / w);
+// 		var base_pitch = f0 * 2 ** bin_target;
+// 		var rem = ((values[v] % w) / w) * (f0 * 2 ** (bin_target + 1) - f0 * 2 ** bin_target);
+// 		frequencies[v] = base_pitch + rem;
+// 	}
+// 	var freq_max = -1;
+// 	for (v = 0; v < frequencies.length; v++) {
+// 		if (frequencies[v] > freq_max) {
+// 			freq_max = frequencies[v];
+// 		}
+// 	}
+// 	for (f = 0; f < frequencies.length; f++){
+// 		frequencies[f] = (((frequencies[f] - f0) * (f_max - f0)) / (freq_max - f0)) + f0;
+// 	}
+// 	playPulse(frequencies);
+// }
 	
 function playPulse(freqs) {
+	console.log(freqs)
 		// for cross browser compatibility
 	// create web audio api context
 	var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -161,14 +188,18 @@ function prepare_data() {
 		let deaths = countries[c]['deaths'];
 		let confirmed = countries[c]['confirmed'];
 		countries[c]['dates'] = Object.keys(recovered[0]);
+		countries[c]['dates'].shift() // removes non relevant keys by popping the first 4 elements
 		countries[c]['dates'].shift()
 		countries[c]['dates'].shift()
 		countries[c]['dates'].shift()
-		countries[c]['dates'].shift()
-		countries[c]['confirmed_timeline']= [] ;
+		countries[c]['confirmed_timeline'] = [];
 		countries[c]['deaths_timeline'] = [];
 		countries[c]['recovered_timeline'] = [];
 		countries[c]['active_timeline'] = [];
+
+		countries[c]['confirmed_daily'] = [];
+		countries[c]['recovered_daily'] = [];
+		countries[c]['deaths_daily']= [] ;
 
 		for (i = 0; i < countries[c]['dates'].length; i++){
 			countries[c]['confirmed_timeline'][i] = 0;
@@ -186,6 +217,12 @@ function prepare_data() {
 				countries[c]['active_timeline'][k] += Number(confirmed[i][keys[k]]) - (Number(deaths[i][keys[k]]) + Number(recovered[i][keys[k]]));
 			}
 		}
+	}
+
+	for (i = 0; i < countries[c]['dates'].length; i++) {
+		countries[c]['confirmed_daily'][i] = 0;
+		countries[c]['deaths_daily'][i] = 0;
+		countries[c]['recovered_daily'][i] = 0;
 	}
 
 	countries['World'] = [];
@@ -208,9 +245,22 @@ function prepare_data() {
 			countries['World']['deaths_timeline'][i] += countries[c]['deaths_timeline'][i];
 			countries['World']['recovered_timeline'][i] += countries[c]['recovered_timeline'][i];
 			countries['World']['active_timeline'][i] += countries[c]['active_timeline'][i];
+			if (c !== 'World') {
+				if (i == 0) {
+					console.log(countries[c]['confirmed_daily'])
+					countries[c]['confirmed_daily'][i] = countries[c]['confirmed_timeline'][i];
+					countries[c]['deaths_daily'][i] = countries[c]['deaths_timeline'][i];
+					countries[c]['recovered_daily'][i] = countries[c]['recovered_timeline'][i];
+				}
+				else {
+					countries[c]['confirmed_daily'][i] = countries[c]['confirmed_timeline'][i] - countries[c]['confirmed_timeline'][i - 1];
+					countries[c]['deaths_daily'][i] = countries[c]['deaths_timeline'][i] - countries[c]['deaths_timeline'][i - 1];
+					countries[c]['recovered_daily'][i] = countries[c]['recovered_timeline'][i] - countries[c]['recovered_timeline'][i - 1];
+				}
+			}
 		}
 	}
-	console.log(countries.World)
+	// console.log(countries.World)
 	// notify that the data is ready to be used
 	jQuery.event.trigger('dataReadyEvent');
 }
@@ -303,50 +353,33 @@ function setup_country_selection_dom(select_id, countries){
 	}	 
 }
 
-// function setup_summary_dom(dom_id, summary) {
+
+// function setup_summary_table_dom(dom_id, summary) {
 // 	var x = document.getElementById(dom_id);	
-// 	var summary_text = 
-// 		`<p><small>Last updated on ${timestamp_to_date(Date.parse(summary.Countries[0].Date))}</small></p>
-// 		<p>Currently there are
-// 		${(summary.Global.TotalConfirmed - (summary.Global.TotalDeaths + summary.Global.TotalRecovered)).toLocaleString()} 
-// 		<strong>active cases</strong> in the World. <br>
-// 		Today there have been ${summary.Global.NewConfirmed.toLocaleString()} <strong>new infections</strong> world-wide
-// 		so far, bringing the <strong>total</strong> to ${summary.Global.TotalConfirmed.toLocaleString()} COVID-19 cases. <br>
-// 		${summary.Global.NewRecovered.toLocaleString()} people have <strong>recovered today</strong>, ${summary.Global.TotalRecovered.toLocaleString()}
-// 		is the <strong>total recovered</strong>. <br>
-// 		Unfortunately there have been ${summary.Global.NewDeaths.toLocaleString()} <strong>deaths</strong> today so far, 
-// 		bringing the <strong>total deaths</strong> to ${summary.Global.TotalDeaths.toLocaleString()}.</p>`;
-// 		//console.log(summary)
-
-// 	x.innerHTML = summary_text;
-// }
-
-function setup_summary_table_dom(dom_id, summary) {
-	var x = document.getElementById(dom_id);	
-	table = `<table id="world_table">` + global_table_headers;
-	table += "<caption>Data from all the countries affected by COVID-19</caption>";
-	countries = summary.Countries;
-	// countries.sort(get_sort_order("NewConfirmed"));
-	countries.sort(get_sort_order_active_cases());
-	for (i = countries.length - 1; i >= 0; i--){
-		data = countries[i];
-		var row = "<tr>";
-		row +=
-			`<th scope="row"><a href=."/view.?country=${data.Slug}">${data.Country}</a></th>
-			<td>${(data.TotalConfirmed - (data.TotalDeaths+data.TotalRecovered)).toLocaleString()}</td>
-			<td>${data.NewConfirmed.toLocaleString()}</td>
-			<td>${data.TotalConfirmed.toLocaleString()}</td>
-			<td>${data.NewRecovered.toLocaleString()}</td>
-			<td>${data.TotalRecovered.toLocaleString()}</td>
-			<td>${data.NewDeaths.toLocaleString()}</td>
-			<td>${data.TotalDeaths.toLocaleString()}</td>
-			</tr>`;
-		table += row;
+// 	table = `<table id="world_table">` + global_table_headers;
+// 	table += "<caption>Data from all the countries affected by COVID-19</caption>";
+// 	countries = summary.Countries;
+// 	// countries.sort(get_sort_order("NewConfirmed"));
+// 	countries.sort(get_sort_order_active_cases());
+// 	for (i = countries.length - 1; i >= 0; i--){
+// 		data = countries[i];
+// 		var row = "<tr>";
+// 		row +=
+// 			`<th scope="row"><a href=."/view.?country=${data.Slug}">${data.Country}</a></th>
+// 			<td>${(data.TotalConfirmed - (data.TotalDeaths+data.TotalRecovered)).toLocaleString()}</td>
+// 			<td>${data.NewConfirmed.toLocaleString()}</td>
+// 			<td>${data.TotalConfirmed.toLocaleString()}</td>
+// 			<td>${data.NewRecovered.toLocaleString()}</td>
+// 			<td>${data.TotalRecovered.toLocaleString()}</td>
+// 			<td>${data.NewDeaths.toLocaleString()}</td>
+// 			<td>${data.TotalDeaths.toLocaleString()}</td>
+// 			</tr>`;
+// 		table += row;
 		
-	}
-	table += '</table>';
-	x.innerHTML += table;
-}
+// 	}
+// 	table += '</table>';
+// 	x.innerHTML += table;
+// }
 
 
 
@@ -355,6 +388,19 @@ function setup_summary_table_dom(dom_id, summary) {
 
 
 // *************************** Utils *********************************** //
+//moving average
+function moving_average(data, n) {
+	console.log(data)
+	var out_data = [];
+	for (i = 0; i < n-1; i++)
+		out_data[i] = 0;
+	for (i = n - 1; i < data.length; i++){
+		out_data[i] = 0.33 * (data[i] + data[i - 1] + data[i - 2]);
+	}
+	return out_data;
+}
+
+
 //Comparer Function, sorts collection by property prop
 function get_sort_order(prop) {  
 	return function(a, b) {  
@@ -453,7 +499,7 @@ function fetch_and_prepare_data_JHU() {
 			}
 			
 			console.log("[OK] FETCH SUMMARY");
-			console.log(country_summaries);
+			// console.log(country_summaries);
 			njobs--;
 			if (njobs == 0)
 				prepare_data();
