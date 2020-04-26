@@ -16,28 +16,18 @@ var country_iso2name = []
 var world = [];
 var data_ready = false;
 
+// how long to play a single data point (in secs)
+let sample_length = 0.08
+
 // this function handles the event triggered after getting the data
 $(document).bind('dataReadyEvent', function (e) {
-	console.log('Data loaded, creating page');
+	console.log('Data Ready, Generating page');
 	document.getElementById('fetching_progress_section').remove(); // remove progress bar because we are done loading
 	document.getElementById('update_timestamp').innerHTML = `
 	<p align='center'><small><em> last updated on ${timestamp_to_date(Date.parse(country_summaries.update_date))}</em></small></p>`
 	create_summary_section('World', 'main_article');
 	setup_country_selection_dom('country_select');
 });
-
-
-const global_table_headers =
-	`<tr>
-		<th scope=\"col\">Country</th>
-		<th scope=\"col\">Active Cases</th>
-		<th scope=\"col\">New Cases</th>
-		<th scope=\"col\">Total Cases</th>
-		<th scope=\"col\">New Recovered</th>
-		<th scope=\"col\">Total Recovered</th>
-		<th scope=\"col\">New Deaths</th>
-		<th scope=\"col\">Total Deaths</th>
-	</tr>`;
 
 
 // use country_name = 'World' to get world stats
@@ -168,15 +158,12 @@ function sonify(data, f0, n_octaves) {
 	var values = Object.values(data);
 	
 	for (v = 0; v < values.length - 1; v++) {
-		// console.log(v)
-		if (values[v] > d_max) {
+		if (values[v] > d_max) 
 			d_max = values[v];
-		}
-		if (values[v] < d_min) {
+		if (values[v] < d_min) 
 			d_min = values[v];
-		}
 	}
-	// d_max = 2*d_max;
+
 	var frequencies = [];
 	for (v = 0; v < values.length; v++) {
 		frequencies[v] = (((data[v] - d_min) * (f_max - f0)) / (d_max - d_min)) + f0;
@@ -185,31 +172,33 @@ function sonify(data, f0, n_octaves) {
 }
 
 function playPulse(freqs) {
-		// for cross browser compatibility
-	// create web audio api context
+	// for cross browser compatibility
 	var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 	var gainNode = audioCtx.createGain();
 	
   	gainNode.gain.minValue = 0;
 	gainNode.gain.maxValue = 1;
 	gainNode.gain.value = 0.25;
-	// gainNode.gain.setValueAtTime(0.005, audioCtx.currentTime);
-	// create Oscillator node
+
 	var oscillator = audioCtx.createOscillator();
 	oscillator.type = 'sine';
+	gainNode.gain.exponentialRampToValueAtTime(
+		0.00001, audioCtx.currentTime +  freqs.length * sample_length
+	)
 	
 	for (i = 0; i < freqs.length; i++) {
-		oscillator.frequency.setValueAtTime(freqs[i], audioCtx.currentTime + i * 0.035);
-		gainNode.gain.setValueAtTime(0.25, audioCtx.currentTime + i * 0.05);
+		oscillator.frequency.setValueAtTime(freqs[i], audioCtx.currentTime + i * sample_length);
+		gainNode.gain.setValueAtTime(0.25, audioCtx.currentTime + i * sample_length);
 	}
+
 	oscillator.connect(gainNode).connect(audioCtx.destination);
-	// oscillator.connect(audioCtx.destination);
+
 	oscillator.start();
-	oscillator.stop(audioCtx.currentTime + freqs.length*.035);
+	oscillator.stop(audioCtx.currentTime + freqs.length * sample_length);
 }
 		
 function prepare_data() {
-	console.log('PREPARE DATA')
+	console.log('CRUNCHING DATA...')
 	if (!data_ready) {
 		data_ready = true;
 		for (c in countries) {
@@ -239,7 +228,6 @@ function prepare_data() {
 				countries[c]['deaths_daily'][i] = 0;
 				countries[c]['recovered_daily'][i] = 0;
 			}
-			console.log(c + ':' + recovered.length + `, ` + confirmed.length)
 			// accumulate cases across multiple regions, if any
 			for (i = 0; i < confirmed.length; i++) {
 				var keys = (countries[c]['dates']);
@@ -249,7 +237,6 @@ function prepare_data() {
 					countries[c]['deaths_timeline'][k] += Number(deaths[i][keys[k]]);
 					if (recovered[i] != undefined)
 						countries[c]['recovered_timeline'][k] += Number(recovered[i][keys[k]]);
-					
 				}
 			}
 			var keys = (countries[c]['dates']);
@@ -301,6 +288,7 @@ function prepare_data() {
 		countries[country_iso2name['KR']] = countries['Korea, South'];
 		delete countries['US'];
 		delete countries['Korea, South']
+		console.log('CRUNCHING DATA... OK!')
 	}
 
 	// notify that the data is ready to be used
@@ -350,10 +338,15 @@ function generate_plot(canvas_elem, title, thickness, color, bgcolor, fill, mdat
 	
 }
 
-
-// |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| //
-
-// ******************* DOM/UI related functions *********************** //
+// /////////////////////////////////////////////////////////////////////////////////////// \\
+// /////////////////////////////////////////////////////////////////////////////////////// \\
+// /////////////////////////////////////////////////////////////////////////////////////// \\
+// /////////////////////////////////////////////////////////////////////////////////////// \\
+// ******************************** DOM/UI ************************************************ \\
+/ //////////////////////////////////////////////////////////////////////////////////////// \\
+// /////////////////////////////////////////////////////////////////////////////////////// \\
+// /////////////////////////////////////////////////////////////////////////////////////// \\
+// /////////////////////////////////////////////////////////////////////////////////////// \\
 
 function add_button(text, container_elem, button_id, callback_string) {
 	// x = document.getElementById(container_id);
@@ -374,10 +367,15 @@ function setup_country_selection_dom(select_id){
 	}
 }
 
-// ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| //
-
-
-// *************************** Utils *********************************** //
+// /////////////////////////////////////////////////////////////////////////////////////// \\
+// /////////////////////////////////////////////////////////////////////////////////////// \\
+// /////////////////////////////////////////////////////////////////////////////////////// \\
+// /////////////////////////////////////////////////////////////////////////////////////// \\
+// ******************************** UTILS ************************************************ \\
+/ //////////////////////////////////////////////////////////////////////////////////////// \\
+// /////////////////////////////////////////////////////////////////////////////////////// \\
+// /////////////////////////////////////////////////////////////////////////////////////// \\
+// /////////////////////////////////////////////////////////////////////////////////////// \\
 //moving average
 function moving_average(data, n) {
 	var out_data = [];
@@ -454,8 +452,6 @@ function get_sort_order_active_cases() {
 
 function timestamp_to_date(tstamp){
 	var d = new Date(tstamp);
-	//console.log(d)
-	// var date_string =  String((d.getMonth()+1) + '/' + (d.getDate()) + '/' + d.getFullYear() + ' ' + d.getHours() + ':' + d.getMinutes());
 	return d;
 }
 
@@ -486,7 +482,16 @@ function sortKeys(obj_1) {
 } 
 
 
-// ************************ DATA FETCHING
+// /////////////////////////////////////////////////////////////////////////////////////// \\
+// /////////////////////////////////////////////////////////////////////////////////////// \\
+// /////////////////////////////////////////////////////////////////////////////////////// \\
+// /////////////////////////////////////////////////////////////////////////////////////// \\
+// ******************************** DATA FETCHING **************************************** \\
+/ //////////////////////////////////////////////////////////////////////////////////////// \\
+// /////////////////////////////////////////////////////////////////////////////////////// \\
+// /////////////////////////////////////////////////////////////////////////////////////// \\
+// /////////////////////////////////////////////////////////////////////////////////////// \\
+
 
 function fetch_and_prepare_data_JHU() {
 	var njobs = 4;
