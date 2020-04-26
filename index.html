@@ -15,7 +15,6 @@
   <script src="./scripts/covid_utils.js"></script>
   <link rel="stylesheet" href="style.css">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
 	<title>A11Y COVID-19</title>
 </head>
 
@@ -27,31 +26,42 @@ window.onload = function() {
    //setup_summary('summary', 'summary_table');
    fetch_and_prepare_data_JHU();
 }
+
+function handle_selection(country_code){
+  if (country_code == undefined)
+    country_code = document.country_form['country_select'].value;
+  document.getElementById('main_article').innerHTML = '';
+  create_summary_section(country_code, 'main_article');
+  return false;
+}
 </script>
 
 <header>
   
   <h1>A11Y COVID-19</h1>
-  <p><a href="#main" class="skip-main" aria-label="jump to">Main Content</a></p>
+  <p><a class='skip-main' href="#main_article">Main Content</a></p>
   <p align='center'> Accessible Pandemic Data Bulletin </p>
   <p align='center'> by Giovanni Fusco @ The Smith-Kettlewell Eye Research Institute </p>
 </header>
 <p id='update_timestamp'></p>
-<nav role='menubar'>
-<br>
 
-<a href="#US">USA </a>
-<a href="#IT">Italy</a>
-<a href="#JP">Japan</a>
-<a href="#CN">China</a>
-<a href="#KR">South Korea</a>
-<!-- <form name="country_form" id="country_form" action="/view">
-    <label for="country_select">Jump to Country:</label>
-    <select id="country_select" aria-controls="country" name="country_select">
-      <option value="">Select a country&hellip;</option>
-    </select>
-    <input type="submit" value="Go">
-  </form> -->
+<nav>
+  <a href="#" onClick="handle_selection('US')" title="jump to">USA</a>
+  <a href="#" onClick="handle_selection('IT')" title="jump to">Italy</a>
+  <a href="#" onClick="handle_selection('JP')" title="jump to">Japan</a>
+  <a href="#" onClick="handle_selection('CN')" title="jump to">China</a>
+  <a href="#" onClick="handle_selection('KR')" title="jump to">South Korea</a>
+  <a href="#" onClick="handle_selection('CA')" title="jump to">Canada</a>
+  <a href="#" onClick="handle_selection('AU')" title="jump to">Australia</a>
+  <div align='right'>
+  <form name="country_form" id="country_form" onSubmit="return handle_selection()">
+      <label for="country_select">Jump to Country:</label>
+      <select id="country_select" aria-controls="country" name="country_select">
+        <option value="">Select a country&hellip;</option>
+      </select>
+      <input type="submit" value="Go">
+    </form>
+  </div>
 </nav>
 
 <main id="main" role="main">
@@ -64,31 +74,6 @@ window.onload = function() {
         <progress id="fetching_progress" max="1" value="0" style="width: 50%"></progress>
       </div>
   </section>
-
-
-
-  <!-- <section> -->
-    <!-- <h2>World Summmary</h2> -->
-    <!-- <div id='summary'> </div> -->
-    <!-- chart section -->
-    <!-- <div id="chart_section" style="width: 65%;"> -->
-     
-      <!-- the actual plot -->
-      <!-- <canvas id="active_cases_chart" -->
-        <!-- aria-label="A plot of the number of active cases of COVID-19 in the World from the beginning of the epidemic to today" role="img"> -->
-        <!-- fallback text -->
-        <!-- <p role="region" aria-live="polite" id="active_cases_chart_fallback">There will be a summary here</div></p> -->
-     <!-- </canvas> -->
-      <!-- button to trigger sonification -->
-      <!-- <div id="sonify_button_section"> -->
-     <!-- </div> -->
-    <!-- </div> -->
-    <!-- <br> -->
-    <!-- <div id='summary_table'> </div> -->
-  <!-- </section> -->
-<!-- <section> -->
- <!-- <h2>United States</h2>  -->
- <!-- </section> -->
 
 </article>
 
