@@ -169,7 +169,7 @@ function create_summary_section(country_code, container_id) {
 
 		var plot_header_deaths = document.createElement('h3');
 		plot_header_deaths.innerText = 'Plot - Daily COVID-19 Deaths';
-		confirmed_plot_cell.append(plot_header_deaths);
+		deaths_plot_cell.append(plot_header_deaths);
 
 		deaths_plot_cell.appendChild(canvas_deaths);
 		deaths_plot_cell.appendChild(document.createElement('br'));
