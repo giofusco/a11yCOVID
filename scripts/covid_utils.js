@@ -23,8 +23,8 @@ let sample_length = 0.08
 $(document).bind('dataReadyEvent', function (e) {
 	console.log('Data Ready, Generating page');
 	document.getElementById('fetching_progress_section').remove(); // remove progress bar because we are done loading
-	document.getElementById('update_timestamp').innerHTML = `
-	<p align='center'><small><em> last updated on ${timestamp_to_date(Date.parse(country_summaries.update_date))}</em></small></p>`
+	// document.getElementById('update_timestamp').innerHTML = `
+	// <p align='center'><small><em> last updated on ${timestamp_to_date(Date.parse(country_summaries.update_date))}</em></small></p>`
 	create_summary_section('World', 'main_article');
 	setup_country_selection_dom('country_select');
 });
@@ -55,12 +55,23 @@ function create_summary_section(country_code, container_id) {
 	var summary_cell = document.createElement('div');
 	summary_cell.className = 'col-lg'
 	let active_number = (country_summaries[country_code].TotalConfirmed - (country_summaries[country_code].TotalDeaths + country_summaries[country_code].TotalRecovered));
+	
 	var summary_paragraph = document.createElement('p'); 
-	summary_paragraph.innerHTML = `<h3>Brief</h3>`;
-	if (active_number != 1 ) 
+	var update_date = timestamp_to_date(Date.parse(country_summaries.update_date));
+	let is_today = isToday(update_date);
+	var update_string = "";
+	// if (is_today)
+	// 	update_string = `${formatAMPM(update_date)} today`;
+	// else
+		update_string = `${formatAMPM(update_date)} on ${update_date.getMonth()+1}/${update_date.getDate()}/${update_date.getFullYear()}`;
+	summary_paragraph.innerHTML = `<h3>Brief</h3>
+		<p align='left'><small><em> Updated at ${update_string}</em></small></p>`;
+
+	if (active_number != 1) 
 		summary_paragraph.innerHTML += ` Currently there are ${active_number.toLocaleString()} <strong>active cases</strong>`;	
 	else
 		summary_paragraph.innerHTML += ` Currently there is 1 <strong>active case</strong>`;	
+	
 	summary_paragraph.innerHTML += ` in ${country_name_label}. <br>
 	The <strong>total number</strong> of COVID-19 infections is ${country_summaries[country_code].TotalConfirmed.toLocaleString()}. <br>
 	People <strong>recovered today</strong> ${country_summaries[country_code].NewRecovered.toLocaleString()}, 
@@ -87,17 +98,19 @@ function create_summary_section(country_code, container_id) {
 
 	var active_plot_cell = document.createElement('div');
 	active_plot_cell.className = 'col-lg text-center';
-
+	var plot_header = document.createElement('h3');
+	plot_header.innerText = 'Plot - Active Cases of COVID-19';
+	active_plot_cell.append(plot_header);
 
 	canvas_active.setAttribute('aria-label', `This plot shows the evolution of the number of active cases of COVID-19 
 								from ${countries[country_name].dates[0].toLocaleString()} to the latest update.` );
 								canvas_active.innerHTML = `<p role="region" aria-live="polite"
 								id="active_cases_chart_fallback">${active_tml_caption}}</p>`;
-	generate_plot(canvas_active, `Active CODVID-19 Cases in ${country_name}`, 1, 'black', 'salmon', false, countries[country_name]['active_timeline']);
+	generate_plot(canvas_active, `Active CODVID-19 Cases in ${country_name_label}`, 1, 'black', 'salmon', false, countries[country_name]['active_timeline']);
 	active_plot_cell.appendChild(document.createElement('br'));
 	active_plot_cell.appendChild(canvas_active);
 	active_plot_cell.appendChild(document.createElement('br'));
-	add_button(`Sonify ${country_name} Active Cases Plot`, active_plot_cell, `sonify_active_${country_name}_button_id`, `sonify(countries['${country_name}']['active_timeline'], 220, 3);`);
+	add_button(`Sonify ${country_name_label} Active Cases Plot`, active_plot_cell, `sonify_active_${country_name}_button_id`, `sonify(countries['${country_name}']['active_timeline'], 220, 3);`);
 	active_plot_cell.appendChild(document.createElement('br'));
 	active_plot_cell.appendChild(document.createElement('br'));
 	row1.appendChild(summary_cell);
@@ -129,13 +142,16 @@ function create_summary_section(country_code, container_id) {
 		
 		canvas_confirmed.innerHTML = `<p role="region" aria-live="polite"
 			id="confirmed_cases_chart_fallback"> ${confirmed_caption} </p>`;
-		var conf_smoothed = moving_average(countries[`${country_name}`]['confirmed_daily'], 3);
-		generate_plot(canvas_confirmed, `Daily new CODVID-19 infections in  ${country_name}`, 1, 'black', 'teal', false,
+		generate_plot(canvas_confirmed, `Daily new CODVID-19 infections in  ${country_name_label}`, 1, 'black', 'teal', false,
 			countries[`${country_name}`]['confirmed_daily']);
+		
+		var plot_header_confirmed = document.createElement('h3');
+		plot_header_confirmed.innerText = 'Plot - Daily New Cases of COVID-19';
+		confirmed_plot_cell.append(plot_header_confirmed);
 		
 		confirmed_plot_cell.appendChild(canvas_confirmed);
 		confirmed_plot_cell.appendChild(document.createElement('br'));
-		add_button(`Sonify ${country_name} Daily New Cases Plot`, confirmed_plot_cell, `sonify_confirmed_${country_name}_button_id`,
+		add_button(`Sonify ${country_name_label} Daily New Cases Plot`, confirmed_plot_cell, `sonify_confirmed_${country_name}_button_id`,
 			`sonify(moving_average(countries['${country_name}']['confirmed_daily'], 3), 220, 1);`);
 		confirmed_plot_cell.appendChild(document.createElement('br'));
 		confirmed_plot_cell.appendChild(document.createElement('br'));
@@ -149,8 +165,12 @@ function create_summary_section(country_code, container_id) {
 		canvas_deaths.innerHTML = `<p role="region" aria-live="polite"
 			id="confirmed_cases_chart_fallback">${deaths_caption}</p>`;
 
-		var deaths_smoothed = moving_average(countries[country_name]['deaths_daily'], 3);
 		generate_plot(canvas_deaths, `Daily CODVID-19 deaths in  ${country_name}`, 1, 'black', 'gray', false, countries[country_name]['deaths_daily']);
+
+		var plot_header_deaths = document.createElement('h3');
+		plot_header_deaths.innerText = 'Plot - Daily COVID-19 Deaths';
+		confirmed_plot_cell.append(plot_header_deaths);
+
 		deaths_plot_cell.appendChild(canvas_deaths);
 		deaths_plot_cell.appendChild(document.createElement('br'));
 		add_button(`Sonify ${country_name} Daily Deaths Plot`, deaths_plot_cell, `sonify_deaths_${country_name}_button_id`,
@@ -400,6 +420,25 @@ function setup_country_selection_dom(select_id) {
 // /////////////////////////////////////////////////////////////////////////////////////// \\
 // /////////////////////////////////////////////////////////////////////////////////////// \\
 // /////////////////////////////////////////////////////////////////////////////////////// \\
+
+function formatAMPM(date) {
+	var hours = date.getHours();
+	var minutes = date.getMinutes();
+	var ampm = hours >= 12 ? 'pm' : 'am';
+	hours = hours % 12;
+	hours = hours ? hours : 12; // the hour '0' should be '12'
+	minutes = minutes < 10 ? '0'+minutes : minutes;
+	var strTime = hours + ':' + minutes + ' ' + ampm;
+	return strTime;
+  }
+
+const isToday = (in_date) => {
+	const today = new Date()
+	return (in_date.getDate() == today.getDate() &&
+		in_date.getMonth() == today.getMonth() &&
+		in_date.getFullYear() == today.getFullYear());
+  }
+
 //moving average
 function moving_average(data, n) {
 	var out_data = [];

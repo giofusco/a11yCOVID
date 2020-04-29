@@ -43,11 +43,12 @@ function handle_selection(country_code){
   <p align='center'> Accessible Pandemic Data Bulletin </p>
   <!-- <p align='center'> by Giovanni Fusco @ The Smith-Kettlewell Eye Research Institute </p> -->
 </header>
-<p id='update_timestamp'></p>
+
 
 <nav>
   <a href="#" onClick="handle_selection('US')" title="jump to">USA</a>
   <a href="#" onClick="handle_selection('IT')" title="jump to">Italy</a>
+  <a href="#" onClick="handle_selection('FR')" title="jump to">France</a>
   <a href="#" onClick="handle_selection('JP')" title="jump to">Japan</a>
   <a href="#" onClick="handle_selection('CN')" title="jump to">China</a>
   <a href="#" onClick="handle_selection('KR')" title="jump to">South Korea</a>
@@ -57,6 +58,8 @@ function handle_selection(country_code){
   <a href="#" onClick="handle_selection('GB')" title="jump to">UK</a>
   <a href="#" onClick="handle_selection('PE')" title="jump to">Peru</a>
   <a href="#" onClick="handle_selection('BR')" title="jump to">Brazil</a>
+  <a href="#" onClick="handle_selection('IR')" title="jump to">Iran</a>
+  <a href="#" onClick="handle_selection('NZ')" title="jump to">New Zealand</a>
   
   <div align='right'>
   <form name="country_form" id="country_form" onSubmit="return handle_selection()">
@@ -70,8 +73,8 @@ function handle_selection(country_code){
 </nav>
 
 <main id="main" role="main">
-
 <article id='main_article'>
+  <p id='update_timestamp'></p>
   <section id="progress_section">
      <!-- progress bar -->
       <div id="fetching_progress_section">
