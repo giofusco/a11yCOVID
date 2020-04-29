@@ -43,35 +43,50 @@ function create_summary_section(country_code, container_id) {
 	canvas_confirmed.id = `canvas_new_confirmed_${country_code}`
 	canvas_deaths.id = `canvas_deaths_confirmed_${country_code}`
 
+	var country_name_label = country_name;
+	console.log('Country code' + country_code)
+	if (country_code == 'World' || country_code === 'US' || country_code ==='BS') {
+		country_name_label = 'the ' + country_name_label;
+	}
+
 	section.innerHTML = `  <hr><h2 id='${country_code}'>${country_name}</h2><br>`;
 	var row1 = document.createElement('div');
 	row1.className = 'row';
 	var summary_cell = document.createElement('div');
 	summary_cell.className = 'col-lg'
-	
+	let active_number = (country_summaries[country_code].TotalConfirmed - (country_summaries[country_code].TotalDeaths + country_summaries[country_code].TotalRecovered));
 	var summary_paragraph = document.createElement('p'); 
-	summary_paragraph.innerHTML = `<h3>Brief</h3>
-	Currently there are
-	${(country_summaries[country_code].TotalConfirmed - (country_summaries[country_code].TotalDeaths + country_summaries[country_code].TotalRecovered)).toLocaleString()} 
-	<strong>active cases</strong> in ${country_name}. <br>
+	summary_paragraph.innerHTML = `<h3>Brief</h3>`;
+	if (active_number != 1 ) 
+		summary_paragraph.innerHTML += ` Currently there are ${active_number.toLocaleString()} <strong>active cases</strong>`;	
+	else
+		summary_paragraph.innerHTML += ` Currently there is 1 <strong>active case</strong>`;	
+	summary_paragraph.innerHTML += ` in ${country_name_label}. <br>
 	The <strong>total number</strong> of COVID-19 infections is ${country_summaries[country_code].TotalConfirmed.toLocaleString()}. <br>
-	People <strong>recovered today</strong> ${country_summaries[country_code].NewRecovered.toLocaleString()} , 
-	<strong>total recovered</strong> ${country_summaries[country_code].TotalRecovered.toLocaleString()}. <br>
-	Unfortunately there have been ${country_summaries[country_code].NewDeaths.toLocaleString()} <strong>deaths</strong> today so far, 
-	bringing the <strong>total deaths</strong> to ${country_summaries[country_code].TotalDeaths.toLocaleString()}.`;
+	People <strong>recovered today</strong> ${country_summaries[country_code].NewRecovered.toLocaleString()}, 
+	<strong>total recovered</strong> ${country_summaries[country_code].TotalRecovered.toLocaleString()}. <br>`;
+	if (country_summaries[country_code].NewDeaths > 1)
+		summary_paragraph.innerHTML += `Unfortunately there have been ${country_summaries[country_code].NewDeaths.toLocaleString()} <strong>deaths</strong> today so far, `; 
+	else if (country_summaries[country_code].NewDeaths == 1)
+		summary_paragraph.innerHTML += `Unfortunately there has been ${country_summaries[country_code].NewDeaths.toLocaleString()} <strong>death</strong> today so far, `; 
+	else {
+		summary_paragraph.innerHTML += `0 <strong>deaths</strong> have been recorded today so far, `; 
+	}
+	summary_paragraph.innerHTML += `bringing the <strong> total deaths </strong> to ${ country_summaries[country_code].TotalDeaths.toLocaleString() }.`;
 
 	summary_cell.appendChild(summary_paragraph);
 	
 	active_tml_stats = get_data_stats(countries[country_name]['active_timeline'], country_name);
-	// console.log(active_tml_stats)
-
-	var active_tml_caption = `The values range from ${active_tml_stats.min_val.toLocaleString()} on ${active_tml_stats.min_key.toLocaleString()} 
-	to ${active_tml_stats.max_val.toLocaleString()} on ${active_tml_stats.max_key.toLocaleString()}.
-	  The first ${active_tml_stats.first_val.toLocaleString()} active cases were recorded on ${active_tml_stats.first_key.toLocaleString()}`
+	var active_tml_caption = `The values range from ${active_tml_stats.min_val.toLocaleString()} on 
+								${active_tml_stats.min_key.toLocaleString()} 
+	to ${active_tml_stats.max_val.toLocaleString()} on ${active_tml_stats.max_key.toLocaleString()}.`;
+	if (active_tml_stats.min_val != active_tml_stats.first_val)
+		active_tml_caption += `The first ${active_tml_stats.first_val.toLocaleString()} active cases were recorded on 
+								${active_tml_stats.first_key.toLocaleString()}`
 
 
 	var active_plot_cell = document.createElement('div');
-	active_plot_cell.className = 'col-lg text-center'
+	active_plot_cell.className = 'col-lg text-center';
 
 
 	canvas_active.setAttribute('aria-label', `This plot shows the evolution of the number of active cases of COVID-19 
@@ -85,8 +100,8 @@ function create_summary_section(country_code, container_id) {
 	add_button(`Sonify ${country_name} Active Cases Plot`, active_plot_cell, `sonify_active_${country_name}_button_id`, `sonify(countries['${country_name}']['active_timeline'], 220, 3);`);
 	active_plot_cell.appendChild(document.createElement('br'));
 	active_plot_cell.appendChild(document.createElement('br'));
-	row1.appendChild(summary_cell)
-	row1.appendChild(active_plot_cell)
+	row1.appendChild(summary_cell);
+	row1.appendChild(active_plot_cell);
 	
 	section.appendChild(row1);
 	var row2 = document.createElement('div');
@@ -97,15 +112,17 @@ function create_summary_section(country_code, container_id) {
 		deaths_stats = get_data_stats(countries[country_name]['deaths_daily'], country_name);
 
 		var confirmed_caption = `The values range from ${confirmed_stats.min_val.toLocaleString()} on ${confirmed_stats.min_key.toLocaleString()} 
-		to ${confirmed_stats.max_val.toLocaleString()} on ${confirmed_stats.max_key.toLocaleString()}.
-		  The first ${confirmed_stats.first_val.toLocaleString()} infections were recorded on ${confirmed_stats.first_key.toLocaleString()}`;
+		to ${confirmed_stats.max_val.toLocaleString()} on ${confirmed_stats.max_key.toLocaleString()}.`;
+		if (confirmed_stats.min_val != confirmed_stats.first_val)
+			confirmed_caption += `The first ${confirmed_stats.first_val.toLocaleString()} infections were recorded on ${confirmed_stats.first_key.toLocaleString()}`;
 
 		var deaths_caption = `The values range from ${deaths_stats.min_val.toLocaleString()} on ${deaths_stats.min_key.toLocaleString()} 
-		  to ${deaths_stats.max_val.toLocaleString()} on ${deaths_stats.max_key.toLocaleString()}.
-			The first ${deaths_stats.first_val.toLocaleString()} deaths were recorded on ${deaths_stats.first_key.toLocaleString()}`
+		  to ${deaths_stats.max_val.toLocaleString()} on ${deaths_stats.max_key.toLocaleString()}.}`;
+		if (deaths_stats.min_val != deaths_stats.first_val)
+			deaths_caption += `The first ${deaths_stats.first_val.toLocaleString()} deaths were recorded on ${deaths_stats.first_key.toLocaleString()}`;
 
 		var confirmed_plot_cell = document.createElement('div');
-		confirmed_plot_cell.className = 'col-sm text-center'
+		confirmed_plot_cell.className = 'col-sm text-center';
 		
 		canvas_confirmed.setAttribute('aria-label', `This plot shows the daily number of new COVID-19 infections
 		from ${countries[country_name].dates[0].toLocaleString()} to the latest update.` );
@@ -125,7 +142,7 @@ function create_summary_section(country_code, container_id) {
 		
 		
 		var deaths_plot_cell = document.createElement('div');
-		deaths_plot_cell.className = 'col-sm text-center'
+		deaths_plot_cell.className = 'col-sm text-center';
 		
 		canvas_deaths.setAttribute('aria-label', `This plot shows the daily number of COVID-19 
 		deaths from ${countries[country_name].dates[0].toLocaleString()} to the latest update.` );
@@ -139,8 +156,8 @@ function create_summary_section(country_code, container_id) {
 		add_button(`Sonify ${country_name} Daily Deaths Plot`, deaths_plot_cell, `sonify_deaths_${country_name}_button_id`,
 			`sonify(moving_average(countries['${country_name}']['deaths_daily'], 3), 220, 1);`);
 
-		row2.appendChild(confirmed_plot_cell)
-		row2.appendChild(deaths_plot_cell)
+		row2.appendChild(confirmed_plot_cell);
+		row2.appendChild(deaths_plot_cell);
 		section.appendChild(row2);
 	}
 	
@@ -286,9 +303,11 @@ function prepare_data() {
 		countries[country_iso2name['US']] = countries['US'];
 		country_name2iso['Korea (South)'] = 'KR';
 		countries[country_iso2name['KR']] = countries['Korea, South'];
+		countries[country_iso2name['IR']] = countries['Iran'];
 		delete countries['US'];
-		delete countries['Korea, South']
-		console.log('CRUNCHING DATA... OK!')
+		delete countries['Korea, South'];
+		delete countries['Iran'];
+		console.log('CRUNCHING DATA... OK!');
 	}
 
 	// notify that the data is ready to be used
@@ -357,12 +376,17 @@ function add_button(text, container_elem, button_id, callback_string) {
 	container_elem.appendChild(b);
 }
 
-function setup_country_selection_dom(select_id){
+function setup_country_selection_dom(select_id) {
+	var sorted_countries = [];
+	for (c in country_name2iso) {
+		sorted_countries[sorted_countries.length] = c;
+	}
+	sorted_countries.sort();
 	var x = document.getElementById(select_id);
-	for (c in countries) {
+	for (c in sorted_countries) {
 		var option = document.createElement("option");
-		option.text = c;
-		option.value = country_name2iso[c];
+		option.text = sorted_countries[c];
+		option.value = country_name2iso[sorted_countries[c]];
 		x.add(option);
 	}
 }
@@ -519,8 +543,10 @@ function fetch_and_prepare_data_JHU() {
 			// global_summary = res.Global;
 			for (i = 0; i < res.Countries.length; i++) {
 				// let name = country_iso2name[res.Countries[i].CountryCode];
-				let country_code = res.Countries[i].CountryCode;
+				var country_code = res.Countries[i].CountryCode;
 				let country_name = res.Countries[i].Country;
+				if (country_code === undefined)
+					country_code = country_name;
 				country_name2iso[country_name] = country_code;
 				country_iso2name[country_code] = country_name;
 				country_summaries[country_code] = [];
@@ -532,7 +558,6 @@ function fetch_and_prepare_data_JHU() {
 				country_summaries[country_code]['TotalRecovered'] = res.Countries[i].TotalRecovered;
 					
 			}
-			// console.log(res)
 			console.log("[OK] FETCH SUMMARY");
 			progress.value += 1;
 			njobs--;
