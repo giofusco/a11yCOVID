@@ -54,36 +54,28 @@ function create_summary_section(country_code, container_id) {
 	row1.className = 'row';
 	var summary_cell = document.createElement('div');
 	summary_cell.className = 'col-lg'
-	let active_number = (country_summaries[country_code].TotalConfirmed - (country_summaries[country_code].TotalDeaths + country_summaries[country_code].TotalRecovered));
-	
+	// let active_number = (country_summaries[country_code].TotalConfirmed - (country_summaries[country_code].TotalDeaths + country_summaries[country_code].TotalRecovered));
+	console.log(countries)
+
+	let active_number = countries[country_iso2name[country_code]].active_timeline[countries[country_iso2name[country_code]].active_timeline.length - 1]
+	let total_confirmed = countries[country_iso2name[country_code]].confirmed_timeline[countries[country_iso2name[country_code]].confirmed_timeline.length - 1]
+	let total_recovered = countries[country_iso2name[country_code]].recovered_timeline[countries[country_iso2name[country_code]].recovered_timeline.length - 1]
+	let total_deaths = countries[country_iso2name[country_code]].deaths_timeline[countries[country_iso2name[country_code]].deaths_timeline.length - 1]
 	var summary_paragraph = document.createElement('p'); 
-	var update_date = timestamp_to_date(Date.parse(country_summaries.update_date));
-	let is_today = isToday(update_date);
-	var update_string = "";
-	// if (is_today)
-	// 	update_string = `${formatAMPM(update_date)} today`;
-	// else
-		update_string = `${formatAMPM(update_date)} on ${update_date.getMonth()+1}/${update_date.getDate()}/${update_date.getFullYear()}`;
+	
 	summary_paragraph.innerHTML = `<h3>Brief</h3>
-		<p align='left'><small><em> Updated at ${update_string}</em></small></p>`;
+		<p align='left'><small><em> JHU data are updated once a day around 23:59 (UTC).</em></small></p><ul>`;
 
 	if (active_number != 1) 
-		summary_paragraph.innerHTML += ` Currently there are ${active_number.toLocaleString()} <strong>active cases</strong>`;	
+		summary_paragraph.innerHTML += `<li>Active cases: ${active_number.toLocaleString()}`;	
 	else
-		summary_paragraph.innerHTML += ` Currently there is 1 <strong>active case</strong>`;	
+		summary_paragraph.innerHTML += `<li>Active cases: 1`;	
 	
-	summary_paragraph.innerHTML += ` in ${country_name_label}. <br>
-	The <strong>total number</strong> of COVID-19 infections is ${country_summaries[country_code].TotalConfirmed.toLocaleString()}. <br>
-	People <strong>recovered today</strong> ${country_summaries[country_code].NewRecovered.toLocaleString()}, 
-	<strong>total recovered</strong> ${country_summaries[country_code].TotalRecovered.toLocaleString()}. <br>`;
-	if (country_summaries[country_code].NewDeaths > 1)
-		summary_paragraph.innerHTML += `Unfortunately there have been ${country_summaries[country_code].NewDeaths.toLocaleString()} <strong>deaths</strong> today so far, `; 
-	else if (country_summaries[country_code].NewDeaths == 1)
-		summary_paragraph.innerHTML += `Unfortunately there has been ${country_summaries[country_code].NewDeaths.toLocaleString()} <strong>death</strong> today so far, `; 
-	else {
-		summary_paragraph.innerHTML += `0 <strong>deaths</strong> have been recorded today so far, `; 
-	}
-	summary_paragraph.innerHTML += `bringing the <strong> total deaths </strong> to ${ country_summaries[country_code].TotalDeaths.toLocaleString() }.`;
+	summary_paragraph.innerHTML += `</li>
+	<li>Total number of COVID-19 <strong>infections</strong> since the start of the pandemic: ${total_confirmed.toLocaleString()}. </li>
+	<li>Total number of <strong>recoveries</strong> registered since the start of the pandemic: ${total_recovered.toLocaleString()}. </li>
+	<li>Total number of <strong>deaths</strong> reported since the start of the pandemic: ${total_deaths.toLocaleString()}. </li>
+	</ul>`;
 
 	summary_cell.appendChild(summary_paragraph);
 	
@@ -155,7 +147,6 @@ function create_summary_section(country_code, container_id) {
 			`sonify(moving_average(countries['${country_name}']['confirmed_daily'], 3), 220, 1);`);
 		confirmed_plot_cell.appendChild(document.createElement('br'));
 		confirmed_plot_cell.appendChild(document.createElement('br'));
-		
 		
 		var deaths_plot_cell = document.createElement('div');
 		deaths_plot_cell.className = 'col-sm text-center';
@@ -300,7 +291,6 @@ function prepare_data() {
 			// console.log(c)
 			// console.log(countries['World']['dates'])
 			for (i = 0; i < countries['World']['dates'].length; i++) {
-				
 				if (c !== 'World') {
 					countries['World']['confirmed_timeline'][i] += countries[c]['confirmed_timeline'][i];
 					countries['World']['deaths_timeline'][i] += countries[c]['deaths_timeline'][i];
@@ -313,20 +303,28 @@ function prepare_data() {
 						countries[c]['recovered_daily'][i] = countries[c]['recovered_timeline'][i];
 					}
 					else {
-						countries[c]['confirmed_daily'][i] = countries[c]['confirmed_timeline'][i] - countries[c]['confirmed_timeline'][i - 1];
-						countries[c]['deaths_daily'][i] = countries[c]['deaths_timeline'][i] - countries[c]['deaths_timeline'][i - 1];
-						countries[c]['recovered_daily'][i] = countries[c]['recovered_timeline'][i] - countries[c]['recovered_timeline'][i - 1];
+						countries[c]['confirmed_daily'][i] = clip_to_zero(countries[c]['confirmed_timeline'][i] - countries[c]['confirmed_timeline'][i - 1]);
+						countries[c]['deaths_daily'][i] = clip_to_zero(countries[c]['deaths_timeline'][i] - countries[c]['deaths_timeline'][i - 1]);
+						countries[c]['recovered_daily'][i] = clip_to_zero(countries[c]['recovered_timeline'][i] - countries[c]['recovered_timeline'][i - 1]);
 					}
 				}
 			}
 		}
-		countries[country_iso2name['US']] = countries['US'];
-		country_name2iso['Korea (South)'] = 'KR';
-		countries[country_iso2name['KR']] = countries['Korea, South'];
-		countries[country_iso2name['IR']] = countries['Iran'];
+		let us = 'United States of America';
+		country_name2iso[us] = 'US';
+		country_iso2name['US'] = us;
+		countries[us] = countries['US'];
+		countries['South Korea'] = countries['Korea, South'];
+		country_iso2name['KR'] = 'South Korea';
+		country_name2iso['South Korea'] = 'KR';
+		// countries[country_iso2name['US']] = countries['US'];
+		// countries[country_iso2name['US']] = countries['US'];
+		// country_name2iso['Korea (South)'] = 'KR';
+		// countries[country_iso2name['KR']] = countries['Korea, South'];
+		// countries[country_iso2name['IR']] = countries['Iran'];
 		delete countries['US'];
 		delete countries['Korea, South'];
-		delete countries['Iran'];
+		// delete countries['Iran'];
 		console.log('CRUNCHING DATA... OK!');
 	}
 
@@ -420,6 +418,13 @@ function setup_country_selection_dom(select_id) {
 // /////////////////////////////////////////////////////////////////////////////////////// \\
 // /////////////////////////////////////////////////////////////////////////////////////// \\
 // /////////////////////////////////////////////////////////////////////////////////////// \\
+
+
+function clip_to_zero(n) {
+	if (n < 0)
+		return 0;
+	else return n;
+}
 
 function formatAMPM(date) {
 	var hours = date.getHours();
@@ -564,47 +569,107 @@ function fetch_and_prepare_data_JHU() {
 	progress.value = 0;
 
 	// fetch daily summary
-	var settings = {
-		"async": true,
-		"crossDomain": true,
-		"url": "https://api.covid19api.com/summary",
-		"method": "GET",
-		"dataType" : "JSON"
-	}
+	// var settings = {
+	// 	"async": true,
+	// 	"crossDomain": true,
+	// 	"url": "https://api.covid19api.com/summary",
+	// 	"method": "GET",
+	// 	"dataType" : "JSON"
+	// }
 
+	// $.ajax(settings).then(
+	// 	function (res) {
+	// 		console.log(res)
+	// 		country_summaries= [];
+	// 		country_summaries['World'] = res.Global;
+	// 		country_name2iso['World'] = 'World';
+	// 		country_iso2name['World'] = 'World';
+	// 		country_summaries.update_date = res.Date;
+	// 		// global_summary = res.Global;
+	// 		for (i = 0; i < res.Countries.length; i++) {
+	// 			// let name = country_iso2name[res.Countries[i].CountryCode];
+				
+	// 			var country_code = res.Countries[i].CountryCode;
+	// 			let country_name = res.Countries[i].Country;
+	// 			if (country_code === undefined)
+	// 				country_code = country_name;
+				
+	// 			if (country_name == 'Japan')
+	// 				console.log(country_code)
+				
+	// 			country_name2iso[country_name] = country_code;
+	// 			country_iso2name[country_code] = country_name;
+	// 			country_summaries[country_code] = [];
+	// 			country_summaries[country_code]['NewConfirmed'] = res.Countries[i].NewConfirmed;
+	// 			country_summaries[country_code]['TotalConfirmed'] = res.Countries[i].TotalConfirmed;
+	// 			country_summaries[country_code]['NewDeaths'] = res.Countries[i].NewDeaths;
+	// 			country_summaries[country_code]['TotalDeaths'] = res.Countries[i].TotalDeaths;
+	// 			country_summaries[country_code]['NewRecovered'] = res.Countries[i].NewRecovered;
+	// 			country_summaries[country_code]['TotalRecovered'] = res.Countries[i].TotalRecovered;
+					
+	// 		}
+	// 		console.log("[OK] FETCH SUMMARY");
+	// 		progress.value += 1;
+	// 		njobs--;
+	// 		if (njobs == 0)
+	// 			prepare_data();
+	//   }, function() {
+	//     console.log( "[!] FETCH SUMMARY" );
+	// });
+	
+
+	// $.ajax(settings).then(
+	// 	function (res) {
+	// 		var data = d3.csvParse(res);
+	// 		for (d = 0; d < data.length; d++) {
+	// 			if (typeof(data[d]['Country/Region']) !== 'undefined') {
+	// 				if (typeof(countries[data[d]['Country/Region']]) === 'undefined') {
+	// 					countries[data[d]['Country/Region']] = [];
+	// 				}
+	// 				if (typeof(countries[data[d]['Country/Region']]['confirmed']) === 'undefined') {
+	// 					countries[data[d]['Country/Region']]["confirmed"] = [];
+	// 				}
+	// 				countries[data[d]['Country/Region']]['confirmed'][countries[data[d]['Country/Region']]["confirmed"].length] = data[d];
+	// 			}
+	// 		}
+	// 		progress.value += 1;
+	// 		console.log("[OK] JHU CONFIRMED_GLOBAL")
+			
+	// 		njobs--;
+	// 		if (njobs == 0)
+	// 			prepare_data();
+	// 	}, function() {
+	// 		console.log("[!] JHU CONFIRMED_GLOBAL")
+	// });
+
+	var settings = {
+		"crossDomain": true,
+		"url": "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/UID_ISO_FIPS_LookUp_Table.csv",
+		"method": "GET",
+		"dataType" : "text"
+	}
 	$.ajax(settings).then(
 		function (res) {
-			country_summaries= [];
-			country_summaries['World'] = res.Global;
+			var data = d3.csvParse(res);
+			console.log(data)
 			country_name2iso['World'] = 'World';
 			country_iso2name['World'] = 'World';
-			country_summaries.update_date = res.Date;
-			// global_summary = res.Global;
-			for (i = 0; i < res.Countries.length; i++) {
-				// let name = country_iso2name[res.Countries[i].CountryCode];
-				var country_code = res.Countries[i].CountryCode;
-				let country_name = res.Countries[i].Country;
-				if (country_code === undefined)
-					country_code = country_name;
-				country_name2iso[country_name] = country_code;
-				country_iso2name[country_code] = country_name;
-				country_summaries[country_code] = [];
-				country_summaries[country_code]['NewConfirmed'] = res.Countries[i].NewConfirmed;
-				country_summaries[country_code]['TotalConfirmed'] = res.Countries[i].TotalConfirmed;
-				country_summaries[country_code]['NewDeaths'] = res.Countries[i].NewDeaths;
-				country_summaries[country_code]['TotalDeaths'] = res.Countries[i].TotalDeaths;
-				country_summaries[country_code]['NewRecovered'] = res.Countries[i].NewRecovered;
-				country_summaries[country_code]['TotalRecovered'] = res.Countries[i].TotalRecovered;
-					
+			for (i = 0; i < data.length; i++){
+				country_name2iso[data[i]['Country_Region']] = data[i]['iso2'];
+				country_iso2name[data[i]['iso2']] = data[i]['Country_Region'];
 			}
-			console.log("[OK] FETCH SUMMARY");
+			console.log(country_name2iso)
+
 			progress.value += 1;
+			console.log("[OK] JHU ISO_TABLE")
+			
 			njobs--;
 			if (njobs == 0)
 				prepare_data();
-	  }, function() {
-	    console.log( "[!] FETCH SUMMARY" );
-	  });
+		}, function() {
+			console.log("[!] JHU ISO_TABLE")
+	});
+	
 
 	var settings = {
 		"crossDomain": true,
@@ -612,7 +677,6 @@ function fetch_and_prepare_data_JHU() {
 		"method": "GET",
 		"dataType" : "text"
 	}
-	var cinit = 0;
 	$.ajax(settings).then(
 		function (res) {
 			var data = d3.csvParse(res);
