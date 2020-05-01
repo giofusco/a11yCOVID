@@ -15,6 +15,7 @@ var country_name2iso = []
 var country_iso2name = []
 var world = [];
 var data_ready = false;
+var usa_states_data = [];
 
 // how long to play a single data point (in secs)
 let sample_length = 0.08
@@ -171,6 +172,37 @@ function create_summary_section(country_code, container_id) {
 		row2.appendChild(deaths_plot_cell);
 		section.appendChild(row2);
 	}
+	if ('US' == country_name2iso[country_name]) {
+		// create row for table of states
+		var row3 = document.createElement('div');
+		row3.className = 'row';
+		var states_table_cell = document.createElement('div');
+		states_table_cell.appendChild(document.createElement('br'));
+		states_table_cell.appendChild(document.createElement('br'));
+		states_table_cell.className = 'col-auto text-center';
+		var states_table = document.createElement('table');
+		var caption = document.createElement('caption');
+		caption.innerText = `This table presents the list of all the states in the USA. For each state, we report new COVID-19 
+								infections and deaths since the last update, together with the total number of infections and deaths since the beginning of the pandemic.`;
+		states_table.appendChild(caption);
+		var table_header = document.createElement('tr');
+		table_header.innerHTML = `<th scope='col'> State </th> <th scope='col'>Total Infections</th><th scope='col'>Daily New Infections</th><th scope='col'>Total Deaths</th><th scope='col'>Daily New Deaths</th>`
+		states_table.appendChild(table_header);
+		for (s in countries[country_name].States) {
+			var state_row = document.createElement('tr');
+			state_row.innerHTML = `<th scope='row'>${s}</th><td>${countries[country_name].States[s].confirmed_timeline.slice(-1)[0].toLocaleString()}</td>
+															<td>${countries[country_name].States[s].confirmed_daily.slice(-1)[0].toLocaleString()}</td>
+															<td>${countries[country_name].States[s].deaths_timeline.slice(-1)[0].toLocaleString()}</td>
+															<td>${countries[country_name].States[s].deaths_daily.slice(-1)[0].toLocaleString()}</td>`;
+			states_table.appendChild(state_row);
+		}
+		states_table_cell.appendChild(states_table);
+		var padding_cell = document.createElement('div');
+		padding_cell.className = 'col-4 text-center';
+		row3.appendChild(padding_cell);
+		row3.appendChild(states_table_cell);
+		section.appendChild(row3);
+	}
 	
 	section.id = `${country_code}_summary`;
 	
@@ -272,6 +304,10 @@ function prepare_data() {
 				countries[c]['active_timeline'][k] += countries[c]['confirmed_timeline'][k] -
 					(countries[c]['deaths_timeline'][k] + countries[c]['recovered_timeline'][k]);
 			}
+
+			if (c == 'US') {
+				prepare_US_states();
+			}
 		}
 		countries['World'] = [];
 		countries['World']['dates'] = countries['Italy']['dates'];
@@ -317,11 +353,6 @@ function prepare_data() {
 		countries['South Korea'] = countries['Korea, South'];
 		country_iso2name['KR'] = 'South Korea';
 		country_name2iso['South Korea'] = 'KR';
-		// countries[country_iso2name['US']] = countries['US'];
-		// countries[country_iso2name['US']] = countries['US'];
-		// country_name2iso['Korea (South)'] = 'KR';
-		// countries[country_iso2name['KR']] = countries['Korea, South'];
-		// countries[country_iso2name['IR']] = countries['Iran'];
 		delete countries['US'];
 		delete countries['Korea, South'];
 		// delete countries['Iran'];
@@ -330,6 +361,94 @@ function prepare_data() {
 
 	// notify that the data is ready to be used
 	jQuery.event.trigger('dataReadyEvent');
+}
+
+function prepare_US_states() {
+	var keys = (countries['US']['dates']);
+
+	for (s in countries['US'].States) {
+		countries['US'].States[s]['confirmed_timeline'] = [];
+		countries['US'].States[s]['confirmed_daily'] = [];
+		countries['US'].States[s]['deaths_timeline'] = [];
+		countries['US'].States[s]['deaths_daily'] = [];
+		for (i = 0; i < countries['US']['dates'].length; i++) {
+			countries['US'].States[s]['confirmed_timeline'][i] = 0;
+			countries['US'].States[s]['deaths_timeline'][i] = 0;
+			countries['US'].States[s]['confirmed_daily'][i] = 0;
+			countries['US'].States[s]['deaths_daily'][i] = 0;
+		}
+		for (c = 0; c < Object.keys(countries['US'].States[s].Counties).length; c++) {
+			var county_name = Object.keys(countries['US'].States[s].Counties)[c];
+			countries['US'].States[s].Counties[county_name]['confirmed_timeline'] = [];
+			countries['US'].States[s].Counties[county_name]['confirmed_daily'] = [];
+			countries['US'].States[s].Counties[county_name]['deaths_timeline'] = [];
+			countries['US'].States[s].Counties[county_name]['deaths_daily'] = [];
+			for (i = 0; i < countries['US'].dates.length; i++) {
+				countries['US'].States[s].Counties[county_name]['confirmed_timeline'][i] = 0;
+				countries['US'].States[s].Counties[county_name]['deaths_timeline'][i] = 0;
+				countries['US'].States[s].Counties[county_name]['confirmed_daily'][i] = 0;
+				countries['US'].States[s].Counties[county_name]['deaths_daily'][i] = 0;
+			}
+		}
+	}
+	
+
+	for (s in countries['US'].States) {
+		if (Object.keys(countries['US'].States[s].Counties).length > 0){
+			for (c = 0; c < Object.keys(countries['US'].States[s].Counties).length; c++) {
+				console.log('>' + c + ', ' + Object.keys(countries['US'].States[s].Counties)[c])
+				let county_name = Object.keys(countries['US'].States[s].Counties)[c];
+				// create timeline and daily for each county
+				let confirmed = countries['US'].States[s].Counties[county_name].confirmed;
+				let deaths = countries['US'].States[s].Counties[county_name].deaths;
+				
+				for (i = 0; i < countries['US'].dates.length; i++) {
+					// for (k in keys) {
+						countries['US'].States[s].Counties[county_name]['confirmed_timeline'][i] += Number(confirmed[keys[i]]);
+						countries['US'].States[s].Counties[county_name]['deaths_timeline'][i] += Number(deaths[keys[i]]);
+						countries['US'].States[s]['confirmed_timeline'][i] += Number(confirmed[keys[i]]);
+						countries['US'].States[s]['deaths_timeline'][i] += Number(deaths[keys[i]]);
+					// }
+					if (i == 0) {
+						// console.log(countries[c]['confirmed_daily'])
+						countries['US'].States[s].Counties[county_name]['confirmed_daily'][i] = countries['US'].States[s].Counties[county_name]['confirmed_timeline'][i];
+						countries['US'].States[s].Counties[county_name]['deaths_daily'][i] = countries['US'].States[s].Counties[county_name]['deaths_timeline'][i];
+						countries['US'].States[s]['confirmed_daily'][i] = countries['US'].States[s].Counties[county_name]['confirmed_timeline'][i];
+						countries['US'].States[s]['deaths_daily'][i] = countries['US'].States[s].Counties[county_name]['deaths_timeline'][i];
+					}
+					else {
+						countries['US'].States[s].Counties[county_name]['confirmed_daily'][i] += clip_to_zero(countries['US'].States[s].Counties[county_name]['confirmed_timeline'][i] - countries['US'].States[s].Counties[county_name]['confirmed_timeline'][i - 1]);
+						countries['US'].States[s].Counties[county_name]['deaths_daily'][i] += clip_to_zero(countries['US'].States[s].Counties[county_name]['deaths_timeline'][i] - countries['US'].States[s].Counties[county_name]['deaths_timeline'][i - 1]);
+						countries['US'].States[s]['confirmed_daily'][i] += clip_to_zero(countries['US'].States[s].Counties[county_name]['confirmed_timeline'][i] - countries['US'].States[s].Counties[county_name]['confirmed_timeline'][i - 1]);
+						countries['US'].States[s]['deaths_daily'][i] += clip_to_zero(countries['US'].States[s].Counties[county_name]['deaths_timeline'][i] - countries['US'].States[s].Counties[county_name]['deaths_timeline'][i - 1]);
+					}
+				}
+			}
+				// sum up timelines and assign to state
+		}
+		else {
+			let confirmed = countries['US'].States[s].confirmed;
+			console.log(confirmed)
+			let deaths = countries['US'].States[s].deaths;
+			for (i = 0; i < countries['US'].dates.length; i++) {
+				console.log("XX " + i);
+				
+				for (k in keys) {
+					countries['US'].States[s]['confirmed_timeline'][i] += Number(confirmed[keys[i]]);
+					countries['US'].States[s]['deaths_timeline'][i] += Number(deaths[keys[i]]);
+				}
+				if (i == 0) {
+					// console.log(countries[c]['confirmed_daily'])
+					countries['US'].States[s]['confirmed_daily'][i] = countries['US'].States[s]['confirmed_timeline'][i];
+					countries['US'].States[s]['deaths_daily'][i] = countries['US'].States[s]['deaths_timeline'][i];
+				}
+				else {
+					countries['US'].States[s]['confirmed_daily'][i] += clip_to_zero(countries['US'].States[s]['confirmed_timeline'][i] - countries['US'].States[s]['confirmed_timeline'][i - 1]);
+					countries['US'].States[s]['deaths_daily'][i] += clip_to_zero(countries['US'].States[s]['deaths_timeline'][i] - countries['US'].States[s]['deaths_timeline'][i - 1]);
+				}
+			}
+		}
+	}
 }
 
 function generate_plot(canvas_elem, title, thickness, color, bgcolor, fill, mdata) {
@@ -562,85 +681,11 @@ function sortKeys(obj_1) {
 
 
 function fetch_and_prepare_data_JHU() {
-	var njobs = 4;
+	var njobs = 6;
 	var progress = document.getElementById('fetching_progress');
 	var cnt = 0;
 	progress.max = njobs;
 	progress.value = 0;
-
-	// fetch daily summary
-	// var settings = {
-	// 	"async": true,
-	// 	"crossDomain": true,
-	// 	"url": "https://api.covid19api.com/summary",
-	// 	"method": "GET",
-	// 	"dataType" : "JSON"
-	// }
-
-	// $.ajax(settings).then(
-	// 	function (res) {
-	// 		console.log(res)
-	// 		country_summaries= [];
-	// 		country_summaries['World'] = res.Global;
-	// 		country_name2iso['World'] = 'World';
-	// 		country_iso2name['World'] = 'World';
-	// 		country_summaries.update_date = res.Date;
-	// 		// global_summary = res.Global;
-	// 		for (i = 0; i < res.Countries.length; i++) {
-	// 			// let name = country_iso2name[res.Countries[i].CountryCode];
-				
-	// 			var country_code = res.Countries[i].CountryCode;
-	// 			let country_name = res.Countries[i].Country;
-	// 			if (country_code === undefined)
-	// 				country_code = country_name;
-				
-	// 			if (country_name == 'Japan')
-	// 				console.log(country_code)
-				
-	// 			country_name2iso[country_name] = country_code;
-	// 			country_iso2name[country_code] = country_name;
-	// 			country_summaries[country_code] = [];
-	// 			country_summaries[country_code]['NewConfirmed'] = res.Countries[i].NewConfirmed;
-	// 			country_summaries[country_code]['TotalConfirmed'] = res.Countries[i].TotalConfirmed;
-	// 			country_summaries[country_code]['NewDeaths'] = res.Countries[i].NewDeaths;
-	// 			country_summaries[country_code]['TotalDeaths'] = res.Countries[i].TotalDeaths;
-	// 			country_summaries[country_code]['NewRecovered'] = res.Countries[i].NewRecovered;
-	// 			country_summaries[country_code]['TotalRecovered'] = res.Countries[i].TotalRecovered;
-					
-	// 		}
-	// 		console.log("[OK] FETCH SUMMARY");
-	// 		progress.value += 1;
-	// 		njobs--;
-	// 		if (njobs == 0)
-	// 			prepare_data();
-	//   }, function() {
-	//     console.log( "[!] FETCH SUMMARY" );
-	// });
-	
-
-	// $.ajax(settings).then(
-	// 	function (res) {
-	// 		var data = d3.csvParse(res);
-	// 		for (d = 0; d < data.length; d++) {
-	// 			if (typeof(data[d]['Country/Region']) !== 'undefined') {
-	// 				if (typeof(countries[data[d]['Country/Region']]) === 'undefined') {
-	// 					countries[data[d]['Country/Region']] = [];
-	// 				}
-	// 				if (typeof(countries[data[d]['Country/Region']]['confirmed']) === 'undefined') {
-	// 					countries[data[d]['Country/Region']]["confirmed"] = [];
-	// 				}
-	// 				countries[data[d]['Country/Region']]['confirmed'][countries[data[d]['Country/Region']]["confirmed"].length] = data[d];
-	// 			}
-	// 		}
-	// 		progress.value += 1;
-	// 		console.log("[OK] JHU CONFIRMED_GLOBAL")
-			
-	// 		njobs--;
-	// 		if (njobs == 0)
-	// 			prepare_data();
-	// 	}, function() {
-	// 		console.log("[!] JHU CONFIRMED_GLOBAL")
-	// });
 
 	var settings = {
 		"crossDomain": true,
@@ -651,14 +696,12 @@ function fetch_and_prepare_data_JHU() {
 	$.ajax(settings).then(
 		function (res) {
 			var data = d3.csvParse(res);
-			console.log(data)
 			country_name2iso['World'] = 'World';
 			country_iso2name['World'] = 'World';
 			for (i = 0; i < data.length; i++){
 				country_name2iso[data[i]['Country_Region']] = data[i]['iso2'];
 				country_iso2name[data[i]['iso2']] = data[i]['Country_Region'];
 			}
-			console.log(country_name2iso)
 
 			progress.value += 1;
 			console.log("[OK] JHU ISO_TABLE")
@@ -680,15 +723,34 @@ function fetch_and_prepare_data_JHU() {
 	$.ajax(settings).then(
 		function (res) {
 			var data = d3.csvParse(res);
+			
 			for (d = 0; d < data.length; d++) {
-				if (typeof(data[d]['Country/Region']) !== 'undefined') {
-					if (typeof(countries[data[d]['Country/Region']]) === 'undefined') {
+				if (typeof (data[d]['Country/Region']) !== 'undefined') {
+					// is it the first time we see this country? if so, initialize the array
+					if (typeof (countries[data[d]['Country/Region']]) === 'undefined') {
 						countries[data[d]['Country/Region']] = [];
+						countries[data[d]['Country/Region']]['States'] = [];
 					}
-					if (typeof(countries[data[d]['Country/Region']]['confirmed']) === 'undefined') {
+					
+					// country-wide data
+					if (typeof(countries[data[d]['Country/Region']]['confirmed']) === 'undefined'){
 						countries[data[d]['Country/Region']]["confirmed"] = [];
 					}
+					if (data[d]['Province/State'] !== ''){
+						if ((countries[data[d]['Country/Region']]['States'][data[d]['Province/State']] === undefined)) {
+							// console.log(countries[data[d]['Country/Region']]['States'][data[d]['Province/State']].length)
+							countries[data[d]['Country/Region']]['States'][data[d]['Province/State']] = [];
+						}
+						if (typeof (countries[data[d]['Country/Region']]['States'][data[d]['Province/State']]['confirmed'] === 'undefined')) {
+							countries[data[d]['Country/Region']]['States'][data[d]['Province/State']]['confirmed'] = [];
+						}
+					}
+
 					countries[data[d]['Country/Region']]['confirmed'][countries[data[d]['Country/Region']]["confirmed"].length] = data[d];
+					
+					if ( (data[d]['Province/State']) !== '') {
+						countries[data[d]['Country/Region']]['States'][data[d]['Province/State']]['confirmed'][countries[data[d]['Country/Region']]['States'][data[d]['Province/State']]['confirmed'].length] = data[d];
+					}
 				}
 			}
 			progress.value += 1;
@@ -707,30 +769,49 @@ function fetch_and_prepare_data_JHU() {
 		"method": "GET",
 		"dataType" : "text"
 	}
-	
 	$.ajax(settings).then(
 		function (res) {
 			var data = d3.csvParse(res);
+			
 			for (d = 0; d < data.length; d++) {
-				if (typeof(data[d]['Country/Region']) !== 'undefined') {
-					if (typeof(countries[data[d]['Country/Region']]) === 'undefined') {
+				if (typeof (data[d]['Country/Region']) !== 'undefined') {
+					// is it the first time we see this country? if so, initialize the array
+					if (typeof (countries[data[d]['Country/Region']]) === 'undefined') {
 						countries[data[d]['Country/Region']] = [];
+						countries[data[d]['Country/Region']]['States'] = [];
 					}
-					if (typeof(countries[data[d]['Country/Region']]['deaths']) === 'undefined') {
+					
+					// country-wide data
+					if (typeof(countries[data[d]['Country/Region']]['deaths']) === 'undefined'){
 						countries[data[d]['Country/Region']]["deaths"] = [];
 					}
+					if (data[d]['Province/State'] !== ''){
+						if ( (countries[data[d]['Country/Region']]['States'][data[d]['Province/State']] === undefined)) {
+							countries[data[d]['Country/Region']]['States'][data[d]['Province/State']] = [];
+						}
+						if ((countries[data[d]['Country/Region']]['States'][data[d]['Province/State']]['deaths'] === undefined)) {
+							countries[data[d]['Country/Region']]['States'][data[d]['Province/State']]['deaths'] = [];
+						}
+					}
+
 					countries[data[d]['Country/Region']]['deaths'][countries[data[d]['Country/Region']]["deaths"].length] = data[d];
+					
+					if ( (data[d]['Province/State']) !== '') {
+						countries[data[d]['Country/Region']]['States'][data[d]['Province/State']]['deaths'][countries[data[d]['Country/Region']]['States'][data[d]['Province/State']]['deaths'].length] = data[d];
+					}
 				}
 			}
 			progress.value += 1;
 			console.log("[OK] JHU DEATHS_GLOBAL")
+			
 			njobs--;
 			if (njobs == 0)
 				prepare_data();
 		}, function() {
-		  console.log( "[!] JHU DEATHS_GLOBAL" );
+			console.log("[!] JHU DEATHS_GLOBAL")
 	});
-
+	
+	
 	var settings = {
 		"crossDomain": true,
 		"url": "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv",
@@ -742,14 +823,31 @@ function fetch_and_prepare_data_JHU() {
 		function (res) {
 			var data = d3.csvParse(res);
 			for (d = 0; d < data.length; d++) {
-				if (typeof(data[d]['Country/Region']) !== 'undefined') {
-					if (typeof(countries[data[d]['Country/Region']]) === 'undefined') {
+				if (typeof (data[d]['Country/Region']) !== 'undefined') {
+					// is it the first time we see this country? if so, initialize the array
+					if (typeof (countries[data[d]['Country/Region']]) === 'undefined') {
 						countries[data[d]['Country/Region']] = [];
+						countries[data[d]['Country/Region']]['States'] = [];
 					}
-					if (typeof(countries[data[d]['Country/Region']]['recovered']) === 'undefined') {
+					
+					// country-wide data
+					if (typeof(countries[data[d]['Country/Region']]['recovered']) === 'undefined'){
 						countries[data[d]['Country/Region']]["recovered"] = [];
 					}
+					if (data[d]['Province/State'] !== ''){
+						if ( (countries[data[d]['Country/Region']]['States'][data[d]['Province/State']] === undefined)) {
+							countries[data[d]['Country/Region']]['States'][data[d]['Province/State']] = [];
+						}
+						if ((countries[data[d]['Country/Region']]['States'][data[d]['Province/State']]['recovered'] === undefined)) {
+							countries[data[d]['Country/Region']]['States'][data[d]['Province/State']]['recovered'] = [];
+						}
+					}
+
 					countries[data[d]['Country/Region']]['recovered'][countries[data[d]['Country/Region']]["recovered"].length] = data[d];
+					
+					if ( (data[d]['Province/State']) !== '') {
+						countries[data[d]['Country/Region']]['States'][data[d]['Province/State']]['recovered'][countries[data[d]['Country/Region']]['States'][data[d]['Province/State']]['recovered'].length] = data[d];
+					}
 				}
 			}
 			progress.value += 1;
@@ -761,5 +859,107 @@ function fetch_and_prepare_data_JHU() {
 		  console.log( "[!] JHU RECOVERED_GLOBAL" );
 	});
 
-	// console.log(countries)
+
+	///// ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| \\\\\\
+	///// **********************  US data fetching starts here *********************************  \\\\\\\
+	///// ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| \\\\\\\\
+
+	var settings = {
+		"crossDomain": true,
+		"url": "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv",
+		"method": "GET",
+		"dataType" : "text"
+	}
+	$.ajax(settings).then(
+		function (res) {
+			var data = d3.csvParse(res);
+			// console.log(data)
+			for (d = 0; d < data.length; d++) {
+				if (typeof(data[d]['Country_Region']) !== 'undefined') {
+					if (typeof (countries[data[d]['Country_Region']]) === 'undefined') {
+						countries[data[d]['Country_Region']] = [];
+						countries[data[d]['Country_Region']]['States'] = [];
+						countries[data[d]['Country_Region']]['States']['Counties'] = [];
+					}
+
+					if (typeof (countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]) === 'undefined') {
+						countries[data[d]['Country_Region']]['States'][data[d]['Province_State']] = [];
+						countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]['confirmed'] = [];
+						if (countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]['Counties'] == undefined) {
+							countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]['Counties'] = [];
+						}
+					}
+					let county = data[d]['Admin2'];
+					if (county.substring(0, 6).localeCompare('Out of')!=0 && county.localeCompare('Unassigned') != 0 &&  county.localeCompare('') != 0) {
+						if (countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]['Counties'][data[d]['Admin2']] == undefined) {
+							countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]['Counties'][data[d]['Admin2']] = [];
+						}
+						countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]['Counties'][data[d]['Admin2']]['confirmed'] = data[d];
+					}
+					else if (county.localeCompare('') == 0) {
+						countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]['confirmed'] = data[d];
+					}
+				}
+			}
+			progress.value += 1;
+			console.log("[OK] JHU CONFIRMED_US")
+			
+			njobs--;
+			if (njobs == 0)
+				prepare_data();
+		}, function() {
+			console.log("[!] JHU CONFIRMED_US")
+	});
+
+	var settings = {
+		"crossDomain": true,
+		"url": "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv",
+		"method": "GET",
+		"dataType" : "text"
+	}
+	$.ajax(settings).then(
+		function (res) {
+			var data = d3.csvParse(res);
+			console.log(data)
+			for (d = 0; d < data.length; d++) {
+				if (typeof(data[d]['Country_Region']) !== 'undefined') {
+					if (typeof (countries[data[d]['Country_Region']]) === 'undefined') {
+						countries[data[d]['Country_Region']] = [];
+						countries[data[d]['Country_Region']]['deaths'] = [];
+						countries[data[d]['Country_Region']]['States'] = [];
+						countries[data[d]['Country_Region']]['States']['Counties'] = [];
+					}
+
+					if ((countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]) == undefined)
+						countries[data[d]['Country_Region']]['States'][data[d]['Province_State']] = [];
+					if (countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]['deaths'] == undefined)
+						countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]['deaths'] = [];
+				
+					if (countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]['Counties'] == undefined)
+							countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]['Counties'] = [];
+				
+
+					let county = data[d]['Admin2'];
+					// console.log('Data: ' + county)
+					if (county.substring(0, 6).localeCompare('Out of')!=0 && county.localeCompare('Unassigned') != 0 &&  county.localeCompare('') != 0) {
+						// console.log('Insert county ' + county)
+						if (countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]['Counties'][data[d]['Admin2']] == undefined) {
+							countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]['Counties'][data[d]['Admin2']] = [];
+						}
+						countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]['Counties'][data[d]['Admin2']]['deaths'] = data[d];
+					}
+					else if (county.localeCompare('') == 0) {
+						countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]['deaths'] = data[d];
+					}
+				}
+			}
+			progress.value += 1;
+			console.log("[OK] JHU DEATHS_US")
+			
+			njobs--;
+			if (njobs == 0)
+				prepare_data();
+		}, function() {
+			console.log("[!] JHU DEATHS_US")
+	});
 }

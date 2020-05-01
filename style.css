@@ -64,6 +64,15 @@ a.skip-main:focus, a.skip-main:active {
     display: table-cell; /* Make elements inside the container behave like table cells */
 }
 
+table {
+  border-collapse: collapse;
+}
+
+table, td, th {
+  border: 1px solid black;
+  text-align: center;
+}
+
   /*
   html {
     font-size: 22px;
