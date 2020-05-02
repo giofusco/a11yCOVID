@@ -45,7 +45,7 @@ function create_about_page(container_id) {
 	which means people who can't see graphs are excluded from the information driving our discourse,
 	even if the raw data are screen-readable.
 	Access to this data is unavailable to the roughly 39 million people around the Globe who are blind. 
-	This project makes the data sourced by John Hopkins University accessible to people with visual impairments. 
+	This project makes the data sourced by Johns Hopkins University accessible to people with visual impairments. 
 	The plots are automatically described to screen readers and sonified on demand.</p>
 	<h3> the author </h3>
 	I'm Giovanni Fusco, a researcher at the Rehabilitation Engineering Research Center at the Smith-Kettlewell Eye Research Institute.
