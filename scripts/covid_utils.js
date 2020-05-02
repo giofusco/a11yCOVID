@@ -2,7 +2,8 @@
 //
 // Created by Giovanni Fusco - The Smith-Kettlewell Eye Research Institute, Copyright 2020
 //
-//
+// If you are reading this, I'm sorry for you. It's messy and it needs refactoring desperately.
+// Can you help? Contact me!
 //
 //
 
@@ -28,8 +29,7 @@ $(document).bind('dataReadyEvent', function (e) {
 	setup_country_selection_dom('country_select');
 });
 
-function list_all_countries(container_id) {
-	var container = document.getElementById(container_id);
+function list_all_countries(container) {
 	var section = document.createElement('section');
 	
 	var sorted_countries = [];
@@ -49,8 +49,8 @@ function list_all_countries(container_id) {
 	row.className = 'row';
 	var country_table_cell = document.createElement('div');
 	country_table_cell.id = 'countries_table';
-	country_table_cell.appendChild(document.createElement('br'));
-	country_table_cell.appendChild(link_to_main);
+	// country_table_cell.appendChild(document.createElement('br'));
+	// country_table_cell.appendChild(link_to_main);
 	country_table_cell.appendChild(document.createElement('br'));
 	country_table_cell.appendChild(document.createElement('br'));
 	
@@ -228,17 +228,17 @@ function create_summary_section(country_code, state_name, container_id) {
 			
 			canvas_confirmed.innerHTML = `<p role="region" aria-live="polite"
 				id="confirmed_cases_chart_fallback"> ${confirmed_caption} </p>`;
-			generate_plot(canvas_confirmed, `Daily new CODVID-19 infections in  ${country_name_label}`, 1, 'black', 'teal', false,
+			generate_plot(canvas_confirmed, `Total CODVID-19 infections in  ${country_name_label}`, 1, 'black', 'teal', false,
 				countries[`${country_name}`]['confirmed_timeline']);
 			
 			var plot_header_confirmed = document.createElement('h3');
-			plot_header_confirmed.innerText = 'Plot - Total New Cases of COVID-19 in ' + country_name_label;
+			plot_header_confirmed.innerText = 'Plot - Total Confirmed Cases of COVID-19 in ' + country_name_label;
 			confirmed_plot_cell.append(plot_header_confirmed);
 			
 			confirmed_plot_cell.appendChild(canvas_confirmed);
 			confirmed_plot_cell.appendChild(document.createElement('br'));
 			add_button(`Sonify ${country_name_label} Total Confirmed Cases Plot`, confirmed_plot_cell, `sonify_confirmed_${country_name}_button_id`,
-				`sonify(countries['${country_name}']['confirmed_timeline'], 220, 1);`);
+				`sonify(countries['${country_name}']['confirmed_timeline'], 220, 3);`);
 			confirmed_plot_cell.appendChild(document.createElement('br'));
 			confirmed_plot_cell.appendChild(document.createElement('br'));
 			
@@ -250,7 +250,7 @@ function create_summary_section(country_code, state_name, container_id) {
 			canvas_deaths.innerHTML = `<p role="region" aria-live="polite"
 				id="confirmed_cases_chart_fallback">${deaths_caption}</p>`;
 
-			generate_plot(canvas_deaths, `Daily CODVID-19 deaths in  ${country_name}`, 1, 'black', 'gray', false, countries[country_name]['deaths_timeline']);
+			generate_plot(canvas_deaths, `Total CODVID-19 deaths in  ${country_name}`, 1, 'black', 'gray', false, countries[country_name]['deaths_timeline']);
 
 			var plot_header_deaths = document.createElement('h3');
 			plot_header_deaths.innerText = 'Plot - Total COVID-19 Deaths in ' + country_name_label;
@@ -259,11 +259,31 @@ function create_summary_section(country_code, state_name, container_id) {
 			deaths_plot_cell.appendChild(canvas_deaths);
 			deaths_plot_cell.appendChild(document.createElement('br'));
 			add_button(`Sonify ${country_name} Total Deaths Plot`, deaths_plot_cell, `sonify_deaths_${country_name}_button_id`,
-				`sonify(countries['${country_name}']['deaths_timeline'], 220, 1);`);
+				`sonify(countries['${country_name}']['deaths_timeline'], 220, 3);`);
 
 			row2.appendChild(confirmed_plot_cell);
 			row2.appendChild(deaths_plot_cell);
+
 			section.appendChild(row2);
+			var padding_cell = document.createElement('div');
+			padding_cell.className = 'col-4 text-center';
+			section.appendChild(padding_cell);
+			var link_cell = document.createElement('div');
+			link_cell.innerHTML = `<p align='center'><a href="#" onClick="handle_selection('World', '')" title="jump to">Table of Countries</a></p>`;
+			if (country_code.localeCompare('US') != 0)
+				section.appendChild(link_cell);
+
+			
+		}
+		else {
+			var padding_cell = document.createElement('div');
+			padding_cell.className = 'col-2 text-center';
+			section.appendChild(padding_cell);
+			var countries_cell = document.createElement('div');
+			countries_cell.className = 'col-sm text-center';
+			countries_cell.id = 'table_container';
+			list_all_countries(countries_cell);
+			section.appendChild(countries_cell);
 		}
 	}
 	else { // handle state plots
@@ -334,7 +354,7 @@ function create_summary_section(country_code, state_name, container_id) {
 		confirmed_plot_cell.appendChild(canvas_confirmed);
 		confirmed_plot_cell.appendChild(document.createElement('br'));
 		add_button(`Sonify Daily New Cases Plot`, confirmed_plot_cell, `sonify_confirmed_${country_name}_button_id`,
-			`sonify(moving_average(countries['${country_name}'].States['${state_name}']['confirmed_daily'], 3), 220, 1);`);
+			`sonify(countries['${country_name}'].States['${state_name}']['confirmed_daily'], 220, 1);`);
 		confirmed_plot_cell.appendChild(document.createElement('br'));
 		confirmed_plot_cell.appendChild(document.createElement('br'));
 		
@@ -355,7 +375,7 @@ function create_summary_section(country_code, state_name, container_id) {
 		deaths_plot_cell.appendChild(canvas_deaths);
 		deaths_plot_cell.appendChild(document.createElement('br'));
 		add_button(`Sonify Total Deaths Plot`, deaths_plot_cell, `sonify_deaths_${country_name}_button_id`,
-			`sonify(countries['${country_name}'].States['${state_name}']['deaths_timeline'], 220, 1);`);
+			`sonify(countries['${country_name}'].States['${state_name}']['deaths_timeline'], 220, 3);`);
 
 		row2.appendChild(confirmed_plot_cell);
 		row2.appendChild(deaths_plot_cell);
