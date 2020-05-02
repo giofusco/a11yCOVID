@@ -57,6 +57,7 @@ function list_all_countries(container_id) {
 	var header = document.createElement('h3');
 	header.innerText = 'Table of World Countries';
 	country_table_cell.appendChild(header);
+	country_table_cell.innerHTML += `<p align='left'><small><em> JHU data are updated once a day around 23:59 (UTC).</em></small></p><ul>`;
 	country_table_cell.className = 'col-auto text-center';
 	var country_table = document.createElement('table');
 	var caption = document.createElement('caption');
@@ -184,7 +185,7 @@ function create_summary_section(country_code, state_name, container_id) {
 		var active_plot_cell = document.createElement('div');
 		active_plot_cell.className = 'col-lg text-center';
 		var plot_header = document.createElement('h3');
-		plot_header.innerText = 'Plot - Active Cases of COVID-19';
+		plot_header.innerText = 'Plot - Active Cases of COVID-19 in ' + country_name_label;
 		active_plot_cell.append(plot_header);
 
 		canvas_active.setAttribute('aria-label', `This plot shows the evolution of the number of active cases of COVID-19 
@@ -222,43 +223,43 @@ function create_summary_section(country_code, state_name, container_id) {
 			var confirmed_plot_cell = document.createElement('div');
 			confirmed_plot_cell.className = 'col-sm text-center';
 			
-			canvas_confirmed.setAttribute('aria-label', `This plot shows the daily number of new COVID-19 infections
+			canvas_confirmed.setAttribute('aria-label', `This plot shows the total number of new COVID-19 infections
 			from the beginning of the pandemic on ${countries[country_name].dates[0].toLocaleString()} to the latest update.`);
 			
 			canvas_confirmed.innerHTML = `<p role="region" aria-live="polite"
 				id="confirmed_cases_chart_fallback"> ${confirmed_caption} </p>`;
 			generate_plot(canvas_confirmed, `Daily new CODVID-19 infections in  ${country_name_label}`, 1, 'black', 'teal', false,
-				countries[`${country_name}`]['confirmed_daily']);
+				countries[`${country_name}`]['confirmed_timeline']);
 			
 			var plot_header_confirmed = document.createElement('h3');
-			plot_header_confirmed.innerText = 'Plot - Daily New Cases of COVID-19';
+			plot_header_confirmed.innerText = 'Plot - Total New Cases of COVID-19 in ' + country_name_label;
 			confirmed_plot_cell.append(plot_header_confirmed);
 			
 			confirmed_plot_cell.appendChild(canvas_confirmed);
 			confirmed_plot_cell.appendChild(document.createElement('br'));
-			add_button(`Sonify ${country_name_label} Daily New Cases Plot`, confirmed_plot_cell, `sonify_confirmed_${country_name}_button_id`,
-				`sonify(moving_average(countries['${country_name}']['confirmed_daily'], 3), 220, 1);`);
+			add_button(`Sonify ${country_name_label} Total Confirmed Cases Plot`, confirmed_plot_cell, `sonify_confirmed_${country_name}_button_id`,
+				`sonify(countries['${country_name}']['confirmed_timeline'], 220, 1);`);
 			confirmed_plot_cell.appendChild(document.createElement('br'));
 			confirmed_plot_cell.appendChild(document.createElement('br'));
 			
 			var deaths_plot_cell = document.createElement('div');
 			deaths_plot_cell.className = 'col-sm text-center';
 			
-			canvas_deaths.setAttribute('aria-label', `This plot shows the daily number of COVID-19 
+			canvas_deaths.setAttribute('aria-label', `This plot shows the total number of COVID-19 
 			deaths from the beginning of the pandemic on ${countries[country_name].dates[0].toLocaleString()} to the latest update.`);
 			canvas_deaths.innerHTML = `<p role="region" aria-live="polite"
 				id="confirmed_cases_chart_fallback">${deaths_caption}</p>`;
 
-			generate_plot(canvas_deaths, `Daily CODVID-19 deaths in  ${country_name}`, 1, 'black', 'gray', false, countries[country_name]['deaths_daily']);
+			generate_plot(canvas_deaths, `Daily CODVID-19 deaths in  ${country_name}`, 1, 'black', 'gray', false, countries[country_name]['deaths_timeline']);
 
 			var plot_header_deaths = document.createElement('h3');
-			plot_header_deaths.innerText = 'Plot - Daily COVID-19 Deaths';
+			plot_header_deaths.innerText = 'Plot - Total COVID-19 Deaths in ' + country_name_label;
 			deaths_plot_cell.append(plot_header_deaths);
 
 			deaths_plot_cell.appendChild(canvas_deaths);
 			deaths_plot_cell.appendChild(document.createElement('br'));
-			add_button(`Sonify ${country_name} Daily Deaths Plot`, deaths_plot_cell, `sonify_deaths_${country_name}_button_id`,
-				`sonify(moving_average(countries['${country_name}']['deaths_daily'], 3), 220, 1);`);
+			add_button(`Sonify ${country_name} Total Deaths Plot`, deaths_plot_cell, `sonify_deaths_${country_name}_button_id`,
+				`sonify(countries['${country_name}']['deaths_timeline'], 220, 1);`);
 
 			row2.appendChild(confirmed_plot_cell);
 			row2.appendChild(deaths_plot_cell);
@@ -279,7 +280,7 @@ function create_summary_section(country_code, state_name, container_id) {
 		var daily_new_plot_cell = document.createElement('div');
 		daily_new_plot_cell.className = 'col-lg text-center';
 		var plot_header = document.createElement('h3');
-		plot_header.innerText = 'Plot - Total COVID-19 Infections Over Time';
+		plot_header.innerText = 'Plot - Total COVID-19 Infections Over Time in ' + country_name_label;
 		daily_new_plot_cell.append(plot_header);
 
 		canvas_daily_new.setAttribute('aria-label', `This plot shows the evolution of the total number of COVID-19 cases 
@@ -327,7 +328,7 @@ function create_summary_section(country_code, state_name, container_id) {
 			countries[`${country_name}`].States[state_name]['confirmed_daily']);
 		
 		var plot_header_confirmed = document.createElement('h3');
-		plot_header_confirmed.innerText = 'Plot - Daily New Cases of COVID-19';
+		plot_header_confirmed.innerText = 'Plot - Daily New Cases of COVID-19 in ' + country_name_label;
 		confirmed_plot_cell.append(plot_header_confirmed);
 		
 		confirmed_plot_cell.appendChild(canvas_confirmed);
@@ -340,21 +341,21 @@ function create_summary_section(country_code, state_name, container_id) {
 		var deaths_plot_cell = document.createElement('div');
 		deaths_plot_cell.className = 'col-sm text-center';
 		
-		canvas_deaths.setAttribute('aria-label', `This plot shows the daily number of COVID-19 
+		canvas_deaths.setAttribute('aria-label', `This plot shows the total number of COVID-19 
 		deaths from ${countries[country_name].dates[0].toLocaleString()} to the latest update.`);
 		canvas_deaths.innerHTML = `<p role="region" aria-live="polite"
 			id="confirmed_cases_chart_fallback">${deaths_caption}</p>`;
 
-		generate_plot(canvas_deaths, `Daily CODVID-19 deaths in  ${country_name}`, 1, 'black', 'gray', false, countries[country_name].States[state_name]['deaths_daily']);
+		generate_plot(canvas_deaths, `Total CODVID-19 deaths in  ${country_name}`, 1, 'black', 'gray', false, countries[country_name].States[state_name]['deaths_timeline']);
 
 		var plot_header_deaths = document.createElement('h3');
-		plot_header_deaths.innerText = 'Plot - Daily COVID-19 Deaths';
+		plot_header_deaths.innerText = 'Plot - Total COVID-19 Deaths in ' + country_name_label;
 		deaths_plot_cell.append(plot_header_deaths);
 
 		deaths_plot_cell.appendChild(canvas_deaths);
 		deaths_plot_cell.appendChild(document.createElement('br'));
-		add_button(`Sonify Daily Deaths Plot`, deaths_plot_cell, `sonify_deaths_${country_name}_button_id`,
-			`sonify(moving_average(countries['${country_name}'].States['${state_name}']['deaths_daily'], 3), 220, 1);`);
+		add_button(`Sonify Total Deaths Plot`, deaths_plot_cell, `sonify_deaths_${country_name}_button_id`,
+			`sonify(countries['${country_name}'].States['${state_name}']['deaths_timeline'], 220, 1);`);
 
 		row2.appendChild(confirmed_plot_cell);
 		row2.appendChild(deaths_plot_cell);
