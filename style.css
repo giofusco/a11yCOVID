@@ -73,6 +73,10 @@ table, td, th {
   text-align: center;
 }
 
+ul.square {
+  list-style-type: square;
+}
+
   /*
   html {
     font-size: 22px;

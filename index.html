@@ -27,11 +27,14 @@ window.onload = function() {
    fetch_and_prepare_data_JHU();
 }
 
-function handle_selection(country_code){
-  if (country_code == undefined)
-    country_code = document.country_form['country_select'].value;
+function handle_selection(country_code, state_name){
+  if (country_code == undefined){
+      country_code = document.country_form['country_select'].value;
+      state_name = '';
+  }
+  console.log('STATE: ' + state_name)
   document.getElementById('main_article').innerHTML = '';
-  create_summary_section(country_code, 'main_article');
+  create_summary_section(country_code, state_name, 'main_article');
   return false;
 }
 </script>
@@ -46,20 +49,20 @@ function handle_selection(country_code){
 
 
 <nav>
-  <a href="#" onClick="handle_selection('US')" title="jump to">USA</a>
-  <a href="#" onClick="handle_selection('IT')" title="jump to">Italy</a>
-  <a href="#" onClick="handle_selection('FR')" title="jump to">France</a>
-  <a href="#" onClick="handle_selection('JP')" title="jump to">Japan</a>
-  <a href="#" onClick="handle_selection('CN')" title="jump to">China</a>
-  <a href="#" onClick="handle_selection('KR')" title="jump to">South Korea</a>
-  <a href="#" onClick="handle_selection('CA')" title="jump to">Canada</a>
-  <a href="#" onClick="handle_selection('MX')" title="jump to">Mexico</a>
-  <a href="#" onClick="handle_selection('IN')" title="jump to">India</a>
-  <a href="#" onClick="handle_selection('GB')" title="jump to">UK</a>
-  <a href="#" onClick="handle_selection('PE')" title="jump to">Peru</a>
-  <a href="#" onClick="handle_selection('BR')" title="jump to">Brazil</a>
-  <a href="#" onClick="handle_selection('IR')" title="jump to">Iran</a>
-  <a href="#" onClick="handle_selection('NZ')" title="jump to">New Zealand</a>
+  <a href="#" onClick="handle_selection('US', '')" title="jump to">USA</a>
+  <a href="#" onClick="handle_selection('IT', '')" title="jump to">Italy</a>
+  <a href="#" onClick="handle_selection('FR', '')" title="jump to">France</a>
+  <a href="#" onClick="handle_selection('JP', '')" title="jump to">Japan</a>
+  <a href="#" onClick="handle_selection('CN', '')" title="jump to">China</a>
+  <a href="#" onClick="handle_selection('KR', '')" title="jump to">South Korea</a>
+  <a href="#" onClick="handle_selection('CA', '')" title="jump to">Canada</a>
+  <a href="#" onClick="handle_selection('MX', '')" title="jump to">Mexico</a>
+  <a href="#" onClick="handle_selection('IN', '')" title="jump to">India</a>
+  <a href="#" onClick="handle_selection('GB', '')" title="jump to">UK</a>
+  <a href="#" onClick="handle_selection('PE', '')" title="jump to">Peru</a>
+  <a href="#" onClick="handle_selection('BR', '')" title="jump to">Brazil</a>
+  <a href="#" onClick="handle_selection('IR', '')" title="jump to">Iran</a>
+  <a href="#" onClick="handle_selection('NZ', '')" title="jump to">New Zealand</a>
   
   <div align='right'>
   <form name="country_form" id="country_form" onSubmit="return handle_selection()">
@@ -92,6 +95,8 @@ function handle_selection(country_code){
     <hr>
     <p align='center'>by Giovanni Fusco © The Smith-Kettlewell Eye Research Institute, April 2020</p>
     <p align='center'> Data sourced from John Hopkins University @ https://github.com/CSSEGISandData/COVID-19</p>
+    <p align='center'> This project is funded by the Rehabilitation Engineering Research Center: Develop and Evaluate Rehabilitation 
+      Technology and Methods for Individuals with Low Vision, Blindness and Multiple Disabilities, Grant Number 90RE5024-01-00  </p>
 </small>
 </footer>
 </body>
