@@ -47,14 +47,14 @@ function create_about_page(container_id) {
 	This project makes the data sourced by John Hopkins University accessible 
 	to people with visual impairments. The plots are automatically described to 
 	screen readers and sonified on demand. </p>
-	<h3> the Author </h3>
+	<h3> the author </h3>
 	I'm Giovanni Fusco, a researcher at the Rehabilitation Engineering Research Center at the Smith-Kettlewell Eye Research Institute.
 	My research focuses on developing tools to reduce accessibity barriers in the STEM field.
 	<br>
-	More info available on the <a href="https://www.ski.org/users/giovanni-fusco">Smith-Kettlewell Research Institute website</a>
+	More info available on the <a href="https://www.ski.org/project/a11y-covid-19">Smith-Kettlewell Research Institute website</a>
 	<br><br>
 	
-	<h3> Funding </h3>
+	<h3> funding </h3>
 	<p>This project is funded by the Rehabilitation Engineering Research Center: Develop and Evaluate Rehabilitation 
 	Technology and Methods for Individuals with Low Vision, Blindness and Multiple Disabilities, Grant Number 90RE5024-01-00  </p>
 	`;
@@ -102,9 +102,7 @@ function list_all_countries(container) {
 	var table_header = document.createElement('tr');
 	table_header.innerHTML = `<th scope='col'> State </th> <th scope='col'>Total Infections</th><th scope='col'>Daily New Infections</th><th scope='col'>Total Deaths</th><th scope='col'>Daily New Deaths</th>`
 	country_table.appendChild(table_header);
-	console.log(countries)
 	for (s in sorted_countries) {
-		console.log(sorted_countries[s])
 		if (sorted_countries[s].localeCompare('World') != 0) {
 			var country_row = document.createElement('tr');
 			country_row.innerHTML = `<th scope='row'><a href="#" onClick="handle_selection('${country_name2iso[sorted_countries[s]]}', '')" title="jump to">${sorted_countries[s]}</a></th>
@@ -168,7 +166,6 @@ function create_summary_section(country_code, state_name, container_id) {
 		total_deaths = countries[country_iso2name[country_code]].States[state_name].deaths_timeline[countries[country_iso2name[country_code]].deaths_timeline.length - 1]
 	}
 	var summary_paragraph = document.createElement('p'); 
-	
 	if ((state_name == undefined) || (state_name.localeCompare('') == 0)) {
 		summary_paragraph.innerHTML = `<h3>Brief</h3>
 		<p align='left'><small><em> JHU data are updated once a day around 23:59 (UTC).</em></small></p><ul>`;
