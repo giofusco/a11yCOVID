@@ -29,6 +29,41 @@ $(document).bind('dataReadyEvent', function (e) {
 	setup_country_selection_dom('country_select');
 });
 
+function create_about_page(container_id) {
+	var container = document.getElementById(container_id);
+	var section = document.createElement('section');
+	var row1 = document.createElement('div');
+	row1.className = 'row';
+	var content_cell = document.createElement('div');
+	content_cell.className = 'col'
+	var padding_cell = document.createElement('div');
+	padding_cell.className = 'col'
+
+	content_cell.innerHTML = `
+	<h2>About the Project</h2>
+	<p>As the world shelters-in-place to slow Coronavirus infections and casualties, 
+	governmental agencies and the media turn to graphs and charts to illustrate the need for such action. 
+	Access to this data is unavailable to the roughly 39 million people who are blind. 
+	This project makes the data sourced by John Hopkins University accessible 
+	to people with visual impairments. The plots are automatically described to 
+	screen readers and sonified on demand. </p>
+	<h3> the Author </h3>
+	I'm Giovanni Fusco, a researcher at the Rehabilitation Engineering Research Center at the Smith-Kettlewell Eye Research Institute.
+	My research focuses on developing tools to reduce accessibity barriers in the STEM field.
+	<br>
+	More info available on the <a href="https://www.ski.org/users/giovanni-fusco">Smith-Kettlewell Research Institute website</a>
+	<br><br>
+	
+	<h3> Funding </h3>
+	<p>This project is funded by the Rehabilitation Engineering Research Center: Develop and Evaluate Rehabilitation 
+	Technology and Methods for Individuals with Low Vision, Blindness and Multiple Disabilities, Grant Number 90RE5024-01-00  </p>
+	`;
+	row1.appendChild(content_cell);
+	row1.appendChild(padding_cell);
+	section.appendChild(row1);
+	container.appendChild(section);
+}
+
 function list_all_countries(container) {
 	var section = document.createElement('section');
 	
@@ -104,12 +139,10 @@ function create_summary_section(country_code, state_name, container_id) {
 	canvas_deaths.id = `canvas_deaths_confirmed_${country_code}`
 
 	var country_name_label = country_name;
-	console.log('Country code ' + country_code)
 	
 	if ((country_code == 'World' || country_code === 'US' || country_code === 'BS') &&  (state_name.localeCompare('') == 0))
 		country_name_label = 'the ' + country_name_label;
 	
-	console.log(state_name)
 	if (state_name.localeCompare('') != 0)
 			country_name_label = state_name + ', ' + country_name2iso[country_name_label];
 
@@ -118,8 +151,6 @@ function create_summary_section(country_code, state_name, container_id) {
 	row1.className = 'row';
 	var summary_cell = document.createElement('div');
 	summary_cell.className = 'col'
-	// let active_number = (country_summaries[country_code].TotalConfirmed - (country_summaries[country_code].TotalDeaths + country_summaries[country_code].TotalRecovered));
-	console.log(country_code + 'state: ' + state_name)
 
 	var active_number = 0;
 	var total_confirmed = 0;
