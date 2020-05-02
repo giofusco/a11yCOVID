@@ -41,12 +41,12 @@ function create_about_page(container_id) {
 
 	content_cell.innerHTML = `
 	<h2>About the Project</h2>
-	<p>As the world shelters-in-place to slow Coronavirus infections and casualties, 
-	governmental agencies and the media turn to graphs and charts to illustrate the need for such action. 
-	Access to this data is unavailable to the roughly 39 million people who are blind. 
-	This project makes the data sourced by John Hopkins University accessible 
-	to people with visual impairments. The plots are automatically described to 
-	screen readers and sonified on demand. </p>
+	<p>So much of the conversation around this pandemic has been about trends: curves and how to flatten them, models, exponential growth, etc. That's usually conveyed visually, 
+	which means people who can't see graphs are excluded from the information driving our discourse,
+	even if the raw data are screen-readable.
+	Access to this data is unavailable to the roughly 39 million people around the Globe who are blind. 
+	This project makes the data sourced by John Hopkins University accessible to people with visual impairments. 
+	The plots are automatically described to screen readers and sonified on demand.</p>
 	<h3> the author </h3>
 	I'm Giovanni Fusco, a researcher at the Rehabilitation Engineering Research Center at the Smith-Kettlewell Eye Research Institute.
 	My research focuses on developing tools to reduce accessibity barriers in the STEM field.
