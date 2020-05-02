@@ -44,7 +44,7 @@ function create_about_page(container_id) {
     <p>So much of the conversation around this pandemic has been about trends: curves and how to flatten them, models, exponential growth, etc. That's usually conveyed visually, 
     which means people who can't see graphs are excluded from the information driving our discourse,
     even if the raw data are screen-readable.
-    Access to this data is unavailable to the roughly 39 million people around the Globe who are blind. 
+    Access to this data is unavailable to the roughly 39 million people around the globe who are blind. 
     This project makes the data sourced by Johns Hopkins University accessible to people with visual impairments. 
     The plots are automatically described to screen readers and sonified on demand.</p>
     <h3> The Author </h3>
