@@ -80,7 +80,7 @@ function create_summary_section(country_code, state_name, container_id) {
 	
 	if ((state_name == undefined) || (state_name.localeCompare('') == 0)) {
 		summary_paragraph.innerHTML = `<h3>Brief</h3>
-		<p align='left'><small><em> JHU data are updated once a day around 23:59 (UTC).</em></small></p><ul class='a'>`;
+		<p align='left'><small><em> JHU data are updated once a day around 23:59 (UTC).</em></small></p><ul>`;
 
 		if (active_number != 1)
 			summary_paragraph.innerHTML += `<li>Active cases: ${active_number.toLocaleString()}`;
@@ -164,7 +164,7 @@ function create_summary_section(country_code, state_name, container_id) {
 			confirmed_plot_cell.className = 'col-sm text-center';
 			
 			canvas_confirmed.setAttribute('aria-label', `This plot shows the daily number of new COVID-19 infections
-			from ${countries[country_name].dates[0].toLocaleString()} to the latest update.`);
+			from the beginning of the pandemic on ${countries[country_name].dates[0].toLocaleString()} to the latest update.`);
 			
 			canvas_confirmed.innerHTML = `<p role="region" aria-live="polite"
 				id="confirmed_cases_chart_fallback"> ${confirmed_caption} </p>`;
@@ -186,7 +186,7 @@ function create_summary_section(country_code, state_name, container_id) {
 			deaths_plot_cell.className = 'col-sm text-center';
 			
 			canvas_deaths.setAttribute('aria-label', `This plot shows the daily number of COVID-19 
-			deaths from ${countries[country_name].dates[0].toLocaleString()} to the latest update.`);
+			deaths from the beginning of the pandemic on ${countries[country_name].dates[0].toLocaleString()} to the latest update.`);
 			canvas_deaths.innerHTML = `<p role="region" aria-live="polite"
 				id="confirmed_cases_chart_fallback">${deaths_caption}</p>`;
 
@@ -220,15 +220,15 @@ function create_summary_section(country_code, state_name, container_id) {
 		var daily_new_plot_cell = document.createElement('div');
 		daily_new_plot_cell.className = 'col-lg text-center';
 		var plot_header = document.createElement('h3');
-		plot_header.innerText = 'Plot - Daily COVID-19 Infections Growth';
+		plot_header.innerText = 'Plot - Total COVID-19 Infections Over Time';
 		daily_new_plot_cell.append(plot_header);
 
-		canvas_daily_new.setAttribute('aria-label', `This plot shows the evolution of the number of daily_new cases of COVID-19 
-									from ${countries[country_name].dates[0].toLocaleString()} to the latest update.`);
+		canvas_daily_new.setAttribute('aria-label', `This plot shows the evolution of the total number of COVID-19 cases 
+									from the beginning of the pandemic on ${countries[country_name].dates[0].toLocaleString()} to the latest update.`);
 		canvas_daily_new.innerHTML = `<p role="region" aria-live="polite"
 									id="daily_new_cases_chart_fallback">${daily_new_tml_caption}}</p>`;
 		
-		generate_plot(canvas_daily_new, `New CODVID-19 Cases in ${country_name_label}`, 1, 'black', 'rgba(125, 100, 45, 0.9)', false, countries[country_name].States[state_name]['confirmed_timeline']);
+		generate_plot(canvas_daily_new, `Total CODVID-19 Cases in ${country_name_label}`, 1, 'black', 'rgba(125, 100, 45, 0.9)', false, countries[country_name].States[state_name]['confirmed_timeline']);
 		daily_new_plot_cell.appendChild(document.createElement('br'));
 		daily_new_plot_cell.appendChild(canvas_daily_new);
 		daily_new_plot_cell.appendChild(document.createElement('br'));
@@ -294,7 +294,7 @@ function create_summary_section(country_code, state_name, container_id) {
 
 		deaths_plot_cell.appendChild(canvas_deaths);
 		deaths_plot_cell.appendChild(document.createElement('br'));
-		add_button(`Sonify ${country_name} Daily Deaths Plot`, deaths_plot_cell, `sonify_deaths_${country_name}_button_id`,
+		add_button(`Sonify Daily Deaths Plot`, deaths_plot_cell, `sonify_deaths_${country_name}_button_id`,
 			`sonify(moving_average(countries['${country_name}'].States['${state_name}']['deaths_daily'], 3), 220, 1);`);
 
 		row2.appendChild(confirmed_plot_cell);
