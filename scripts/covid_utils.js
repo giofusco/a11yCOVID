@@ -51,7 +51,7 @@ function create_about_page(container_id) {
 	I'm Giovanni Fusco, a researcher at the Rehabilitation Engineering Research Center at the Smith-Kettlewell Eye Research Institute.
 	My research focuses on developing tools to reduce accessibity barriers in the STEM field.
 	<br>
-	More info available on the <a href="https://www.ski.org/project/a11y-covid-19">Smith-Kettlewell Research Institute website</a>
+	More info available on the <a href="https://www.ski.org/project/a11y-covid-19" target="_blank">Smith-Kettlewell Research Institute website</a>
 	<br><br>
 	
 	<h3> funding </h3>
