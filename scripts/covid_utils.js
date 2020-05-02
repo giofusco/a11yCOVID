@@ -28,6 +28,65 @@ $(document).bind('dataReadyEvent', function (e) {
 	setup_country_selection_dom('country_select');
 });
 
+function list_all_countries(container_id) {
+	var container = document.getElementById(container_id);
+	var section = document.createElement('section');
+	
+	var sorted_countries = [];
+	for (c in country_name2iso) {
+		sorted_countries[sorted_countries.length] = c;
+	}
+	sorted_countries.sort();
+	var row = document.createElement('div');
+	row.appendChild(document.createElement('br'))
+	var link_to_main = document.createElement('a');
+	link_to_main.href = '#';
+	link_to_main.addEventListener("click", function () {
+		handle_selection('World', '');
+	});
+	link_to_main.innerText = 'Back to World page';
+
+	row.className = 'row';
+	var country_table_cell = document.createElement('div');
+	country_table_cell.id = 'countries_table';
+	country_table_cell.appendChild(document.createElement('br'));
+	country_table_cell.appendChild(link_to_main);
+	country_table_cell.appendChild(document.createElement('br'));
+	country_table_cell.appendChild(document.createElement('br'));
+	
+	var header = document.createElement('h3');
+	header.innerText = 'Table of World Countries';
+	country_table_cell.appendChild(header);
+	country_table_cell.className = 'col-auto text-center';
+	var country_table = document.createElement('table');
+	var caption = document.createElement('caption');
+	caption.innerText = `This table presents the list of all the countries in the World. For each country, we report new COVID-19 
+							infections and deaths since the last update, together with the total number of infections and deaths since the beginning of the pandemic.`;
+	country_table.appendChild(caption);
+	var table_header = document.createElement('tr');
+	table_header.innerHTML = `<th scope='col'> State </th> <th scope='col'>Total Infections</th><th scope='col'>Daily New Infections</th><th scope='col'>Total Deaths</th><th scope='col'>Daily New Deaths</th>`
+	country_table.appendChild(table_header);
+	console.log(countries)
+	for (s in sorted_countries) {
+		console.log(sorted_countries[s])
+		if (sorted_countries[s].localeCompare('World') != 0) {
+			var country_row = document.createElement('tr');
+			country_row.innerHTML = `<th scope='row'><a href="#" onClick="handle_selection('${country_name2iso[sorted_countries[s]]}', '')" title="jump to">${sorted_countries[s]}</a></th>
+														<td>${countries[sorted_countries[s]].confirmed_timeline.slice(-1)[0].toLocaleString()}</td>
+														<td>${countries[sorted_countries[s]].confirmed_daily.slice(-1)[0].toLocaleString()}</td>
+														<td>${countries[sorted_countries[s]].deaths_timeline.slice(-1)[0].toLocaleString()}</td>
+														<td>${countries[sorted_countries[s]].deaths_daily.slice(-1)[0].toLocaleString()}</td>`;
+			country_table.appendChild(country_row);
+		}
+	}
+	country_table_cell.appendChild(country_table);
+	var padding_cell = document.createElement('div');
+	padding_cell.className = 'col-4 text-center';
+	row.appendChild(padding_cell);
+	row.appendChild(country_table_cell);
+	section.appendChild(row);
+	container.appendChild(section);
+}
 
 // use country_name = 'World' to get world stats
 function create_summary_section(country_code, state_name, container_id) {
@@ -499,6 +558,8 @@ function prepare_data() {
 		countries['South Korea'] = countries['Korea, South'];
 		country_iso2name['KR'] = 'South Korea';
 		country_name2iso['South Korea'] = 'KR';
+		delete country_name2iso['Korea, South'];
+		delete country_name2iso['US'];
 		delete countries['US'];
 		delete countries['Korea, South'];
 		// delete countries['Iran'];
