@@ -347,7 +347,7 @@ function create_summary_section(country_code, state_name, container_id) {
         daily_new_plot_cell.appendChild(document.createElement('br'));
         daily_new_plot_cell.appendChild(canvas_daily_new);
         daily_new_plot_cell.appendChild(document.createElement('br'));
-        add_button(`Sonify Daily New Cases Plot`, daily_new_plot_cell, `sonify_daily_new_${country_name}_button_id`, `sonify(moving_average(countries['${country_name}'].States['${state_name}']['confirmed_timeline'], 3), 220, 3);`);
+        add_button(`Sonify Total Cases Plot`, daily_new_plot_cell, `sonify_daily_new_${country_name}_button_id`, `sonify(moving_average(countries['${country_name}'].States['${state_name}']['confirmed_timeline'], 3), 220, 3);`);
         daily_new_plot_cell.appendChild(document.createElement('br'));
         daily_new_plot_cell.appendChild(document.createElement('br'));
         
