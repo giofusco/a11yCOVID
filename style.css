@@ -77,6 +77,84 @@ ul.square {
   list-style-type: square;
 }
 
+li.no-dot{
+    list-style-type: none;
+    font-size: medium;
+}
+
+input.large/*checkbox class name*/ {
+    /* transform: scale(2); */
+    font-size: medium;
+  }
+
+
+/* from https://webdesign.tutsplus.com/tutorials/how-to-make-custom-accessible-checkboxes-and-radio-buttons--cms-32074 */
+*,
+*::before,
+*::after {
+    box-sizing: inherit;
+}
+
+/*style wrapper to give some space*/
+.wrapper {
+    position: relative;
+  margin-bottom: 1rem;
+  margin-top: 1rem;
+}
+
+/*style label to give some more space*/
+.wrapper label {
+  display: block;
+  padding: 12px 0 12px 48px;
+}
+
+/*style and hide original checkbox*/
+.wrapper input {
+  height: 40px;
+  left: 0;
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  width: 40px;
+}
+
+/*position new box*/
+.wrapper input + label::before {
+  border: 2px solid;
+  content: "";
+  height: 40px;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 40px;
+}
+
+/*create check symbol with pseudo element*/
+.wrapper input + label::after {
+  content: "";
+  border: 4px solid;
+  border-left: 0;
+  border-top: 0;
+  height: 20px;
+  left: 14px;
+  opacity: 0;
+  position: absolute;
+  top: 6px;
+  transform: rotate(45deg);
+  transition: opacity 0.2s ease-in-out;
+  width: 12px;
+}
+
+/*reveal check for 'on' state*/
+.wrapper input:checked + label::after {
+  opacity: 1;
+}
+
+.wrapper input:focus + label::before {
+    box-shadow: 0 0 0 3px #ffbf47;  
+  outline: 3px solid transparent;
+}
+
   /*
   html {
     font-size: 22px;

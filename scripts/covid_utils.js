@@ -227,7 +227,7 @@ function create_summary_section(country_code, state_name, container_id) {
         active_plot_cell.appendChild(document.createElement('br'));
         active_plot_cell.appendChild(canvas_active);
         active_plot_cell.appendChild(document.createElement('br'));
-        add_button(`Sonify ${country_name_label} Active Cases Plot`, active_plot_cell, `sonify_active_${country_name}_button_id`, `sonify(countries['${country_name}']['active_timeline'], 220, 3);`);
+        add_button(`Sonify ${country_name_label} Active Cases Plot`, active_plot_cell, `sonify_active_${country_name}_button_id`, `sonify('stereo_panning_sonify_active_${country_name}_button_id', countries['${country_name}']['active_timeline'], 220, 3);`);
         active_plot_cell.appendChild(document.createElement('br'));
         active_plot_cell.appendChild(document.createElement('br'));
         
@@ -273,7 +273,7 @@ function create_summary_section(country_code, state_name, container_id) {
             confirmed_plot_cell.appendChild(canvas_confirmed);
             confirmed_plot_cell.appendChild(document.createElement('br'));
             add_button(`Sonify ${country_name_label} Total Confirmed Cases Plot`, confirmed_plot_cell, `sonify_confirmed_${country_name}_button_id`,
-                `sonify(countries['${country_name}']['confirmed_timeline'], 220, 3);`);
+                `sonify('stereo_panning_sonify_confirmed_${country_name}_button_id', countries['${country_name}']['confirmed_timeline'], 220, 3);`);
             confirmed_plot_cell.appendChild(document.createElement('br'));
             confirmed_plot_cell.appendChild(document.createElement('br'));
             
@@ -294,7 +294,7 @@ function create_summary_section(country_code, state_name, container_id) {
             deaths_plot_cell.appendChild(canvas_deaths);
             deaths_plot_cell.appendChild(document.createElement('br'));
             add_button(`Sonify ${country_name} Total Deaths Plot`, deaths_plot_cell, `sonify_deaths_${country_name}_button_id`,
-                `sonify(countries['${country_name}']['deaths_timeline'], 220, 3);`);
+                `sonify('stereo_panning_sonify_deaths_${country_name}_button_id', countries['${country_name}']['deaths_timeline'], 220, 3);`);
 
             row2.appendChild(confirmed_plot_cell);
             row2.appendChild(deaths_plot_cell);
@@ -347,7 +347,7 @@ function create_summary_section(country_code, state_name, container_id) {
         daily_new_plot_cell.appendChild(document.createElement('br'));
         daily_new_plot_cell.appendChild(canvas_daily_new);
         daily_new_plot_cell.appendChild(document.createElement('br'));
-        add_button(`Sonify Total Cases Plot`, daily_new_plot_cell, `sonify_daily_new_${country_name}_button_id`, `sonify(moving_average(countries['${country_name}'].States['${state_name}']['confirmed_timeline'], 3), 220, 3);`);
+        add_button(`Sonify Total Cases Plot`, daily_new_plot_cell, `sonify_daily_new_${country_name}_button_id`, `sonify('stereo_panning_sonify_daily_new_${country_name}_button_id', moving_average(countries['${country_name}'].States['${state_name}']['confirmed_timeline'], 3), 220, 3);`);
         daily_new_plot_cell.appendChild(document.createElement('br'));
         daily_new_plot_cell.appendChild(document.createElement('br'));
         
@@ -389,7 +389,7 @@ function create_summary_section(country_code, state_name, container_id) {
         confirmed_plot_cell.appendChild(canvas_confirmed);
         confirmed_plot_cell.appendChild(document.createElement('br'));
         add_button(`Sonify Daily New Cases Plot`, confirmed_plot_cell, `sonify_confirmed_${country_name}_button_id`,
-            `sonify(countries['${country_name}'].States['${state_name}']['confirmed_daily'], 220, 1);`);
+            `sonify('stereo_panning_sonify_confirmed_${country_name}_button_id', countries['${country_name}'].States['${state_name}']['confirmed_daily'], 220, 1);`);
         confirmed_plot_cell.appendChild(document.createElement('br'));
         confirmed_plot_cell.appendChild(document.createElement('br'));
         
@@ -410,7 +410,7 @@ function create_summary_section(country_code, state_name, container_id) {
         deaths_plot_cell.appendChild(canvas_deaths);
         deaths_plot_cell.appendChild(document.createElement('br'));
         add_button(`Sonify Total Deaths Plot`, deaths_plot_cell, `sonify_deaths_${country_name}_button_id`,
-            `sonify(countries['${country_name}'].States['${state_name}']['deaths_timeline'], 220, 3);`);
+            `sonify('stereo_panning_sonify_deaths_${country_name}_button_id', countries['${country_name}'].States['${state_name}']['deaths_timeline'], 220, 3);`);
 
         row2.appendChild(confirmed_plot_cell);
         row2.appendChild(deaths_plot_cell);
@@ -477,7 +477,7 @@ function create_states_table(country_name) {
     return states_table_cell;
 }
 
-function sonify(data, f0, n_octaves) {
+function sonify(caller_id, data, f0, n_octaves) {
     let f_max = f0 * 2 ** n_octaves;
     var d_max = -1;
     var d_min = 1e9;
@@ -494,20 +494,27 @@ function sonify(data, f0, n_octaves) {
     for (v = 0; v < values.length; v++) {
         frequencies[v] = (((data[v] - d_min) * (f_max - f0)) / (d_max - d_min)) + f0;
     }
-    playPulse(frequencies);
+    console.log(caller_id + ' : ' + document.getElementById(caller_id).checked)
+    
+    play_pulse(frequencies, document.getElementById(caller_id).checked);
 }
 
-function playPulse(freqs) {
+function play_pulse(freqs, pan) {
     // for cross browser compatibility
-    var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    var gainNode = audioCtx.createGain() || audioCtx.createGainNode();
-    
-      gainNode.gain.minValue = 0;
+    let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    let gainNode = audioCtx.createGain() || audioCtx.createGainNode();
+    let panNode = audioCtx.createStereoPanner();
+    panNode.pan.value = 0;
+    let panStep = 2 / freqs.length;
+    if (pan)
+        panNode.pan.value = -1;
+
+    gainNode.gain.minValue = 0;
     gainNode.gain.maxValue = 1;
     gainNode.gain.value = 0.25;
 
     var oscillator = audioCtx.createOscillator();
-    oscillator.type = 'sine';
+    oscillator.type = 'triangle';
     gainNode.gain.exponentialRampToValueAtTime(
         0.00001, audioCtx.currentTime +  freqs.length * sample_length
     )
@@ -515,9 +522,11 @@ function playPulse(freqs) {
     for (i = 0; i < freqs.length; i++) {
         oscillator.frequency.setValueAtTime(freqs[i], audioCtx.currentTime + i * sample_length);
         gainNode.gain.setValueAtTime(0.25, audioCtx.currentTime + i * sample_length);
+        if (pan)
+            panNode.pan.setValueAtTime(panNode.pan.value + i * panStep, audioCtx.currentTime + i * sample_length);
     }
 
-    oscillator.connect(gainNode).connect(audioCtx.destination);
+    oscillator.connect(gainNode).connect(panNode).connect(audioCtx.destination);
 
     oscillator.start();
     oscillator.stop(audioCtx.currentTime + freqs.length * sample_length);
@@ -773,12 +782,24 @@ function generate_plot(canvas_elem, title, thickness, color, bgcolor, fill, mdat
 // /////////////////////////////////////////////////////////////////////////////////////// \\
 
 function add_button(text, container_elem, button_id, callback_string) {
-    // x = document.getElementById(container_id);
-    b = document.createElement('button');
+    var form = document.createElement('div');
+    form.name = 'sonification_controls_form';
+    form.innerHTML += `
+    <legend id='son_controls_legend'>Sonification Options</legend>
+    <ul aria-labelledby='son_controls_legend' role='group'>
+      <li class='no-dot'>
+          <input id="stereo_panning_${button_id}" required="" type="checkbox" name="stereo_panning" value="Enable Stereo Panning"> 
+          <label for="stereo_panning_${button_id}">  Enable Stereo Panning </label>
+      </li>
+    </ul>
+    `;
+    
+    var b = document.createElement('button');
     b.id = button_id;
     b.innerHTML = text
     b.setAttribute('onclick', callback_string);
-    container_elem.appendChild(b);
+    form.appendChild(b);
+    container_elem.appendChild(form);
 }
 
 function setup_country_selection_dom(select_id) {
