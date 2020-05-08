@@ -500,7 +500,7 @@ function sonify(data, f0, n_octaves) {
 function playPulse(freqs) {
     // for cross browser compatibility
     var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    var gainNode = audioCtx.createGain();
+    var gainNode = audioCtx.createGain() || audioCtx.createGainNode();
     
       gainNode.gain.minValue = 0;
     gainNode.gain.maxValue = 1;
