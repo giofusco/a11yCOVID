@@ -19,7 +19,7 @@ var data_ready = false;
 var usa_states_data = [];
 
 // how long to play a single data point (in secs)
-let sample_length = 0.08
+let sample_length = 0.1
 
 // this function handles the event triggered after getting the data
 $(document).bind('dataReadyEvent', function (e) {
@@ -227,7 +227,8 @@ function create_summary_section(country_code, state_name, container_id) {
         active_plot_cell.appendChild(document.createElement('br'));
         active_plot_cell.appendChild(canvas_active);
         active_plot_cell.appendChild(document.createElement('br'));
-        add_button(`Sonify ${country_name_label} Active Cases Plot`, active_plot_cell, `sonify_active_${country_name}_button_id`, `sonify('stereo_panning_sonify_active_${country_name}_button_id', countries['${country_name}']['active_timeline'], 220, 3);`);
+        add_button(`Sonify ${country_name_label} Active Cases Plot`, 'active_plot_controls', active_plot_cell, `sonify_active_${country_name}_button_id`,
+            `sonify('active_plot_controls', 'stereo_panning_sonify_active_${country_name}_button_id', countries['${country_name}']['active_timeline'], 220, 3);`);
         active_plot_cell.appendChild(document.createElement('br'));
         active_plot_cell.appendChild(document.createElement('br'));
         
@@ -272,8 +273,8 @@ function create_summary_section(country_code, state_name, container_id) {
             
             confirmed_plot_cell.appendChild(canvas_confirmed);
             confirmed_plot_cell.appendChild(document.createElement('br'));
-            add_button(`Sonify ${country_name_label} Total Confirmed Cases Plot`, confirmed_plot_cell, `sonify_confirmed_${country_name}_button_id`,
-                `sonify('stereo_panning_sonify_confirmed_${country_name}_button_id', countries['${country_name}']['confirmed_timeline'], 220, 3);`);
+            add_button(`Sonify ${country_name_label} Total Confirmed Cases Plot`, 'confimed_plot_controls', confirmed_plot_cell, `sonify_confirmed_${country_name}_button_id`,
+                `sonify('confimed_plot_controls', 'stereo_panning_sonify_confirmed_${country_name}_button_id', countries['${country_name}']['confirmed_timeline'], 220, 3);`);
             confirmed_plot_cell.appendChild(document.createElement('br'));
             confirmed_plot_cell.appendChild(document.createElement('br'));
             
@@ -293,8 +294,8 @@ function create_summary_section(country_code, state_name, container_id) {
 
             deaths_plot_cell.appendChild(canvas_deaths);
             deaths_plot_cell.appendChild(document.createElement('br'));
-            add_button(`Sonify ${country_name} Total Deaths Plot`, deaths_plot_cell, `sonify_deaths_${country_name}_button_id`,
-                `sonify('stereo_panning_sonify_deaths_${country_name}_button_id', countries['${country_name}']['deaths_timeline'], 220, 3);`);
+            add_button(`Sonify ${country_name} Total Deaths Plot`, 'deaths_plot_controls', deaths_plot_cell, `sonify_deaths_${country_name}_button_id`,
+                `sonify('deaths_plot_controls', 'stereo_panning_sonify_deaths_${country_name}_button_id', countries['${country_name}']['deaths_timeline'], 220, 3);`);
 
             row2.appendChild(confirmed_plot_cell);
             row2.appendChild(deaths_plot_cell);
@@ -347,7 +348,8 @@ function create_summary_section(country_code, state_name, container_id) {
         daily_new_plot_cell.appendChild(document.createElement('br'));
         daily_new_plot_cell.appendChild(canvas_daily_new);
         daily_new_plot_cell.appendChild(document.createElement('br'));
-        add_button(`Sonify Total Cases Plot`, daily_new_plot_cell, `sonify_daily_new_${country_name}_button_id`, `sonify('stereo_panning_sonify_daily_new_${country_name}_button_id', moving_average(countries['${country_name}'].States['${state_name}']['confirmed_timeline'], 3), 220, 3);`);
+        add_button(`Sonify Total Cases Plot`, 'daily_new_plot_controls', daily_new_plot_cell, `sonify_daily_new_${country_name}_button_id`,
+            `sonify('daily_new_plot_controls', 'stereo_panning_sonify_daily_new_${country_name}_button_id', moving_average(countries['${country_name}'].States['${state_name}']['confirmed_timeline'], 3), 220, 3);`);
         daily_new_plot_cell.appendChild(document.createElement('br'));
         daily_new_plot_cell.appendChild(document.createElement('br'));
         
@@ -388,8 +390,8 @@ function create_summary_section(country_code, state_name, container_id) {
         
         confirmed_plot_cell.appendChild(canvas_confirmed);
         confirmed_plot_cell.appendChild(document.createElement('br'));
-        add_button(`Sonify Daily New Cases Plot`, confirmed_plot_cell, `sonify_confirmed_${country_name}_button_id`,
-            `sonify('stereo_panning_sonify_confirmed_${country_name}_button_id', countries['${country_name}'].States['${state_name}']['confirmed_daily'], 220, 1);`);
+        add_button(`Sonify Daily New Cases Plot`, 'confirmed_plot_controls', confirmed_plot_cell, `sonify_confirmed_${country_name}_button_id`,
+            `sonify('confirmed_plot_controls', 'stereo_panning_sonify_confirmed_${country_name}_button_id', countries['${country_name}'].States['${state_name}']['confirmed_daily'], 220, 1);`);
         confirmed_plot_cell.appendChild(document.createElement('br'));
         confirmed_plot_cell.appendChild(document.createElement('br'));
         
@@ -409,8 +411,8 @@ function create_summary_section(country_code, state_name, container_id) {
 
         deaths_plot_cell.appendChild(canvas_deaths);
         deaths_plot_cell.appendChild(document.createElement('br'));
-        add_button(`Sonify Total Deaths Plot`, deaths_plot_cell, `sonify_deaths_${country_name}_button_id`,
-            `sonify('stereo_panning_sonify_deaths_${country_name}_button_id', countries['${country_name}'].States['${state_name}']['deaths_timeline'], 220, 3);`);
+        add_button(`Sonify Total Deaths Plot`, 'deaths_plot_controls', deaths_plot_cell, `sonify_deaths_${country_name}_button_id`,
+            `sonify( 'deaths_plot_controls', 'stereo_panning_sonify_deaths_${country_name}_button_id', countries['${country_name}'].States['${state_name}']['deaths_timeline'], 220, 3);`);
 
         row2.appendChild(confirmed_plot_cell);
         row2.appendChild(deaths_plot_cell);
@@ -477,7 +479,7 @@ function create_states_table(country_name) {
     return states_table_cell;
 }
 
-function sonify(caller_id, data, f0, n_octaves) {
+function sonify(form_id, caller_id, data, f0, n_octaves) {
     let f_max = f0 * 2 ** n_octaves;
     var d_max = -1;
     var d_min = 1e9;
@@ -489,23 +491,26 @@ function sonify(caller_id, data, f0, n_octaves) {
         if (values[v] < d_min) 
             d_min = values[v];
     }
-
+    var play_ref_tone = document.getElementById(form_id).querySelector("#play_reference_tone").checked;
+    var stereo_pan = document.getElementById(form_id).querySelector("#stereo_panning").checked;
+    console.log(play_ref_tone)
     var frequencies = [];
     for (v = 0; v < values.length; v++) {
         frequencies[v] = (((data[v] - d_min) * (f_max - f0)) / (d_max - d_min)) + f0;
     }
-    console.log(caller_id + ' : ' + document.getElementById(caller_id).checked)
-    
-    play_pulse(frequencies, document.getElementById(caller_id).checked);
+    console.log(frequencies)
+    console.log('f0: ' + f0)
+    play_pulse(frequencies, stereo_pan, play_ref_tone, f0);
 }
 
-function play_pulse(freqs, pan) {
+function play_pulse(freqs, pan, play_ref_tone, f0) {
     // for cross browser compatibility
     let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     let gainNode = audioCtx.createGain() || audioCtx.createGainNode();
     let panNode = audioCtx.createStereoPanner();
     panNode.pan.value = 0;
-    let panStep = 2 / freqs.length;
+    var panStep = 2 / freqs.length;
+    var freqLen = freqs.length;
     if (pan)
         panNode.pan.value = -1;
 
@@ -514,22 +519,47 @@ function play_pulse(freqs, pan) {
     gainNode.gain.value = 0.25;
 
     var oscillator = audioCtx.createOscillator();
+    var refToneOscillator = audioCtx.createOscillator();
     oscillator.type = 'triangle';
-    gainNode.gain.exponentialRampToValueAtTime(
-        0.00001, audioCtx.currentTime +  freqs.length * sample_length
-    )
-    
-    for (i = 0; i < freqs.length; i++) {
-        oscillator.frequency.setValueAtTime(freqs[i], audioCtx.currentTime + i * sample_length);
-        gainNode.gain.setValueAtTime(0.25, audioCtx.currentTime + i * sample_length);
-        if (pan)
-            panNode.pan.setValueAtTime(panNode.pan.value + i * panStep, audioCtx.currentTime + i * sample_length);
+    refToneOscillator.type = 'triangle';
+    refToneOscillator.frequency = 0;
+    oscillator.frequency = 0;
+    let t0 = audioCtx.currentTime;
+
+    if (play_ref_tone) {
+        for (i = 0; i < freqs.length; i++) {
+            gainNode.gain.setValueAtTime(0.25, audioCtx.currentTime + 3*i * sample_length);
+            oscillator.frequency.setValueAtTime(freqs[i], audioCtx.currentTime + 3*i * sample_length);
+            oscillator.frequency.setValueAtTime(f0, audioCtx.currentTime + (3*i + 1) * sample_length);
+            if (pan)
+                panNode.pan.setValueAtTime(panNode.pan.value + i * panStep, audioCtx.currentTime + 3*i * sample_length);
+        }
+        
+        gainNode.gain.exponentialRampToValueAtTime(
+            0.00001, audioCtx.currentTime + (3*freqLen + 1) * sample_length
+        )
+        oscillator.connect(gainNode).connect(panNode).connect(audioCtx.destination);
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + freqs.length * 3 * sample_length);
+    }
+    else {
+        for (i = 0; i < freqs.length; i++) {
+            oscillator.frequency.setValueAtTime(freqs[i], audioCtx.currentTime + i * sample_length);
+            gainNode.gain.setValueAtTime(0.25, audioCtx.currentTime + i * sample_length);
+            if (pan)
+                panNode.pan.setValueAtTime(panNode.pan.value + i * panStep, audioCtx.currentTime + i * sample_length);
+        }
+        gainNode.gain.exponentialRampToValueAtTime(
+            0.00001, audioCtx.currentTime +  freqs.length * sample_length
+        )
+        oscillator.connect(gainNode).connect(panNode).connect(audioCtx.destination);
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + freqLen * sample_length);
     }
 
-    oscillator.connect(gainNode).connect(panNode).connect(audioCtx.destination);
-
-    oscillator.start();
-    oscillator.stop(audioCtx.currentTime + freqs.length * sample_length);
+    
+    
+    
 }
         
 function prepare_data() {
@@ -781,15 +811,19 @@ function generate_plot(canvas_elem, title, thickness, color, bgcolor, fill, mdat
 // /////////////////////////////////////////////////////////////////////////////////////// \\
 // /////////////////////////////////////////////////////////////////////////////////////// \\
 
-function add_button(text, container_elem, button_id, callback_string) {
+function add_button(text, form_id, container_elem, button_id, callback_string) {
     var form = document.createElement('div');
-    form.name = 'sonification_controls_form';
+    // form.name = 'sonification_controls_form';
+    form.name = form_id;
+    form.id = form_id;
     form.innerHTML += `
     <legend id='son_controls_legend'>Sonification Options</legend>
     <ul aria-labelledby='son_controls_legend' role='group'>
       <li class='no-dot'>
-          <input id="stereo_panning_${button_id}" required="" type="checkbox" name="stereo_panning" value="Enable Stereo Panning"> 
-          <label for="stereo_panning_${button_id}">  Enable Stereo Panning </label>
+          <input id="stereo_panning" type="checkbox" name="stereo_panning" value="Enable Stereo Panning"> 
+          <label for="stereo_panning">Enable Stereo Panning</label>
+          <input id="play_reference_tone" type="checkbox" name="play_reference_tone" value="Alternate Baseline Tone"> 
+          <label for="play_reference_tone">Alternate Baseline Tone</label>
       </li>
     </ul>
     `;
@@ -827,6 +861,11 @@ function setup_country_selection_dom(select_id) {
 // /////////////////////////////////////////////////////////////////////////////////////// \\
 // /////////////////////////////////////////////////////////////////////////////////////// \\
 
+function get_element_inside_container(containerID, childID) {
+    var elm = document.getElementById(childID);
+    var parent = elm ? elm.parentNode : {};
+    return (parent.id && parent.id === containerID) ? elm : {};
+}
 
 function clip_to_zero(n) {
     if (n < 0)
