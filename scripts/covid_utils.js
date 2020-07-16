@@ -55,7 +55,7 @@ function create_about_page(container_id) {
     <br><br>
     
     <h3> Funding </h3>
-    <p>This project was supported by grant number 90RE5024-01-00 from the U.S. Administration for Community Living, Department of Health and Human Services, Washington, D.C. 20201.  </p>
+    <p>This project was supported by NIDILRR grant number 90RE5024-01-00 from the U.S. Administration for Community Living, Department of Health and Human Services, Washington, D.C. 20201.  </p>
     <br><br><small> Disclaimer: Grantees undertaking projects with government sponsorship are encouraged to express freely 
     their findings and conclusions. Points of view or opinions do not, therefore, necessarily represent official ACL policy. </small></p>
     `;
