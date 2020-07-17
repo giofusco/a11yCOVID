@@ -6,15 +6,17 @@
 </style>
 
 <head>
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
-  <script src="https://d3js.org/d3-dsv.v1.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
-  <script src="./scripts/covid_utils.js"></script>
-  <link rel="stylesheet" href="style.css">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <script>var clicky_site_ids = clicky_site_ids || []; clicky_site_ids.push(101267620);</script>
+    <script async src="//static.getclicky.com/js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <script src="https://d3js.org/d3-dsv.v1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+    <script src="./scripts/covid_utils.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>A11Y COVID-19</title>
 </head>
 
@@ -22,8 +24,6 @@
   
 <script type="text/javascript">
 window.onload = function() {
-  //  setup_list_of_countries('country_select');
-   //setup_summary('summary', 'summary_table');
    fetch_and_prepare_data_JHU();
 }
 
@@ -46,11 +46,9 @@ function handle_selection(country_code, state_name){
 </script>
 
 <header>
-  
   <h1>A11Y COVID-19</h1>
   <p><a class='skip-main' href="#main_article">Main Content</a></p>
   <p align='center'> Accessible Pandemic Data Bulletin </p>
-  <!-- <p align='center'> by Giovanni Fusco @ The Smith-Kettlewell Eye Research Institute </p> -->
 </header>
 
 
@@ -93,7 +91,6 @@ function handle_selection(country_code, state_name){
 <footer>
   <small>
     <hr>
-    
     <p align='center'>by Giovanni Fusco © The Smith-Kettlewell Eye Research Institute, April 2020</p>
     <p align='center'> This project was supported by NIDILRR grant number 90RE5024-01-00 from the U.S. Administration for Community Living, Department of Health and Human Services, Washington, D.C. 20201. </p>
     <p align='center'> Data sourced from Johns Hopkins University @ https://github.com/CSSEGISandData/COVID-19</p>  
