@@ -3,11 +3,11 @@
 // Created by Giovanni Fusco - The Smith-Kettlewell Eye Research Institute, Copyright 2020
 //
 // If you are reading this, I'm sorry for you. It's messy and it needs refactoring desperately.
-// Can you help? Contact me!
+// Can you help? Contact me! info-covid@ski.org
 //
 //
 
-let api_url = 'https://api.covid19api.com/';
+// let api_url = 'https://api.covid19api.com/';
 var country_summaries;
 var global_summary = [];
 var timeline_active = new Object();
@@ -20,6 +20,146 @@ var usa_states_data = [];
 
 // how long to play a single data point (in secs)
 let sample_length = 0.1
+
+function sonify(form_id, caller_id, data, f0, n_octaves) {
+    let f_max = f0 * 2 ** n_octaves;
+    var d_max = -1;
+    var d_min = 1e9;
+    var values = Object.values(data);
+    
+    for (v = 0; v < values.length - 1; v++) {
+        if (values[v] > d_max) 
+            d_max = values[v];
+        if (values[v] < d_min) 
+            d_min = values[v];
+    }
+    var play_ref_tone = document.getElementById(form_id).querySelector("#play_reference_tone").checked;
+    var stereo_pan = document.getElementById(form_id).querySelector("#stereo_panning").checked;
+    var unison = document.getElementById(form_id).querySelector("#play_reference_tone_unison").checked;
+    var play_tickmark = document.getElementById(form_id).querySelector("#play_tickmark").checked;
+    console.log(play_ref_tone)
+    var frequencies = [];
+    for (v = 0; v < values.length; v++) {
+        frequencies[v] = (((data[v] - d_min) * (f_max - f0)) / (d_max - d_min)) + f0;
+    }
+    console.log(frequencies)
+    console.log('f0: ' + f0)
+    play_pulse(frequencies, stereo_pan, play_ref_tone, unison, play_tickmark, f0);
+}
+
+function play_pulse(freqs, pan, play_ref_tone, unison, play_tickmark, f0) {
+    // for cross browser compatibility
+    let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    let gainNode = audioCtx.createGain() || audioCtx.createGainNode();
+    let panNode = audioCtx.createStereoPanner();
+    panNode.pan.value = 0;
+    var panStep = 2 / freqs.length;
+    var freqLen = freqs.length;
+    if (pan)
+        panNode.pan.value = -1;
+
+    gainNode.gain.minValue = 0;
+    gainNode.gain.maxValue = 1;
+    gainNode.gain.value = 0.25;
+
+    var oscillator = audioCtx.createOscillator();
+    var refToneOscillator = audioCtx.createOscillator();
+    var weekOscillator = audioCtx.createOscillator();
+    oscillator.type = 'triangle';
+    oscillator.frequency = 0;
+    refToneOscillator.type = 'triangle';
+    refToneOscillator.frequency = 0;
+    weekOscillator.type = 'sawtooth';
+    weekOscillator.frequency = 0;
+    
+    let t0 = audioCtx.currentTime;
+    let tickFreq = 500;
+    var cnt = 0;
+
+    if (play_tickmark) {
+        for (i = 0; i < freqs.length; i++) {
+            gainNode.gain.setValueAtTime(0.15, t0 + i * sample_length);
+            if (unison || play_ref_tone) {
+                if (cnt == 14) {
+                    weekOscillator.frequency.setValueAtTime(tickFreq, t0 + 3 * i * sample_length);
+                    cnt++;
+                }
+                else if (cnt == 28) {
+                    weekOscillator.frequency.setValueAtTime(2 * tickFreq, t0 + 3 * i * sample_length);
+                    cnt = 0;
+                }
+                else {
+                    weekOscillator.frequency.setValueAtTime(0, t0 + 3 * i * sample_length);
+                    cnt++;
+                }
+            }
+            else {
+                if (cnt == 14) {
+                    weekOscillator.frequency.setValueAtTime(tickFreq, t0 + i * sample_length);
+                    cnt++;
+                }
+                else if (cnt == 29) {
+                    weekOscillator.frequency.setValueAtTime(2 * tickFreq, t0 + i * sample_length);
+                    cnt = 0;
+                }
+                else {
+                    cnt++;
+                    weekOscillator.frequency.setValueAtTime(0, t0 + i * sample_length);
+                }
+            }
+        }
+    }
+    
+    if (play_ref_tone || unison) {
+        for (i = 0; i < freqs.length; i++) {
+            gainNode.gain.setValueAtTime(0.25, t0 + 3 * i * sample_length);
+            oscillator.frequency.setValueAtTime(freqs[i], t0 + 3 * i * sample_length);
+            if (!unison)
+                oscillator.frequency.setValueAtTime(f0, t0 + (3*i + 1) * sample_length);    
+            else
+                refToneOscillator.frequency.setValueAtTime(f0, t0 + 3 * i * sample_length);
+            
+            if (pan)
+                panNode.pan.setValueAtTime(panNode.pan.value + i * panStep, t0 + 3*i * sample_length);
+        }
+        
+        gainNode.gain.exponentialRampToValueAtTime(
+            0.00001, t0 + (3*freqLen + 1) * sample_length
+        )
+        oscillator.connect(gainNode).connect(panNode).connect(audioCtx.destination);
+        refToneOscillator.connect(gainNode).connect(panNode).connect(audioCtx.destination);
+        oscillator.start();
+        refToneOscillator.start();
+        oscillator.stop(t0 + freqs.length * 3 * sample_length);
+        refToneOscillator.stop(t0 + freqs.length * 3 * sample_length);
+        weekOscillator.connect(gainNode).connect(audioCtx.destination);
+
+        weekOscillator.start();
+        weekOscillator.stop(t0 + freqs.length * 3 * sample_length);
+    }
+    else {
+        for (i = 0; i < freqs.length; i++) {
+            oscillator.frequency.setValueAtTime(freqs[i], t0 + i * sample_length);
+            gainNode.gain.setValueAtTime(0.25, t0 + i * sample_length);
+            if (pan)
+                panNode.pan.setValueAtTime(panNode.pan.value + i * panStep, t0 + i * sample_length);
+        }
+        gainNode.gain.exponentialRampToValueAtTime(
+            0.00001, t0 +  freqs.length * sample_length
+        )
+        oscillator.connect(gainNode).connect(panNode).connect(audioCtx.destination);
+        oscillator.start();
+        oscillator.stop(t0 + freqLen * sample_length);
+        weekOscillator.connect(gainNode).connect(audioCtx.destination);
+
+        weekOscillator.start();
+        weekOscillator.stop(t0 + freqLen * sample_length);
+    }
+    
+    
+}
+
+
 
 // this function handles the event triggered after getting the data
 $(document).bind('dataReadyEvent', function (e) {
@@ -65,6 +205,30 @@ function create_about_page(container_id) {
     section.appendChild(row1);
     container.appendChild(section);
 }
+
+
+function create_feedback_page(container_id) {
+    var container = document.getElementById(container_id);
+    var section = document.createElement('section');
+    var row1 = document.createElement('div');
+    row1.className = 'row';
+    var content_cell = document.createElement('div');
+    content_cell.className = 'col'
+    var padding_cell = document.createElement('div');
+    padding_cell.className = 'col'
+    content_cell.innerHTML = `
+    <h2>Let me know!</h2>
+    <p>Report bugs, ask for help, request features or for general feedback! <br> 
+    Email support at <a href="mailto:info-covid@ski.org">info-covid@ski.org</a><br>
+    or leave a feedback using the following form</p><br>
+    <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSdbAGLbN2nays3Txrb9Re4VizraACZAhrcMeSMwRGwLjGZIqw/viewform?embedded=true" width="640" height="812" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>`
+    row1.appendChild(content_cell);
+    row1.appendChild(padding_cell);
+    row1.appendChild(padding_cell);
+    section.appendChild(row1);
+    container.appendChild(section);
+}
+
 
 function list_all_countries(container) {
     var section = document.createElement('section');
@@ -419,7 +583,6 @@ function create_summary_section(country_code, state_name, container_id) {
         section.appendChild(row2);
     }
 
-
     if ('US' == country_name2iso[country_name]) {
         // create row for table of states
         var row3 = document.createElement('div');
@@ -479,88 +642,7 @@ function create_states_table(country_name) {
     return states_table_cell;
 }
 
-function sonify(form_id, caller_id, data, f0, n_octaves) {
-    let f_max = f0 * 2 ** n_octaves;
-    var d_max = -1;
-    var d_min = 1e9;
-    var values = Object.values(data);
-    
-    for (v = 0; v < values.length - 1; v++) {
-        if (values[v] > d_max) 
-            d_max = values[v];
-        if (values[v] < d_min) 
-            d_min = values[v];
-    }
-    var play_ref_tone = document.getElementById(form_id).querySelector("#play_reference_tone").checked;
-    var stereo_pan = document.getElementById(form_id).querySelector("#stereo_panning").checked;
-    console.log(play_ref_tone)
-    var frequencies = [];
-    for (v = 0; v < values.length; v++) {
-        frequencies[v] = (((data[v] - d_min) * (f_max - f0)) / (d_max - d_min)) + f0;
-    }
-    console.log(frequencies)
-    console.log('f0: ' + f0)
-    play_pulse(frequencies, stereo_pan, play_ref_tone, f0);
-}
 
-function play_pulse(freqs, pan, play_ref_tone, f0) {
-    // for cross browser compatibility
-    let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    let gainNode = audioCtx.createGain() || audioCtx.createGainNode();
-    let panNode = audioCtx.createStereoPanner();
-    panNode.pan.value = 0;
-    var panStep = 2 / freqs.length;
-    var freqLen = freqs.length;
-    if (pan)
-        panNode.pan.value = -1;
-
-    gainNode.gain.minValue = 0;
-    gainNode.gain.maxValue = 1;
-    gainNode.gain.value = 0.25;
-
-    var oscillator = audioCtx.createOscillator();
-    var refToneOscillator = audioCtx.createOscillator();
-    oscillator.type = 'triangle';
-    refToneOscillator.type = 'triangle';
-    refToneOscillator.frequency = 0;
-    oscillator.frequency = 0;
-    let t0 = audioCtx.currentTime;
-
-    if (play_ref_tone) {
-        for (i = 0; i < freqs.length; i++) {
-            gainNode.gain.setValueAtTime(0.25, audioCtx.currentTime + 3*i * sample_length);
-            oscillator.frequency.setValueAtTime(freqs[i], audioCtx.currentTime + 3*i * sample_length);
-            oscillator.frequency.setValueAtTime(f0, audioCtx.currentTime + (3*i + 1) * sample_length);
-            if (pan)
-                panNode.pan.setValueAtTime(panNode.pan.value + i * panStep, audioCtx.currentTime + 3*i * sample_length);
-        }
-        
-        gainNode.gain.exponentialRampToValueAtTime(
-            0.00001, audioCtx.currentTime + (3*freqLen + 1) * sample_length
-        )
-        oscillator.connect(gainNode).connect(panNode).connect(audioCtx.destination);
-        oscillator.start();
-        oscillator.stop(audioCtx.currentTime + freqs.length * 3 * sample_length);
-    }
-    else {
-        for (i = 0; i < freqs.length; i++) {
-            oscillator.frequency.setValueAtTime(freqs[i], audioCtx.currentTime + i * sample_length);
-            gainNode.gain.setValueAtTime(0.25, audioCtx.currentTime + i * sample_length);
-            if (pan)
-                panNode.pan.setValueAtTime(panNode.pan.value + i * panStep, audioCtx.currentTime + i * sample_length);
-        }
-        gainNode.gain.exponentialRampToValueAtTime(
-            0.00001, audioCtx.currentTime +  freqs.length * sample_length
-        )
-        oscillator.connect(gainNode).connect(panNode).connect(audioCtx.destination);
-        oscillator.start();
-        oscillator.stop(audioCtx.currentTime + freqLen * sample_length);
-    }
-
-    
-    
-    
-}
         
 function prepare_data() {
     console.log('CRUNCHING DATA...')
@@ -698,7 +780,6 @@ function prepare_US_states() {
             }
         }
     }
-    
 
     for (s in countries['US'].States) {
         if (Object.keys(countries['US'].States[s].Counties).length > 0){
@@ -819,11 +900,17 @@ function add_button(text, form_id, container_elem, button_id, callback_string) {
     form.innerHTML += `
     <legend id='son_controls_legend'>Sonification Options</legend>
     <ul aria-labelledby='son_controls_legend' role='group'>
-      <li class='no-dot'>
+        <li class='no-dot'>
           <input id="stereo_panning" type="checkbox" name="stereo_panning" value="Enable Stereo Panning"> 
           <label for="stereo_panning">Enable Stereo Panning</label>
-          <input id="play_reference_tone" type="checkbox" name="play_reference_tone" value="Alternate Baseline Tone"> 
+          <input id="play_tickmark" type="checkbox" name="play_tickmark" value="Play 14 days mark" checked> 
+          <label for="play_tickmark">Play 14 days mark</label>
+        </li>
+        <li class='no-dot'>
+        <input id="play_reference_tone" type="checkbox" name="play_reference_tone" value="Alternate Baseline Tone">           
           <label for="play_reference_tone">Alternate Baseline Tone</label>
+          <input id="play_reference_tone_unison" type="checkbox" name="play_reference_tone_unison" value="Unison Baseline Tone">
+          <label for="play_reference_tone_unison">Unison Baseline Tone (overrides alternate)</label>
       </li>
     </ul>
     `;

@@ -17,7 +17,8 @@
     <script src="./scripts/covid_utils.js"></script>
     <link rel="stylesheet" href="style.css">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>A11Y COVID-19</title>
+    <meta name="description" content="This website provides accessible sonified COVID-19 pandemic data" />
+    <title>Accessible COVID-19 data</title>
 </head>
 
 <body>
@@ -35,9 +36,11 @@ function handle_selection(country_code, state_name){
   document.getElementById('main_article').innerHTML = '';
   
   if (country_code.localeCompare('ALL') == 0)
-    list_all_countries('main_article')
+    list_all_countries('main_article');
   else if (country_code.localeCompare('About') == 0)
     create_about_page('main_article');
+  else if (country_code.localeCompare('Feedback') == 0)
+    create_feedback_page('main_article');
   else
     create_summary_section(country_code, state_name, 'main_article');
 
@@ -46,13 +49,22 @@ function handle_selection(country_code, state_name){
 </script>
 
 <header>
-  <h1>A11Y COVID-19</h1>
-  <p><a class='skip-main' href="#main_article">Main Content</a></p>
-  <p align='center'> Accessible Pandemic Data Bulletin </p>
+  <h1>Accessible COVID-19</h1>
+  <ul>
+    <li class='no-dot'>
+    <p><a class='skip-main' href="#main_article">Main Content</a></p></li>
+    <li class='no-dot'>
+    <p align='center'>Sonified Pandemic Data Bulletin </p></li>
+    <li class='no-dot'>
+    <p align='center'>by Giovanni Fusco © The Smith-Kettlewell Eye Research Institute, April 2020</p>
+    </li>
+  </ul>
+  
 </header>
 
 
 <nav>
+  <a href="#" onClick="handle_selection('Feedback', '')" title="jump to">Leave your Feedback </a>
   <a href="#" onClick="handle_selection('About', '')" title="jump to">About</a>
   <a href="#" onClick="handle_selection('US', '')" title="jump to">USA</a>
   <a href="#" onClick="handle_selection('IT', '')" title="jump to">Italy</a>
@@ -91,7 +103,7 @@ function handle_selection(country_code, state_name){
 <footer>
   <small>
     <hr>
-    <p align='center'>by Giovanni Fusco © The Smith-Kettlewell Eye Research Institute, April 2020</p>
+    <!-- <p align='center'>by Giovanni Fusco © The Smith-Kettlewell Eye Research Institute, April 2020</p> -->
     <p align='center'> This project was supported by NIDILRR grant number 90RE5024-01-00 from the U.S. Administration for Community Living, Department of Health and Human Services, Washington, D.C. 20201. </p>
     <p align='center'> Data sourced from Johns Hopkins University @ https://github.com/CSSEGISandData/COVID-19</p>  
 </small>
