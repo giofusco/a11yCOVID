@@ -42,7 +42,7 @@ function handle_selection(country_code, state_name, county){
   else if (country_code.localeCompare('Feedback') == 0)
     create_feedback_page('main_article');
   else
-    create_summary_section(country_code, state_name, county, 'main_article');
+    create_article(country_code, state_name, county, 'main_article');
 
   return false;
 }
@@ -64,14 +64,14 @@ function handle_selection(country_code, state_name, county){
 
 
 <nav>
-  <a href="#" onClick="handle_selection('Feedback', '')" title="jump to">Leave your Feedback </a>
-  <a href="#" onClick="handle_selection('About', '')" title="jump to">About</a>
-  <a href="#" onClick="handle_selection('US', '')" title="jump to">USA</a>
-  <a href="#" onClick="handle_selection('IT', '')" title="jump to">Italy</a>
-  <a href="#" onClick="handle_selection('NZ', '')" title="jump to">New Zealand</a>
-  <a href="#" onClick="handle_selection('SE', '')" title="jump to">Sweden</a>
-  <a href="#" onClick="handle_selection('CN', '')" title="jump to">China</a>
-  <a href="#" onClick="handle_selection('World', '')" title="jump to">All Countries</a>
+  <a href="#" onClick="handle_selection('Feedback', '', '')" title="jump to">Leave your Feedback </a>
+  <a href="#" onClick="handle_selection('About', '', '')" title="jump to">About</a>
+  <a href="#" onClick="handle_selection('US', '', '')" title="jump to">USA</a>
+  <a href="#" onClick="handle_selection('IT', '', '')" title="jump to">Italy</a>
+  <a href="#" onClick="handle_selection('NZ', '', '')" title="jump to">New Zealand</a>
+  <a href="#" onClick="handle_selection('SE', '', '')" title="jump to">Sweden</a>
+  <a href="#" onClick="handle_selection('CN', '', '')" title="jump to">China</a>
+  <a href="#" onClick="handle_selection('World', '', '')" title="jump to">All Countries</a>
   <a href="https://www.cdc.gov/coronavirus/2019-ncov/prevent-getting-sick/prevention.html" target="_blank">CDC Safety Guidelines</a>
   
   <div align='right'>
