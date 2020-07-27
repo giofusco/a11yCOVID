@@ -121,12 +121,12 @@ function play_pulse(freqs, pan, play_ref_tone, unison, play_tickmark, f0) {
         refToneOscillator.connect(gainNode).connect(panNode).connect(audioCtx.destination);
         oscillator.start();
         refToneOscillator.start();
-        oscillator.stop(t0 + freqs.length * 3 * sample_length);
-        refToneOscillator.stop(t0 + freqs.length * 3 * sample_length);
+        // oscillator.stop(t0 + freqs.length * 3 * sample_length);
+        // refToneOscillator.stop(t0 + freqs.length * 3 * sample_length);
         weekOscillator.connect(gainNode).connect(audioCtx.destination);
 
         weekOscillator.start();
-        weekOscillator.stop(t0 + freqs.length * 3 * sample_length);
+        // weekOscillator.stop(t0 + freqs.length * 3 * sample_length);
     }
     else {
         for (i = 0; i < freqs.length; i++) {
