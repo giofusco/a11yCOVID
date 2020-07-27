@@ -1066,18 +1066,28 @@ function prepare_states(country_code) {
 
 function generate_plot(canvas_elem, title, thickness, color, bgcolor, fill, mdata) {
     // var ctx = $('#active_cases_chart');
+    var ctx = canvas_elem.getContext("2d");
+
+    // Create gradient
+    var gradientFill = ctx.createLinearGradient(0, 0, 1000, 1000);
+    gradientFill.addColorStop(0, bgcolor);
+    gradientFill.addColorStop(1, "rgba(0, 0, 0, 0.6)");
+   
     var data = {
         labels: countries.World['dates'],
         datasets: [
             {
                 label: title,
                 data: mdata,
-                backgroundColor: bgcolor,
+                // backgroundColor: bgcolor,
                 borderColor: color,
-                borderWidth: thickness,
+                borderWidth: 3,
                 fill: fill,
                 lineTension: 0,
-                radius: 4
+                radius: 5,
+                fill: 'origin',
+                backgroundColor: gradientFill,
+                pointStyle: 'line'
             }]
     };
     //options
@@ -1097,12 +1107,48 @@ function generate_plot(canvas_elem, title, thickness, color, bgcolor, fill, mdat
                 fontColor: "#333",
                 fontSize: 16
             }
+        },
+        
+        tooltips: {
+            mode: 'nearest'
+        },
+
+        scales: {
+            xAxes: [{
+                ticks: {
+                    autoSkip: true,
+                    fontSize: 22
+                }
+
+            }],
+            yAxes: [{
+                ticks: {
+                    autoSkip: true,
+                    fontSize: 22,
+                    callback: function (value, index, values) {
+                        new_value = value;
+                        if (value >= 1e3 && value < 1e6)
+                            new_value = value / 1e3 + 'K';
+                        else if (value >= 1e6 && value < 1e9)
+                            new_value = value / 1e6 + 'M';
+                        else if (value >= 1e9)
+                            new_value = value / 1e9 + 'B';
+                        return new_value;
+                    }
+
+                }
+
+            }]
         }
     };
+
+
+
     var chart = new Chart(canvas_elem, {
-        type: "bar",
+        type: "line",
         data: data,
-        options: options
+        options: options,
+        ticks: [autoSkip = true]
     });
     
 }
