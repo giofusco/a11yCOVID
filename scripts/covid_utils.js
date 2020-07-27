@@ -54,14 +54,14 @@ function play_pulse(freqs, pan, play_ref_tone, unison, play_tickmark, f0) {
     var panNode;
     
     var is_safari = !!navigator.userAgent.match(/Version\/[\d\.]+.*Safari/);
-    if (!is_safari){
+    if (!is_safari) {
         panNode = audioCtx.createStereoPanner();
         panNode.pan.value = 0;
         var panStep = 2 / freqs.length;
         var freqLen = freqs.length;
         if (pan)
             panNode.pan.value = -1;
-
+    }
     gainNode.gain.minValue = 0;
     gainNode.gain.maxValue = 1;
     gainNode.gain.value = 0.25;
