@@ -51,12 +51,16 @@ function play_pulse(freqs, pan, play_ref_tone, unison, play_tickmark, f0) {
     // for cross browser compatibility
     let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     let gainNode = audioCtx.createGain() || audioCtx.createGainNode();
-    let panNode = audioCtx.createStereoPanner();
-    panNode.pan.value = 0;
-    var panStep = 2 / freqs.length;
-    var freqLen = freqs.length;
-    if (pan)
-        panNode.pan.value = -1;
+    var panNode;
+    
+    var is_safari = !!navigator.userAgent.match(/Version\/[\d\.]+.*Safari/);
+    if (!is_safari){
+        panNode = audioCtx.createStereoPanner();
+        panNode.pan.value = 0;
+        var panStep = 2 / freqs.length;
+        var freqLen = freqs.length;
+        if (pan)
+            panNode.pan.value = -1;
 
     gainNode.gain.minValue = 0;
     gainNode.gain.maxValue = 1;
@@ -106,7 +110,7 @@ function play_pulse(freqs, pan, play_ref_tone, unison, play_tickmark, f0) {
             else
                 refToneOscillator.frequency.setValueAtTime(f0, t0 + 3 * i * sample_length);
             
-            if (pan)
+            if (pan && !is_safari)
                 panNode.pan.setValueAtTime(panNode.pan.value + i * panStep, t0 + 3*i * sample_length);
         }
         
@@ -128,17 +132,20 @@ function play_pulse(freqs, pan, play_ref_tone, unison, play_tickmark, f0) {
         for (i = 0; i < freqs.length; i++) {
             oscillator.frequency.setValueAtTime(freqs[i], t0 + i * sample_length);
             gainNode.gain.setValueAtTime(0.25, t0 + i * sample_length);
-            if (pan)
+            if (pan && !is_safari)
                 panNode.pan.setValueAtTime(panNode.pan.value + i * panStep, t0 + i * sample_length);
         }
         gainNode.gain.exponentialRampToValueAtTime(
             0.00001, t0 +  freqs.length * sample_length
         )
-        oscillator.connect(gainNode).connect(panNode).connect(audioCtx.destination);
+        if (!is_safari)
+            oscillator.connect(gainNode).connect(panNode).connect(audioCtx.destination);
+        else
+            oscillator.connect(gainNode).connect(audioCtx.destination);
+        
         oscillator.start();
         oscillator.stop(t0 + freqLen * sample_length);
         weekOscillator.connect(gainNode).connect(audioCtx.destination);
-
         weekOscillator.start();
         weekOscillator.stop(t0 + freqLen * sample_length);
     }
