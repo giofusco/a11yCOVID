@@ -28,7 +28,7 @@ window.onload = function() {
    fetch_and_prepare_data_JHU();
 }
 
-function handle_selection(country_code, state_name){
+function handle_selection(country_code, state_name, county){
   if (country_code == undefined){
       country_code = document.country_form['country_select'].value;
       state_name = '';
@@ -42,7 +42,7 @@ function handle_selection(country_code, state_name){
   else if (country_code.localeCompare('Feedback') == 0)
     create_feedback_page('main_article');
   else
-    create_summary_section(country_code, state_name, 'main_article');
+    create_summary_section(country_code, state_name, county, 'main_article');
 
   return false;
 }
