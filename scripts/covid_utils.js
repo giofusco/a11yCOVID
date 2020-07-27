@@ -6,17 +6,10 @@
 // Can you help? Contact me! info-covid@ski.org
 //
 //
-
-// let api_url = 'https://api.covid19api.com/';
-var country_summaries;
-var global_summary = [];
-var timeline_active = new Object();
 var countries = [];
 var country_name2iso = []
 var country_iso2name = []
-var world = [];
 var data_ready = false;
-var usa_states_data = [];
 
 // how long to play a single data point (in secs)
 let sample_length = 0.1
@@ -64,89 +57,153 @@ function play_pulse(freqs, pan, play_ref_tone, unison, play_tickmark, f0) {
     }
     gainNode.gain.minValue = 0;
     gainNode.gain.maxValue = 1;
-    gainNode.gain.value = 0.25;
+    gainNode.gain.value = 0.025;
 
     var oscillator = audioCtx.createOscillator();
+    var oscillator2 = audioCtx.createOscillator();
+    var oscillator3 = audioCtx.createOscillator();
     var refToneOscillator = audioCtx.createOscillator();
+    var refToneOscillator2 = audioCtx.createOscillator();
+    var refToneOscillator3 = audioCtx.createOscillator();
     var weekOscillator = audioCtx.createOscillator();
+    var weekOscillator2 = audioCtx.createOscillator();
     oscillator.type = 'triangle';
     oscillator.frequency = 0;
-    refToneOscillator.type = 'triangle';
+    oscillator2.type = 'triangle';
+    oscillator2.frequency = 0;
+    oscillator3.type = 'triangle';
+    oscillator3.frequency = 0;
+    refToneOscillator.type = 'sine';
     refToneOscillator.frequency = 0;
+    refToneOscillator2.type = 'sine';
+    refToneOscillator2.frequency = 0;
+    refToneOscillator3.type = 'sine';
+    refToneOscillator3.frequency = 0;
     weekOscillator.type = 'sawtooth';
     weekOscillator.frequency = 0;
+    weekOscillator2.type = 'sawtooth';
+    weekOscillator2.frequency = 0;
     
     let t0 = audioCtx.currentTime;
     let tickFreq = 500;
     var cnt = 0;
     var sample_spacing = 1;
-    if (unison || play_ref_tone)
+    if (play_ref_tone)
         sample_spacing = 3;
 
     if (play_tickmark) {
         for (i = 0; i < freqs.length; i++) {
-            gainNode.gain.setValueAtTime(0.15, t0 + i * sample_length);
+            gainNode.gain.setValueAtTime(0.025, t0 + i * sample_length);
             if (cnt == 14) {
                 weekOscillator.frequency.setValueAtTime(tickFreq, t0 + (sample_spacing * i) * sample_length);
+                weekOscillator2.frequency.setValueAtTime(.33*tickFreq, t0 + (sample_spacing * i) * sample_length);
                 cnt++;
             }
             else if (cnt == 29) {
                 weekOscillator.frequency.setValueAtTime(2 * tickFreq, t0 + (sample_spacing * i) * sample_length);
+                weekOscillator2.frequency.setValueAtTime(.33*tickFreq, t0 + (sample_spacing * i) * sample_length);
                 cnt = 0;
             }
             else {
                 cnt++;
                 weekOscillator.frequency.setValueAtTime(0, t0 + (sample_spacing * i) * sample_length);
+                weekOscillator2.frequency.setValueAtTime(0, t0 + (sample_spacing * i) * sample_length);
             }
         }
     }
     
     if (play_ref_tone || unison) {
+        // var step = 3;
+        // if (unison)
+        //     step = 1;
         for (i = 0; i < freqs.length; i++) {
-            gainNode.gain.setValueAtTime(0.25, t0 + 3 * i * sample_length);
-            oscillator.frequency.setValueAtTime(freqs[i], t0 + 3 * i * sample_length);
-            if (!unison)
-                oscillator.frequency.setValueAtTime(f0, t0 + (3*i + 1) * sample_length);    
-            else
-                refToneOscillator.frequency.setValueAtTime(f0, t0 + 3 * i * sample_length);
+            
+            gainNode.gain.setValueAtTime(0.025, t0 + sample_spacing * i * sample_length);
+            oscillator.frequency.setValueAtTime(freqs[i], t0 + sample_spacing * i * sample_length);
+            oscillator2.frequency.setValueAtTime(3*freqs[i], t0 + sample_spacing * i * sample_length);
+            oscillator3.frequency.setValueAtTime(2*freqs[i], t0 + sample_spacing * i * sample_length);
+            if (!unison) {
+                oscillator.frequency.setValueAtTime(f0, t0 + (sample_spacing * i + 1) * sample_length);
+                oscillator2.frequency.setValueAtTime(3 * f0, t0 + (sample_spacing * i + 1) * sample_length);
+                oscillator3.frequency.setValueAtTime(2 * f0, t0 + (sample_spacing * i + 1) * sample_length);
+            }
+            else {
+                refToneOscillator.frequency.setValueAtTime(f0, t0 + sample_spacing * i * sample_length);
+                refToneOscillator2.frequency.setValueAtTime(3 * f0, t0 + sample_spacing * i * sample_length);
+                refToneOscillator3.frequency.setValueAtTime(2*f0, t0 + sample_spacing * i * sample_length);
+            }
             
             if (pan && !is_safari)
-                panNode.pan.setValueAtTime(panNode.pan.value + i * panStep, t0 + 3*i * sample_length);
+                panNode.pan.setValueAtTime(panNode.pan.value + i * panStep, t0 + sample_spacing*i * sample_length);
         }
         
         gainNode.gain.exponentialRampToValueAtTime(
-            0.00001, t0 + (3*freqLen + 1) * sample_length
+            0.00001, t0 + (sample_spacing*freqLen + 1) * sample_length
         )
-        oscillator.connect(gainNode).connect(panNode).connect(audioCtx.destination);
-        refToneOscillator.connect(gainNode).connect(panNode).connect(audioCtx.destination);
+
+        refToneOscillator.connect(gainNode).connect(audioCtx.destination);
+        refToneOscillator2.connect(gainNode).connect(audioCtx.destination);
+        refToneOscillator3.connect(gainNode).connect(audioCtx.destination);
+
+        if (!is_safari) {
+            oscillator.connect(gainNode).connect(panNode).connect(audioCtx.destination);
+            oscillator2.connect(gainNode).connect(panNode).connect(audioCtx.destination);
+            oscillator3.connect(gainNode).connect(panNode).connect(audioCtx.destination);
+           
+        }
+        else {
+            oscillator.connect(gainNode).connect(panNode).connect(audioCtx.destination);
+            oscillator2.connect(gainNode).connect(panNode).connect(audioCtx.destination);
+            oscillator3.connect(gainNode).connect(panNode).connect(audioCtx.destination);
+        }
+        
         oscillator.start();
-        refToneOscillator.start();
+        oscillator2.start();
+        oscillator3.start();
+        if (unison) {
+            refToneOscillator.start();
+            refToneOscillator2.start();
+            refToneOscillator3.start();
+        }
         // oscillator.stop(t0 + freqs.length * 3 * sample_length);
         // refToneOscillator.stop(t0 + freqs.length * 3 * sample_length);
         weekOscillator.connect(gainNode).connect(audioCtx.destination);
-
+        weekOscillator2.connect(gainNode).connect(audioCtx.destination);
         weekOscillator.start();
+        weekOscillator2.start();
         // weekOscillator.stop(t0 + freqs.length * 3 * sample_length);
     }
     else {
         for (i = 0; i < freqs.length; i++) {
             oscillator.frequency.setValueAtTime(freqs[i], t0 + i * sample_length);
-            gainNode.gain.setValueAtTime(0.25, t0 + i * sample_length);
+            oscillator2.frequency.setValueAtTime(3 * freqs[i], t0 + i * sample_length);
+            oscillator3.frequency.setValueAtTime(0.33*freqs[i], t0 + i * sample_length);
+            gainNode.gain.setValueAtTime(0.025, t0 + i * sample_length);
             if (pan && !is_safari)
                 panNode.pan.setValueAtTime(panNode.pan.value + i * panStep, t0 + i * sample_length);
         }
         gainNode.gain.exponentialRampToValueAtTime(
             0.00001, t0 +  freqs.length * sample_length
         )
-        if (!is_safari)
+        if (!is_safari) {
             oscillator.connect(gainNode).connect(panNode).connect(audioCtx.destination);
-        else
+            oscillator2.connect(gainNode).connect(panNode).connect(audioCtx.destination);
+            oscillator3.connect(gainNode).connect(panNode).connect(audioCtx.destination);
+        }
+        else {
             oscillator.connect(gainNode).connect(audioCtx.destination);
+            oscillator2.connect(gainNode).connect(audioCtx.destination);
+            oscillator3.connect(gainNode).connect(audioCtx.destination);
+        }
         
         oscillator.start();
+        oscillator2.start();
+        oscillator3.start();
         // oscillator.stop(t0 + freqLen * sample_length);
         weekOscillator.connect(gainNode).connect(audioCtx.destination);
+        weekOscillator2.connect(gainNode).connect(audioCtx.destination);
         weekOscillator.start();
+        weekOscillator2.start();
         // weekOscillator.stop(t0 + freqLen * sample_length);
     }
 }
@@ -392,7 +449,7 @@ function create_active_plot_cell(country_code, country_name, country_name_label)
     active_plot_cell.appendChild(canvas_active);
     active_plot_cell.appendChild(document.createElement('br'));
     add_button(`Sonify ${country_name_label} Active Cases Plot`, 'active_plot_controls', active_plot_cell, `sonify_active_${country_name}_button_id`,
-        `sonify('active_plot_controls', 'stereo_panning_sonify_active_${country_name}_button_id', countries['${country_name}']['active_timeline'], 220, 3);`);
+        `sonify('active_plot_controls', 'stereo_panning_sonify_active_${country_name}_button_id', countries['${country_name}']['active_timeline'], 220, 2);`);
     active_plot_cell.appendChild(document.createElement('br'));
     active_plot_cell.appendChild(document.createElement('br'));
     
@@ -426,7 +483,7 @@ function create_confirmed_plot_cell(country_code, country_name, country_name_lab
     confirmed_plot_cell.appendChild(canvas_confirmed);
     confirmed_plot_cell.appendChild(document.createElement('br'));
     add_button(`Sonify ${country_name_label} Total Confirmed Cases Plot`, 'confimed_plot_controls', confirmed_plot_cell, `sonify_confirmed_${country_name}_button_id`,
-        `sonify('confimed_plot_controls', 'stereo_panning_sonify_confirmed_${country_name}_button_id', countries['${country_name}']['confirmed_timeline'], 220, 3);`);
+        `sonify('confimed_plot_controls', 'stereo_panning_sonify_confirmed_${country_name}_button_id', countries['${country_name}']['confirmed_timeline'],220, 2);`);
     confirmed_plot_cell.appendChild(document.createElement('br'));
     confirmed_plot_cell.appendChild(document.createElement('br'));
 
@@ -464,7 +521,7 @@ function create_deaths_plot_cell(country_code, country_name, country_name_label)
     deaths_plot_cell.appendChild(canvas_deaths);
     deaths_plot_cell.appendChild(document.createElement('br'));
     add_button(`Sonify ${country_name} Total Deaths Plot`, 'deaths_plot_controls', deaths_plot_cell, `sonify_deaths_${country_name}_button_id`,
-        `sonify('deaths_plot_controls', 'stereo_panning_sonify_deaths_${country_name}_button_id', countries['${country_name}']['deaths_timeline'], 220, 3);`);
+        `sonify('deaths_plot_controls', 'stereo_panning_sonify_deaths_${country_name}_button_id', countries['${country_name}']['deaths_timeline'],220, 2);`);
     
     return deaths_plot_cell;
 }
@@ -537,7 +594,7 @@ function create_state_confirmed_cumulative_plot_cell(state_name, country_name, c
     daily_new_plot_cell.appendChild(canvas_daily_new);
     daily_new_plot_cell.appendChild(document.createElement('br'));
     add_button(`Sonify Total Cases Plot`, 'daily_new_plot_controls', daily_new_plot_cell, `sonify_daily_new_${country_name}_button_id`,
-        `sonify('daily_new_plot_controls', 'stereo_panning_sonify_daily_new_${country_name}_button_id', moving_average(countries['${country_name}'].States['${state_name}']['confirmed_timeline'], 3), 220, 3);`);
+        `sonify('daily_new_plot_controls', 'stereo_panning_sonify_daily_new_${country_name}_button_id', moving_average(countries['${country_name}'].States['${state_name}']['confirmed_timeline'], 3),220, 2);`);
     daily_new_plot_cell.appendChild(document.createElement('br'));
     daily_new_plot_cell.appendChild(document.createElement('br'));
     
@@ -598,7 +655,7 @@ function create_state_deaths_plot_cell(state_name, country_name, country_name_la
     deaths_plot_cell.appendChild(canvas_deaths);
     deaths_plot_cell.appendChild(document.createElement('br'));
     add_button(`Sonify Total Deaths Plot`, 'deaths_plot_controls', deaths_plot_cell, `sonify_deaths_${country_name}_button_id`,
-        `sonify( 'deaths_plot_controls', 'stereo_panning_sonify_deaths_${country_name}_button_id', countries['${country_name}'].States['${state_name}']['deaths_timeline'], 220, 3);`);
+        `sonify( 'deaths_plot_controls', 'stereo_panning_sonify_deaths_${country_name}_button_id', countries['${country_name}'].States['${state_name}']['deaths_timeline'],220, 2);`);
     return deaths_plot_cell;
 }
 
@@ -625,7 +682,7 @@ function create_county_confirmed_cumulative_plot_cell(county_name, state_name, c
     daily_new_plot_cell.appendChild(canvas_daily_new);
     daily_new_plot_cell.appendChild(document.createElement('br'));
     add_button(`Sonify Total Cases Plot`, 'daily_new_plot_controls', daily_new_plot_cell, `sonify_daily_new_${country_name}_button_id`,
-        `sonify('daily_new_plot_controls', 'stereo_panning_sonify_daily_new_${country_name}_button_id', moving_average(countries['${country_name}'].States['${state_name}'].Counties['${county_name}']['confirmed_timeline'], 3), 220, 3);`);
+        `sonify('daily_new_plot_controls', 'stereo_panning_sonify_daily_new_${country_name}_button_id', moving_average(countries['${country_name}'].States['${state_name}'].Counties['${county_name}']['confirmed_timeline'], 3),220, 2);`);
     daily_new_plot_cell.appendChild(document.createElement('br'));
     daily_new_plot_cell.appendChild(document.createElement('br'));
     
@@ -686,7 +743,7 @@ function create_county_deaths_plot_cell(county_name, state_name, country_name, c
     deaths_plot_cell.appendChild(canvas_deaths);
     deaths_plot_cell.appendChild(document.createElement('br'));
     add_button(`Sonify Total Deaths Plot`, 'deaths_plot_controls', deaths_plot_cell, `sonify_deaths_${county_name}_button_id`,
-        `sonify( 'deaths_plot_controls', 'stereo_panning_sonify_deaths_${county_name}_button_id', countries['${country_name}'].States['${state_name}'].Counties['${county_name}']['deaths_timeline'], 220, 3);`);
+        `sonify( 'deaths_plot_controls', 'stereo_panning_sonify_deaths_${county_name}_button_id', countries['${country_name}'].States['${state_name}'].Counties['${county_name}']['deaths_timeline'],220, 2);`);
     return deaths_plot_cell;
 }
 
