@@ -226,11 +226,9 @@ function create_about_page(container_id) {
     var row1 = document.createElement('div');
     row1.className = 'row';
     var content_cell = document.createElement('div');
-    content_cell.className = 'col'
     var padding_cell = document.createElement('div');
-    padding_cell.className = 'col'
-    content_cell.innerHTML = `
-    <h2>About the Project</h2>
+    content_cell.innerHTML = `<hr>
+    <h3>About the Project</h3>
     <p>So much of the conversation around this pandemic has been about trends: curves and how to flatten them, models, exponential growth, etc. That's usually conveyed visually, 
     which means people who can't see graphs are excluded from the information driving our discourse,
     even if the raw data are screen-readable.
@@ -263,19 +261,16 @@ function create_feedback_page(container_id) {
     var row1 = document.createElement('div');
     row1.className = 'row';
     var content_cell = document.createElement('div');
-    content_cell.className = 'col'
+    // content_cell.className = 'col'
     var padding_cell = document.createElement('div');
-    padding_cell.className = 'col'
-    content_cell.innerHTML = `
+    // padding_cell.className = 'col'
+    content_cell.innerHTML = `<hr>
     <h2>Let me know!</h2>
-    <p>Report bugs, ask for help, request features or for general feedback! <br> 
-    Email support at <a href="mailto:info-covid@ski.org">info-covid@ski.org</a><br>
-    or leave a feedback using the following form</p><br>
-    <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSdbAGLbN2nays3Txrb9Re4VizraACZAhrcMeSMwRGwLjGZIqw/viewform?embedded=true" width="640" height="812" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>`
-    row1.appendChild(content_cell);
-    row1.appendChild(padding_cell);
-    row1.appendChild(padding_cell);
-    section.appendChild(row1);
+    <p>To report bugs, ask for help, request features or for general feedback,  
+    email support at <a href="mailto:info-covid@ski.org">info-covid@ski.org</a> <br>
+    or leave a feedback using the form below.</p><br>
+    <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSdbAGLbN2nays3Txrb9Re4VizraACZAhrcMeSMwRGwLjGZIqw/viewform?embedded=true" width="640" height="900" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>`
+    section.appendChild(content_cell);
     container.appendChild(section);
 }
 
@@ -288,8 +283,11 @@ function list_all_countries(container) {
         sorted_countries[sorted_countries.length] = c;
     }
     sorted_countries.sort();
+    
     var row = document.createElement('div');
     row.appendChild(document.createElement('br'))
+    row.className = 'row';
+
     var link_to_main = document.createElement('a');
     link_to_main.href = '#';
     link_to_main.addEventListener("click", function () {
@@ -297,7 +295,7 @@ function list_all_countries(container) {
     });
     link_to_main.innerText = 'Back to World page';
 
-    row.className = 'row';
+   
     var country_table_cell = document.createElement('div');
     country_table_cell.id = 'countries_table';
     country_table_cell.appendChild(document.createElement('br'));
@@ -412,7 +410,7 @@ function get_latest_stats(state_name, country_code, county_name) {
 function create_country_name_label(country_name, state_name, country_code, county_name) {
     var country_name_label = country_name;
     if ((country_code == 'World' || country_code === 'US' || country_code === 'BS') && (state_name.localeCompare('') == 0))
-        country_name_label = 'the ' + country_name_label;
+        country_name_label = 'The ' + country_name_label;
     if (county_name.localeCompare('') != 0)
         country_name_label = county_name + ', '+ state_name + ', ' + country_name2iso[country_name_label];
     else if (state_name.localeCompare('') != 0)
@@ -527,7 +525,14 @@ function create_deaths_plot_cell(country_code, country_name, country_name_label)
 }
 
 
-function display_country_content(country_code, country_name, country_name_label, section, row1, row2) {
+function display_country_content(country_code, country_name, country_name_label, section) {
+    var row1 = document.createElement('div');
+    row1.className = 'row';
+    var row2 = document.createElement('div');
+    row2.className = 'row';
+    var row3 = document.createElement('div');
+    row3.className = 'row';
+    
     var active_plot_cell = create_active_plot_cell(country_code, country_name, country_name_label);
     row1.appendChild(active_plot_cell);
     section.appendChild(row1);
@@ -537,8 +542,10 @@ function display_country_content(country_code, country_name, country_name_label,
         var confirmed_plot_cell = create_confirmed_plot_cell(country_code, country_name, country_name_label); 
         var deaths_plot_cell = create_deaths_plot_cell(country_code, country_name, country_name_label); 
         row2.appendChild(confirmed_plot_cell);
-        row2.appendChild(deaths_plot_cell);
+        row3.appendChild(deaths_plot_cell);
         section.appendChild(row2);
+        section.appendChild(row3);
+
         var padding_cell = document.createElement('div');
         padding_cell.className = 'col-4 text-center';
         section.appendChild(padding_cell);
@@ -548,15 +555,14 @@ function display_country_content(country_code, country_name, country_name_label,
             section.appendChild(link_cell);
         
         if ('US' == country_code || 'CN' == country_code) {
-            var row3 = document.createElement('div');
-            row3.appendChild(document.createElement('br'))
-            row3.className = 'row';
-            states_table_cell = create_states_table(country_name);
             var padding_cell = document.createElement('div');
             padding_cell.className = 'col-2 text-center';
-            row3.appendChild(padding_cell);
-            row3.appendChild(states_table_cell);
-            section.appendChild(row3);
+            section.appendChild(padding_cell);
+            var states_cell = document.createElement('div');
+            states_cell.className = 'col-sm text-center';
+            states_cell.id = 'table_container';
+            create_states_table(country_name, states_cell);
+            section.appendChild(states_cell);
         }
     }
     else {
@@ -747,7 +753,15 @@ function create_county_deaths_plot_cell(county_name, state_name, country_name, c
     return deaths_plot_cell;
 }
 
-function display_state_content(state_name, country_code, country_name, country_name_label, section, row1, row2) {
+function display_state_content(state_name, country_code, country_name, country_name_label, section) {
+    
+    var row1 = document.createElement('div');
+    row1.className = 'row';
+    var row2 = document.createElement('div');
+    row2.className = 'row';
+    var row3 = document.createElement('div');
+    row3.className = 'row';
+
     var daily_new_plot_cell = create_state_confirmed_cumulative_plot_cell(state_name, country_name, country_name_label);
     row1.appendChild(daily_new_plot_cell);
     section.appendChild(row1);
@@ -755,36 +769,44 @@ function display_state_content(state_name, country_code, country_name, country_n
     var confirmed_plot_cell = create_state_confirmed_daily_plot_cell(state_name, country_name, country_name_label);
     var deaths_plot_cell = create_state_deaths_plot_cell(state_name, country_name, country_name_label);
     row2.appendChild(confirmed_plot_cell);
-    row2.appendChild(deaths_plot_cell);
+    row3.appendChild(deaths_plot_cell);
     section.appendChild(row2);
+    section.appendChild(row3);
 
     if (typeof countries[country_name].States[s].Counties !== 'undefined') {
         // create table of counties
         let counties_table_cell = create_counties_table(country_code, country_name, state_name);
-        var row3 = document.createElement('div');
-        row3.appendChild(document.createElement('br'))
-        row3.className = 'row';
+        var row4 = document.createElement('div');
+        row4.appendChild(document.createElement('br'))
+        row4.className = 'row';
         var padding_cell = document.createElement('div');
         padding_cell.className = 'col-2 text-center';
-        row3.appendChild(padding_cell);
-        row3.appendChild(counties_table_cell);
-        section.appendChild(row3);
+        row4.appendChild(padding_cell);
+        row4.appendChild(counties_table_cell);
+        section.appendChild(row4);
     }
     else {
         // create table of counties
         let counties_table_cell = create_states_table(country_name);
-        var row3 = document.createElement('div');
-        row3.appendChild(document.createElement('br'))
-        row3.className = 'row';
+        var row4 = document.createElement('div');
+        row4.appendChild(document.createElement('br'))
+        row4.className = 'row';
         var padding_cell = document.createElement('div');
         padding_cell.className = 'col-2 text-center';
-        row3.appendChild(padding_cell);
-        row3.appendChild(counties_table_cell);
-        section.appendChild(row3);
+        row4.appendChild(padding_cell);
+        row4.appendChild(counties_table_cell);
+        section.appendChild(row4);
     }
 }
 
-function display_county_content(county_name, state_name, country_code, country_name, country_name_label, section, row1, row2){
+function display_county_content(county_name, state_name, country_code, country_name, country_name_label, section){
+    var row1 = document.createElement('div');
+    row1.className = 'row';
+    var row2 = document.createElement('div');
+    row2.className = 'row';
+    var row3 = document.createElement('div');
+    row3.className = 'row';
+
     var daily_new_plot_cell = create_county_confirmed_cumulative_plot_cell(county_name, state_name, country_name, country_name_label);
     row1.appendChild(daily_new_plot_cell);
     section.appendChild(row1);
@@ -792,21 +814,22 @@ function display_county_content(county_name, state_name, country_code, country_n
     var confirmed_plot_cell = create_county_confirmed_daily_plot_cell(county_name, state_name, country_name, country_name_label);
     var deaths_plot_cell = create_county_deaths_plot_cell(county_name, state_name, country_name, country_name_label);
     row2.appendChild(confirmed_plot_cell);
-    row2.appendChild(deaths_plot_cell);
+    row3.appendChild(deaths_plot_cell);
     section.appendChild(row2);
+    section.appendChild(row3);
 
     countries[country_name].States[state_name].Counties
     // create table of counties
     let counties_table_cell = create_counties_table(country_code, country_name, state_name);
 
-    var row3 = document.createElement('div');
-    row3.appendChild(document.createElement('br'))
-    row3.className = 'row';
+    var row4 = document.createElement('div');
+    row4.appendChild(document.createElement('br'))
+    row4.className = 'row';
     var padding_cell = document.createElement('div');
     padding_cell.className = 'col-2 text-center';
-    row3.appendChild(padding_cell);
-    row3.appendChild(counties_table_cell);
-    section.appendChild(row3);
+    row4.appendChild(padding_cell);
+    row4.appendChild(counties_table_cell);
+    section.appendChild(row4);
 }
 
 
@@ -818,30 +841,23 @@ function create_article(country_code, state_name, county_name, container_id) {
 
     // set up page title
     var country_name_label = create_country_name_label(country_name, state_name, country_code, county_name);
-    // if (is_empty(county_name))
         section.innerHTML = `  <hr><h2 id='${country_code}'>${country_name_label}</h2><br>`;
-    // else
-    // section.innerHTML = `  <hr><h2 id='${country_code}'>${county_name}, ${country_name_label}</h2><br>`;
 
     // row 1 - Here goes the Brief
-    var row1 = document.createElement('div');
-    row1.className = 'row';
-
+    var summary_row = document.createElement('div');
+    summary_row.className = 'row';
     // create brief content
     let summary_cell = create_summary_cell(country_code, country_name, state_name, county_name);
-    row1.appendChild(summary_cell);
+    summary_row.appendChild(summary_cell);
+    section.appendChild(summary_row);
     // end brief
-    
-    // set up second row
-    var row2 = document.createElement('div');
-    row2.className = 'row';
 
     if (is_empty(state_name))
-        display_country_content(country_code, country_name, country_name_label, section, row1, row2);
+        display_country_content(country_code, country_name, country_name_label, section);
     else if (is_empty(county_name))
-        display_state_content(state_name, country_code, country_name, country_name_label, section, row1, row2);
+        display_state_content(state_name, country_code, country_name, country_name_label, section);
     else
-        display_county_content(county_name, state_name, country_code, country_name, country_name_label, section, row1, row2);
+        display_county_content(county_name, state_name, country_code, country_name, country_name_label, section);
     
     section.id = `${country_code}_summary`;   
     container.appendChild(section);
@@ -864,12 +880,12 @@ function create_counties_table(country_code, country_name, state_name) {
     states_table_cell.appendChild(document.createElement('br'));
     
     var header = document.createElement('h3');
-    header.innerText = `Table of Counties in the state of ${state_name}, ${country_name}`;
+    header.innerText = `Table of Counties in ${state_name}, ${country_name}`;
     states_table_cell.appendChild(header);
     states_table_cell.className = 'col-auto text-center';
     var states_table = document.createElement('table');
     var caption = document.createElement('caption');
-    caption.innerText = `This table presents the list of all the counties in the state of ${state_name}.`;
+    caption.innerText = `This table presents the list of all the counties in ${state_name}.`;
     states_table.appendChild(caption);
     var table_header = document.createElement('tr');
     table_header.innerHTML = `<th scope='col'> County </th> <th scope='col'>Total Infections</th><th scope='col'>Daily New Infections</th><th scope='col'>Total Deaths</th><th scope='col'>Daily New Deaths</th>`
@@ -888,13 +904,19 @@ function create_counties_table(country_code, country_name, state_name) {
 }
 
 
-function create_states_table(country_name) {
+function create_states_table(country_name, container) {
+    var section = document.createElement('section');
+    var row = document.createElement('div');
+    row.appendChild(document.createElement('br'))
+    row.className = 'row';
     var link_to_main = document.createElement('a');
         link_to_main.href = '#';
         link_to_main.addEventListener("click", function () {
             handle_selection(country_name2iso[country_name], '', '');
         });
         link_to_main.innerText = `Back to ${country_name} main page`;
+    
+    
     var states_table_cell = document.createElement('div');
     states_table_cell.id = 'states_table';
     states_table_cell.appendChild(document.createElement('br'));
@@ -924,7 +946,14 @@ function create_states_table(country_name) {
         states_table.appendChild(state_row);
     }
     states_table_cell.appendChild(states_table);
-    return states_table_cell;
+    var padding_cell = document.createElement('div');
+    padding_cell.className = 'col-2 text-center';
+    row.appendChild(padding_cell);
+    row.appendChild(states_table_cell);
+    section.appendChild(row);
+    container.appendChild(section);
+
+    // return states_table_cell;
 }
 
 
