@@ -422,6 +422,7 @@ function create_country_name_label(country_name, state_name, country_code, count
 function create_active_plot_cell(country_code, country_name, country_name_label) {
 
     var canvas_active = document.createElement('canvas');
+    canvas_active.width = window.innerWidth;
     canvas_active.id = `canvas_active_${country_code}`
     var active_tml_stats = get_data_stats(countries[country_name]['active_timeline'], country_name);
     var active_tml_caption = `The values range from ${active_tml_stats.min_val.toLocaleString()} on 
@@ -456,6 +457,7 @@ function create_active_plot_cell(country_code, country_name, country_name_label)
 
 function create_confirmed_plot_cell(country_code, country_name, country_name_label) {
     var canvas_confirmed = document.createElement('canvas');
+    canvas_confirmed.width = window.innerWidth;
     canvas_confirmed.id = `canvas_new_confirmed_${country_code}`
     confirmed_stats = get_data_stats(countries[country_name]['confirmed_daily'], country_name);
     var confirmed_caption = `The values range from ${confirmed_stats.min_val.toLocaleString()} on ${confirmed_stats.min_key.toLocaleString()} 
@@ -609,6 +611,7 @@ function create_state_confirmed_cumulative_plot_cell(state_name, country_name, c
 
 function create_state_confirmed_daily_plot_cell(state_name, country_name, country_name_label) {
     var canvas_confirmed = document.createElement('canvas');
+    canvas_confirmed.width = window.innerWidth;
     var confirmed_stats = get_data_stats(countries[country_name].States[state_name]['confirmed_daily'], country_name);
     var confirmed_caption = `The values range from ${confirmed_stats.min_val.toLocaleString()} on ${confirmed_stats.min_key.toLocaleString()} 
     to ${confirmed_stats.max_val.toLocaleString()} on ${confirmed_stats.max_key.toLocaleString()}.`;
@@ -667,6 +670,7 @@ function create_state_deaths_plot_cell(state_name, country_name, country_name_la
 
 function create_county_confirmed_cumulative_plot_cell(county_name, state_name, country_name, country_name_label) {
     var canvas_daily_new = document.createElement('canvas');
+    
     var daily_new_tml_stats = get_data_stats(countries[country_name].States[state_name].Counties[county_name]['confirmed_timeline'], country_name);
         var daily_new_tml_caption = `The values on tha vertical axis range from ${daily_new_tml_stats.min_val.toLocaleString()} recorded on 
                                     ${daily_new_tml_stats.min_key.toLocaleString()} 
