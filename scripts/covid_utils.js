@@ -1184,9 +1184,10 @@ function generate_plot(canvas_elem, title, thickness, color, bgcolor, fill, mdat
     var ctx = canvas_elem.getContext("2d");
 
     // Create gradient
-    var gradientFill = ctx.createLinearGradient(0, 0, 1000, 1000);
-    gradientFill.addColorStop(0, bgcolor);
+    var gradientFill = ctx.createLinearGradient(1000, 1000, 0, 0);
     gradientFill.addColorStop(1, "rgba(0, 0, 0, 0.6)");
+    gradientFill.addColorStop(0, bgcolor);
+    
    
     var data = {
         labels: countries.World['dates'],
