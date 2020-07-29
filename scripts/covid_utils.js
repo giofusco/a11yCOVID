@@ -6,13 +6,21 @@
 // Can you help? Contact me! info-covid@ski.org
 //
 //
+
+// this global variable is used to collect all the asynch reponses
+var njobs = 8;
+
 var countries = [];
-var country_name2iso = []
-var country_iso2name = []
+var country_name2iso = [];
+var country_iso2name = [];
 var data_ready = false;
+var daily_report_us_states = [];
+var daily_report_regions = [];
+const daily_reports_base_url_local = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/";
+const daily_reports_base_url_US_states = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports_us/";
 
 // how long to play a single data point (in secs)
-let sample_length = 0.1
+let sample_length = 0.1;
 
 function sonify(form_id, caller_id, data, f0, n_octaves) {
     let f_max = f0 * 2 ** n_octaves;
@@ -30,13 +38,10 @@ function sonify(form_id, caller_id, data, f0, n_octaves) {
     var stereo_pan = document.getElementById(form_id).querySelector("#stereo_panning").checked;
     var unison = document.getElementById(form_id).querySelector("#play_reference_tone_unison").checked;
     var play_tickmark = document.getElementById(form_id).querySelector("#play_tickmark").checked;
-    console.log(play_ref_tone)
+
     var frequencies = [];
-    for (v = 0; v < values.length; v++) {
+    for (v = 0; v < values.length; v++)
         frequencies[v] = (((data[v] - d_min) * (f_max - f0)) / (d_max - d_min)) + f0;
-    }
-    console.log(frequencies)
-    console.log('f0: ' + f0)
     play_pulse(frequencies, stereo_pan, play_ref_tone, unison, play_tickmark, f0);
 }
 
@@ -213,9 +218,7 @@ function play_pulse(freqs, pan, play_ref_tone, unison, play_tickmark, f0) {
 $(document).bind('dataReadyEvent', function (e) {
     console.log('GENERATING CONTENT...');
     document.getElementById('fetching_progress_section').remove(); // remove progress bar because we are done loading
-    console.log('GENERATING CONTENT for WORLD...');
     create_article('World', '', '', 'main_article');
-    console.log('GENERATING CONTENT for dom...');
     setup_country_selection_dom('country_select');
     console.log('GENERATING CONTENT... OK!');
 });
@@ -334,50 +337,105 @@ function list_all_countries(container) {
     container.appendChild(section);
 }
 
-function create_summary_cell(country_code, country_name, state_name, county_name) {
+function numberWithCommas(x) {
+    var parts = x.toString().split(".");
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return parts.join(".");
+}
+
+function create_summary_cell(country_code, country_name, country_name_label, state_name, county_name) {
     let curr_stats = get_latest_stats(state_name, country_code, county_name);
     var summary_cell = document.createElement('div');
     summary_cell.className = 'col'
     
-    var summary_paragraph = document.createElement('p'); 
+    var summary_paragraph = document.createElement('div');
+    summary_paragraph.className = "card";
+    summary_paragraph.innerHTML+=
+        `<div class="card-header"> <h2> ${country_name_label} </h2></div>
+            <div class="card-body">
+              <h3>Brief</h3><small class="text-muted"> updated daily at 23:59 (UTC).</small>`;
+              
+    // var summary_paragraph = document.createElement('p'); 
+    
     if (is_empty(state_name)) {
-        summary_paragraph.innerHTML = `<h3>Brief</h3>
-        <p align='left'><small><em> JHU data are updated once a day around 23:59 (UTC).</em></small></p><ul>`;
-
+        summary_paragraph.innerHTML += `<ul class="list-group list-group-flush">`;
         if (curr_stats.active_number != 1)
-            summary_paragraph.innerHTML += `<li>Active cases: ${curr_stats.active_number.toLocaleString()}`;
+            summary_paragraph.innerHTML += `<li class="list-group-item"><b>Active</b> Cases: ${curr_stats.active_number.toLocaleString()}`;
         else
-            summary_paragraph.innerHTML += `<li>Active cases: 1`;
+            summary_paragraph.innerHTML += `<li class="list-group-item"><b>Active</b> Cases: 1`;
     
         summary_paragraph.innerHTML += `</li>
-                                <li>Total number of COVID-19 <strong>infections</strong> since the start of the pandemic: ${curr_stats.total_confirmed.toLocaleString()}. </li>
-                                <li>Total number of <strong>recoveries</strong> registered since the start of the pandemic: ${curr_stats.total_recovered.toLocaleString()}. </li>
-                                <li>Total number of <strong>deaths</strong> reported since the start of the pandemic: ${curr_stats.total_deaths.toLocaleString()}. </li>
-                                </ul>`;
+                                <li class="list-group-item">Total <b>Infections</b>: ${curr_stats.total_confirmed.toLocaleString()}</li>
+                                <li class="list-group-item">Total <b>Recoveries</b>: ${curr_stats.total_recovered.toLocaleString()}</li>
+                                <li class="list-group-item">Total <b>Deaths</b>: ${curr_stats.total_deaths.toLocaleString()}</li></ul>`;
         if (('US' == country_code) || ('CN' == country_code))
-            summary_paragraph.innerHTML += `<br><p align='center'><a href="#states_table">Jump to States list</a></p>`
+            summary_paragraph.innerHTML += ` </div><p align='center'><a href="#states_table">Jump to States list</a></p>`
     }
-    else if (is_empty(county_name)) {
-        summary_paragraph.innerHTML = `<h3>Brief</h3>
-        <p align='left'><small><em> JHU data are updated once a day around 23:59 (UTC).</em></small></p><ul>`;
     
-        summary_paragraph.innerHTML += `</li>
-                                <li>Total number of COVID-19 <strong>infections</strong> since the start of the pandemic: ${curr_stats.total_confirmed.toLocaleString()}. </li>
-                                <li>Total number of <strong>deaths</strong> reported since the start of the pandemic: ${curr_stats.total_deaths.toLocaleString()}. </li>
-                                </ul>`;
-        if ('US' == country_code) 
-            summary_paragraph.innerHTML += `<br><br><p align='left'><a href="#counties_table">Jump to Counties list</a></p>`
+    else if ( is_empty(county_name) && ('US' == country_code) ) { //state
+        summary_paragraph.innerHTML += `<ul class="list-group list-group-flush">`;
+        
+        if (typeof daily_report_us_states[state_name] !== "undefined")
+            summary_paragraph.innerHTML += `<li class="list-group-item"><b>Active</b> cases: ${parseInt(daily_report_us_states[state_name].active).toLocaleString()}`;
+
+        summary_paragraph.innerHTML += `
+                                <li class="list-group-item">Total <b>Infections</b>: ${curr_stats.total_confirmed.toLocaleString()}</li>
+                                <li class="list-group-item">Total <b>Deaths</b>: ${curr_stats.total_deaths.toLocaleString()}</li>`
+
+        if (typeof (daily_report_us_states[state_name].test_rate) === "undefined")
+            summary_paragraph.innerHTML += `<li class="list-group-item">Tests x 100,000 People: N/A</li>`;    
+        else
+            summary_paragraph.innerHTML += `<li class="list-group-item">Tests x 100,000 People: ${parseFloat(daily_report_us_states[state_name].test_rate).toFixed(2).toLocaleString()} </li>`;
+        summary_paragraph.innerHTML += `<li class="list-group-item">Cases x 100,000 People: ${parseFloat(daily_report_us_states[state_name].incidence_rate).toLocaleString()} </li>`;
+        summary_paragraph.innerHTML += `<li class="list-group-item">Mortality Rate: ${parseFloat(daily_report_us_states[state_name].mortality_rate).toFixed(2).toLocaleString()} %</li>`;
+        if (typeof (daily_report_us_states[state_name].hospitalization_rate) === "undefined" || is_empty(daily_report_us_states[state_name].hospitalization_rate))
+            summary_paragraph.innerHTML += `<li class="list-group-item">Hospitalization Rate: N/A</li></ul>`;
+        else
+            summary_paragraph.innerHTML += `<li class="list-group-item">Hospitalization Rate: ${parseFloat(daily_report_us_states[state_name].hospitalization_rate).toFixed(2).toLocaleString()} %</li></ul>`;
+        summary_paragraph.innerHTML += `</div><ul class="list-group list-group-flush"><li class="list-group-item"><p align='center'><a href="#counties_table">Jump to Counties list</a></p></li></ul>`;
     }
-    else {
-        summary_paragraph.innerHTML = `<h3>Brief</h3>
-        <p align='left'><small><em> JHU data are updated once a day around 23:59 (UTC).</em></small></p><ul>`;
+        
+    else if ( is_empty(county_name) && ('CN' == country_code) ) { //state of china
+        summary_paragraph.innerHTML += `<ul class="list-group list-group-flush">`;
+        
+        if (typeof daily_report_regions[country_name].Province_State[state_name] !== "undefined")
+            summary_paragraph.innerHTML += `<li class="list-group-item"><b>Active</b> cases: ${parseInt(daily_report_regions[country_name].Province_State[state_name].active).toLocaleString()}`;
+
+        summary_paragraph.innerHTML += `
+                                <li class="list-group-item">Total <b>Infections</b>: ${curr_stats.total_confirmed.toLocaleString()}</li>
+                                <li class="list-group-item">Total <b>Deaths</b>: ${curr_stats.total_deaths.toLocaleString()}</li>`
+
+            if (typeof (daily_report_regions[country_name].Province_State[state_name].test_rate) === "undefined")
+            summary_paragraph.innerHTML += `<li class="list-group-item">Cases x 100,000 People: ${parseFloat(daily_report_regions[country_name].Province_State[state_name].incidence_rate).toFixed(2).toLocaleString()} </li>`;
+            summary_paragraph.innerHTML += `<li class="list-group-item">Mortality Rate: ${parseFloat(daily_report_regions[country_name].Province_State[state_name].case_fatality_ratio).toFixed(2).toLocaleString()} %</li>`;
+            
+        summary_paragraph.innerHTML += `</div>`;
+        summary_paragraph.innerHTML += `</div>`;
+            
+    }
     
-        summary_paragraph.innerHTML += `</li>
-                                <li>Total number of COVID-19 <strong>infections</strong> since the start of the pandemic: ${curr_stats.total_confirmed.toLocaleString()}. </li>
-                                <li>Total number of <strong>deaths</strong> reported since the start of the pandemic: ${curr_stats.total_deaths.toLocaleString()}. </li>
-                                </ul>`;
-        if ('US' == country_code)
-            summary_paragraph.innerHTML += `<br><br><p align='left'><a href="#counties_table">Jump to Counties list</a></p>`
+    else { // US county summary
+        summary_paragraph.innerHTML += `<ul class="list-group list-group-flush">`;
+        summary_paragraph.innerHTML += `<li class="list-group-item"><b>Active</b> Cases: ${parseInt(daily_report_regions[country_code].Province_State[state_name].County[county_name].active).toLocaleString()}`;
+        summary_paragraph.innerHTML += `
+                                <li class="list-group-item">Total <strong>Infections</strong>: ${curr_stats.total_confirmed.toLocaleString()}</li>
+                                <li class="list-group-item">Total <strong>Deaths</strong>: ${curr_stats.total_deaths.toLocaleString()}</li>`;
+        // if ('US' == country_code) {
+            summary_paragraph.innerHTML += `<li class="list-group-item">Incidence Rate: 
+            ${parseFloat(daily_report_regions[country_code].Province_State[state_name].County[county_name]['incidence_rate']).toFixed(2).toLocaleString()} x 100,000 people</li>`;
+        
+            if (typeof (daily_report_regions[country_code].Province_State[state_name].case_fatality_ratio) === "undefined" || is_empty(daily_report_regions[country_code].Province_State[state_name].case_fatality_ratio))
+                summary_paragraph.innerHTML += `<li class="list-group-item">Mortality Rate: N/A</li></ul>`;
+            else
+                summary_paragraph.innerHTML += `<li class="list-group-item">Mortality Rate: ${parseFloat(daily_report_regions[country_code].Province_State[state_name].case_fatality_ratio).toFixed(2).toLocaleString()} %</li></ul>`;
+        
+            summary_paragraph.innerHTML += `</div><ul class="list-group list-group-flush"><li class="list-group-item"><p align='center'><a href="#counties_table">Jump to Counties list</a></p></li></ul>`;
+            summary_paragraph.innerHTML += `</div>`;
+
+        // // }
+        // summary_paragraph.innerHTML += `</ul>`;
+        // if ('US' == country_code)
+        //     summary_paragraph.innerHTML += `<br><br><p align='left'><a href="#counties_table">Jump to Counties list</a></p>`
     }
     
     summary_cell.appendChild(summary_paragraph);
@@ -797,27 +855,30 @@ function display_state_content(state_name, country_code, country_name, country_n
 
     if (typeof countries[country_name].States[s].Counties !== 'undefined') {
         // create table of counties
-        let counties_table_cell = create_counties_table(country_code, country_name, state_name);
-        var row4 = document.createElement('div');
-        row4.appendChild(document.createElement('br'))
-        row4.className = 'row';
         var padding_cell = document.createElement('div');
         padding_cell.className = 'col-2 text-center';
-        row4.appendChild(padding_cell);
-        row4.appendChild(counties_table_cell);
-        section.appendChild(row4);
+        section.appendChild(padding_cell);
+        var counties_cell = document.createElement('div');
+        create_counties_table(country_code, country_name, state_name, counties_cell);
+        // var row4 = document.createElement('div');
+        // row4.appendChild(document.createElement('br'))
+        // row4.className = 'row';
+        // var padding_cell = document.createElement('div');
+        // padding_cell.className = 'col-2 text-center';
+        // row4.appendChild(padding_cell);
+        // row4.appendChild(counties_table_cell);
+        section.appendChild(counties_cell);
     }
     else {
-        // create table of counties
-        let counties_table_cell = create_states_table(country_name);
-        var row4 = document.createElement('div');
-        row4.appendChild(document.createElement('br'))
-        row4.className = 'row';
+        // create table of states
         var padding_cell = document.createElement('div');
         padding_cell.className = 'col-2 text-center';
-        row4.appendChild(padding_cell);
-        row4.appendChild(counties_table_cell);
-        section.appendChild(row4);
+        section.appendChild(padding_cell);
+        var states_cell = document.createElement('div');
+        states_cell.className = 'col-sm text-center';
+        states_cell.id = 'table_container';
+        create_states_table(country_name, states_cell);
+        section.appendChild(states_cell);
     }
 }
 
@@ -842,16 +903,14 @@ function display_county_content(county_name, state_name, country_code, country_n
 
     countries[country_name].States[state_name].Counties
     // create table of counties
-    let counties_table_cell = create_counties_table(country_code, country_name, state_name);
-
-    var row4 = document.createElement('div');
-    row4.appendChild(document.createElement('br'))
-    row4.className = 'row';
     var padding_cell = document.createElement('div');
     padding_cell.className = 'col-2 text-center';
-    row4.appendChild(padding_cell);
-    row4.appendChild(counties_table_cell);
-    section.appendChild(row4);
+    section.appendChild(padding_cell);
+    var counties_cell = document.createElement('div');
+    counties_cell.className = 'col-sm text-center';
+    counties_cell.id = 'table_container';
+    create_counties_table(country_code, country_name, state_name, counties_cell);
+    section.appendChild(counties_cell);
 }
 
 
@@ -863,15 +922,17 @@ function create_article(country_code, state_name, county_name, container_id) {
 
     // set up page title
     var country_name_label = create_country_name_label(country_name, state_name, country_code, county_name);
-        section.innerHTML = `  <hr><h2 id='${country_code}'>${country_name_label}</h2><br>`;
+        // section.innerHTML = `  <hr><h2 id='${country_code}'>${country_name_label}</h2><br>`;
 
     // row 1 - Here goes the Brief
     var summary_row = document.createElement('div');
     summary_row.className = 'row';
     // create brief content
-    let summary_cell = create_summary_cell(country_code, country_name, state_name, county_name);
+    let summary_cell = create_summary_cell(country_code, country_name, country_name_label, state_name, county_name);
     summary_row.appendChild(summary_cell);
     section.appendChild(summary_row);
+    section.appendChild(document.createElement('br'))
+    section.appendChild(document.createElement('br'))
     // end brief
 
     if (is_empty(state_name))
@@ -887,7 +948,11 @@ function create_article(country_code, state_name, county_name, container_id) {
     container.appendChild(document.createElement('br'));
 }
 
-function create_counties_table(country_code, country_name, state_name) {
+function create_counties_table(country_code, country_name, state_name, container) {
+    var section = document.createElement('section');
+    var row = document.createElement('div');
+    row.appendChild(document.createElement('br'))
+    row.className = 'row';
     var link_to_main = document.createElement('a');
         link_to_main.href = '#';
         link_to_main.addEventListener("click", function () {
@@ -913,16 +978,22 @@ function create_counties_table(country_code, country_name, state_name) {
     table_header.innerHTML = `<th scope='col'> County </th> <th scope='col'>Total Infections</th><th scope='col'>Daily New Infections</th><th scope='col'>Total Deaths</th><th scope='col'>Daily New Deaths</th>`
     states_table.appendChild(table_header);
     for (s in countries[country_name].States[state_name].Counties) {
-        console.log(countries[country_name].States[state_name].Counties[s])
         var state_row = document.createElement('tr');
-        state_row.innerHTML = `<th scope='row'><a href="#" onClick="handle_selection('${country_code}', '${state_name}', '${s}' )" title="jump to">${s}</a></th><td>${countries[country_name].States[state_name].Counties[s].confirmed_timeline.slice(-1)[0].toLocaleString()}</td>
-                                                        <td>${countries[country_name].States[state_name].Counties[s].confirmed_daily.slice(-1)[0].toLocaleString()}</td>
-                                                        <td>${countries[country_name].States[state_name].Counties[s].deaths_timeline.slice(-1)[0].toLocaleString()}</td>
-                                                        <td>${countries[country_name].States[state_name].Counties[s].deaths_daily.slice(-1)[0].toLocaleString()}</td>`;
+        state_row.innerHTML = `<th scope='row'><a href="#" onClick="handle_selection('${country_code}', '${state_name}', '${s}' )" title="jump to">${s}</a></th>
+                                <td>${countries[country_name].States[state_name].Counties[s].confirmed_timeline.slice(-1)[0].toLocaleString()}</td>
+                                <td>${countries[country_name].States[state_name].Counties[s].confirmed_daily.slice(-1)[0].toLocaleString()}</td>
+                                <td>${countries[country_name].States[state_name].Counties[s].deaths_timeline.slice(-1)[0].toLocaleString()}</td>
+                                <td>${countries[country_name].States[state_name].Counties[s].deaths_daily.slice(-1)[0].toLocaleString()}</td>`;
         states_table.appendChild(state_row);
     }
     states_table_cell.appendChild(states_table);
-    return states_table_cell;
+    var padding_cell = document.createElement('div');
+    padding_cell.className = 'col-2 text-center';
+    row.appendChild(padding_cell);
+    row.appendChild(states_table_cell);
+    section.appendChild(row);
+    container.appendChild(section);
+    // return states_table_cell;
 }
 
 
@@ -1325,12 +1396,92 @@ function setup_country_selection_dom(select_id) {
     }
 }
 
+function parse_reports_regions(res) {
+    var data = d3.csvParse(res);
+    for (d = 0; d < data.length; d++) {
+        if (typeof (data[d]['Country_Region']) !== 'undefined') {
+            // setup data structure the first time we encounter a country
+            if (typeof (daily_report_regions[data[d]['Country_Region']]) === 'undefined') {
+                daily_report_regions[data[d]['Country_Region']] = [];
+                daily_report_regions[data[d]['Country_Region']]['Province_State'] = [];
+            }
+            // insert data into structure 
+            //first, make distinction between US and not to handle counties vs regions
+            if (data[d]['Country_Region'].localeCompare('US') == 0) {
+                let country = data[d]['Country_Region'];
+                let state = data[d]['Province_State'];
+                let county = data[d]['Admin2'];
+                if (typeof (daily_report_regions[country].Province_State[state]) === 'undefined') {
+                    daily_report_regions[country].Province_State[state] = [];
+                    daily_report_regions[country].Province_State[state]['County'] = [];
+                }
+                if (typeof (daily_report_regions[country].Province_State[state].County[county]) === 'undefined') 
+                    daily_report_regions[country].Province_State[state].County[county] = [];
+                    
+                daily_report_regions[country].Province_State[state].County[county]['active'] = data[d].Active;
+                daily_report_regions[country].Province_State[state].County[county]['recovered'] = data[d].Recovered;
+                daily_report_regions[country].Province_State[state].County[county]['deaths'] = data[d].Deaths;
+                daily_report_regions[country].Province_State[state].County[county]['case_fatality_ratio'] = data[d]['Case-Fatality_Ratio'];
+                daily_report_regions[country].Province_State[state].County[county]['incidence_rate'] = data[d].Incidence_Rate;
+                daily_report_regions[country].Province_State[state].County[county]['confirmed'] = data[d].Confirmed;
+                daily_report_regions[country].Province_State[state].County[county]['last_update'] = data[d].Last_Update;
+
+            }
+            else {
+                let country = data[d]['Country_Region'];
+                let state = data[d]['Province_State'];
+                if (typeof (daily_report_regions[country].Province_State[state]) === 'undefined') 
+                    daily_report_regions[country].Province_State[state] = [];
+                
+                daily_report_regions[country].Province_State[state]['active'] = data[d].Active;
+                daily_report_regions[country].Province_State[state]['recovered'] = data[d].Recovered;
+                daily_report_regions[country].Province_State[state]['deaths'] = data[d].Deaths;
+                daily_report_regions[country].Province_State[state]['case_fatality_ratio'] = data[d]['Case-Fatality_Ratio'];
+                daily_report_regions[country].Province_State[state]['incidence_rate'] = data[d].Incidence_Rate;
+                daily_report_regions[country].Province_State[state]['confirmed'] = data[d].Confirmed;
+                daily_report_regions[country].Province_State[state]['last_update'] = data[d].Last_Update;
+            }
+        }
+    }
+}
+
+function parse_reports_us_states(res) {
+    var data = d3.csvParse(res);
+    for (d = 0; d < data.length; d++) {
+        if (typeof (data[d]['Country_Region']) !== 'undefined') {
+            // setup data structure the first time we encounter a country
+            if (typeof (daily_report_us_states[data[d]['Province_State']]) === 'undefined') {
+                daily_report_us_states[data[d]['Province_State']] = [];
+            }
+
+            let state = data[d]['Province_State'];
+            if (typeof (daily_report_us_states[state]) === 'undefined')
+                daily_report_us_states[state] = [];
+                
+            daily_report_us_states[state]['active'] = data[d].Active;
+            daily_report_us_states[state]['recovered'] = data[d].Recovered;
+            daily_report_us_states[state]['deaths'] = data[d].Deaths;
+            daily_report_us_states[state]['case_fatality_ratio'] = data[d]['Case-Fatality_Ratio'];
+            daily_report_us_states[state]['incidence_rate'] = data[d].Incident_Rate; // ahhh inconsistencies in the data source
+            daily_report_us_states[state]['confirmed'] = data[d].Confirmed;
+            daily_report_us_states[state]['last_update'] = data[d].Last_Update;
+            daily_report_us_states[state]['people_tested'] = data[d].People_Tested;
+            daily_report_us_states[state]['people_hospitalized'] = data[d].People_Hospitalized;
+            daily_report_us_states[state]['mortality_rate'] = data[d].Mortality_Rate;
+            daily_report_us_states[state]['testing_rate'] = data[d].Testing_Rate;
+            daily_report_us_states[state]['hospitalization_rate'] = data[d].Hospitalization_Rate;
+
+           
+        }
+    }
+}
+
 // /////////////////////////////////////////////////////////////////////////////////////// \\
 // /////////////////////////////////////////////////////////////////////////////////////// \\
 // /////////////////////////////////////////////////////////////////////////////////////// \\
 // /////////////////////////////////////////////////////////////////////////////////////// \\
 // ******************************** UTILS ************************************************ \\
-/ //////////////////////////////////////////////////////////////////////////////////////// \\
+// //////////////////////////////////////////////////////////////////////////////////////// \\
 // /////////////////////////////////////////////////////////////////////////////////////// \\
 // /////////////////////////////////////////////////////////////////////////////////////// \\
 // /////////////////////////////////////////////////////////////////////////////////////// \\
@@ -1369,6 +1520,24 @@ const isToday = (in_date) => {
         in_date.getMonth() == today.getMonth() &&
         in_date.getFullYear() == today.getFullYear());
   }
+
+const date2DDMMYYYY = (date, separator) => {
+    day = date.getDate();
+    month = date.getMonth() + 1;
+    if (parseInt(day) < 10)
+        day = '0' + day;
+    if (parseInt(month) < 10)
+        month = '0' + month;
+    var s_date = month + separator + day + separator + date.getFullYear();
+    return s_date;
+}
+  
+function getYesterdayDate(){
+    var date = new Date();
+    date.setDate(date.getDate() - 1);
+    return date;
+}
+
 
 //moving average
 function moving_average(data, n) {
@@ -1487,18 +1656,79 @@ function sortKeys(obj_1) {
 // /////////////////////////////////////////////////////////////////////////////////////// \\
 
 
-function fetch_and_prepare_data_JHU() {
-    var njobs = 6;
+function get_daily_report_regions(filename) {
     var progress = document.getElementById('fetching_progress');
-    var cnt = 0;
+    var in_url = daily_reports_base_url_local + filename;
+    // retrieve daily reports for US states, counties and regions in other nations
+    var settings = {
+        "crossDomain": true,
+        "url": in_url,
+        "method": "GET",
+        "dataType" : "text"
+    }
+    $.ajax(settings).then(
+        function (res) {
+            // progress.value += 1;
+            console.log("[OK] JHU DAILY REPORTS FOUND");
+            // do something with the response
+            parse_reports_regions(res);
+            console.log(daily_report_regions)
+            njobs--;
+            progress.value += 1;
+            if (njobs == 0) // all the async calls returned successfully
+                prepare_data();
+        }, function () {
+            console.log("[X] NO " + in_url);
+            date_string = date2DDMMYYYY(getYesterdayDate(), '-');
+            let filename = date_string + ".csv";
+            get_daily_report_regions(filename)
+    });
+}
+
+function get_daily_report_us_state(filename) {
+    var progress = document.getElementById('fetching_progress');
+    var in_url = daily_reports_base_url_US_states + filename;
+    // retrieve daily reports for US states, counties and regions in other nations
+    var settings = {
+        "crossDomain": true,
+        "url": in_url,
+        "method": "GET",
+        "dataType" : "text"
+    }
+    $.ajax(settings).then(
+        function (res) {
+            // progress.value += 1;
+            console.log("[OK] JHU DAILY REPORTS US STATES FOUND");
+            // do something with the response
+            parse_reports_us_states(res);
+            njobs--;
+            progress.value++;
+            if (njobs == 0) // all the async calls returned successfully
+                prepare_data();
+        }, function () {
+            console.log("[X] NO " + in_url);
+            date_string = date2DDMMYYYY(getYesterdayDate(), '-');
+            let filename = date_string + ".csv";
+            get_daily_report_us_state(filename)
+    });
+}
+
+
+function fetch_and_prepare_data_JHU() {
+    
+    var progress = document.getElementById('fetching_progress');
     progress.max = njobs;
     progress.value = 0;
+   
+    var date_string = date2DDMMYYYY(new Date(), '-');
+    get_daily_report_regions(date_string + ".csv");
+    get_daily_report_us_state(date_string + ".csv");
 
     var settings = {
         "crossDomain": true,
         "url": "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/UID_ISO_FIPS_LookUp_Table.csv",
         "method": "GET",
-        "dataType" : "text"
+        "dataType": "text",
     }
     $.ajax(settings).then(
         function (res) {
