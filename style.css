@@ -155,93 +155,20 @@ input.large/*checkbox class name*/ {
   outline: 3px solid transparent;
 }
 
-  /*
-  html {
-    font-size: 22px;
-    background-color: #ffffff;
-    width: 80%;
-  }
-  
-  body {
-    width: 80%;
-    margin: 0 auto;
-  }
 
 
-
-
-table {
-  border-collapse: collapse;
+/*** BEN :: little helpers ***/
+.spacer {
+    margin: auto auto;
+}
+#country_select {
+    width: 15%;
+    margin-bottom: 1rem;
+}
+#son_controls_legend {
+    /*maybe, maybe not*/
+}
+iframe {
+    display: block;
 }
 
-table, td, th {
-  border: 1px solid black;
-  text-align: center;
-}
-
-nav, article, aside, footer {
-    background-color: white;
-    padding: 1%;
-  }
-
-
-
-main {
-    display: flex;
-  }
-  
-  article {
-    flex: 4;
-    display: grid;
-    columns: 2;
-  }
-  
-  aside {
-    flex: 1;
-    margin-left: 10px;
-    background-color: #e4e4e4;
-  }
-  
-  aside li {
-    padding-bottom: 10px;
-  }
-  
-  footer {
-    margin-top: 10px;
-  }
-
-  table#world_table {
-    width:70%; 
-    margin-left:15%; 
-    margin-right:15%;
-  }
-
-
-  
-  h1{
-    text-align: center;
-  }
-
-  h2{
-    text-align: center;
-
-  }
-
-  button{
-    display: flex;
-    border-width: 2;
-    box-shadow: inset;
-    
-    padding: 5px 5px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 18px;
-    align-content: center;
-    justify-content: center;
-    margin: 0 auto;
-  }
-  a{
-    margin: 10px;
-  } 
-  */

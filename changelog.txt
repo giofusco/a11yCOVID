@@ -1,0 +1,29 @@
+Accessible COVID-19 Pandemic Data
+by Giovanni Fusco © The Smith-Kettlewell Eye Research Institute, April 2020
+refactoring by Paul-Benjamin Hubrich
+
+All changes committed via https://github.com/giofusco/a11yCOVID/tree/refactoring
+
+Changelog:
+All JS changes will be marked within the code by using /* BEN :: …*/ as tag.
+
+html/css 
+* justified main navigation center via bootstrap "justify-content-center"-class
+* aligned progress bar to center using 'align' attribute
+* removed "jump to country" from input selector to keep it DRY – screen reader read it double
+* set country-selector width to 15% for visual consistency/stabilization while loading
+* fixated margin-bottom of country_select
+
+JS 
+* consolidated oscillator setup into reusable function setupOscillator(). console.log() feature is still active when Oscillators start, until decision wether it is wanted.
+* merged get_daily_report_regions(filename) and get_daily_report_us_state() functions to get_daily_reports(), using stringRuler() to determine whether it’s global or US reporting.
+* stringRuler() can later on be modified to adjust to other measurings if needed.
+* Merged parse_reports_regions(res) and parse_reports_us_states(res) to …something I don’t even know yet
+
+* Changed fetch_and_prepare_data_JHU() -> var date_string to getYesterdayDate() instead of new Date(); it’s reporting and not forecasting.
+* Set off getclicky – broken link issue – to avoid console error.
+* Updated d3 from version 1.x to 6.1 to avoid international restrictions conflict.  E.g. cookie handling guidelines within the EU blocked __cfduid cookie for being set to SameSite: lax/strict 
+	-> if __cfduid is required we should set it to 'none' manually 
+
+
+* to be continued...

@@ -16,8 +16,7 @@ var country_iso2name = [];
 var data_ready = false;
 var daily_report_us_states = [];
 var daily_report_regions = [];
-const daily_reports_base_url_local = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/";
-const daily_reports_base_url_US_states = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports_us/";
+const daily_reports_base_URL = ['https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/', 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports_us/'];
 
 // how long to play a single data point (in secs)
 let sample_length = 0.1;
@@ -45,6 +44,20 @@ function sonify(form_id, caller_id, data, f0, n_octaves) {
     play_pulse(frequencies, stereo_pan, play_ref_tone, unison, play_tickmark, f0);
 }
 
+
+/**///////////////////////////////////////////////////////////**/
+/** ** BEN :: shortening and remodelling oscillation setup ** **/
+/**///////////////////////////////////////////////////////////**/
+const oscillator_call_feedback = (array) => { for (let item of array.values()) console.log(item);};         // BEN :: just prints the handled oscillators to console
+
+const setupOscillator = (oscName, type) => {                                                                // later needs array property 'isPlaying' to make reclick stop osc first and then restart. weird stuff that is.
+    i = 0; len = oscName.length - 1; 
+    while (i <= len) { oscName[i].type = type; oscName[i].frequency = 0; i++; };
+    console.log(oscName.length + ' oscillators set up and [OK] :: ', oscillator_call_feedback(oscName));
+}; 
+/**///////////////////////////////////////////////////////////**/
+
+
 function play_pulse(freqs, pan, play_ref_tone, unison, play_tickmark, f0) {
     // for cross browser compatibility
     let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -52,43 +65,44 @@ function play_pulse(freqs, pan, play_ref_tone, unison, play_tickmark, f0) {
     var panNode;
     
     var is_safari = !!navigator.userAgent.match(/Version\/[\d\.]+.*Safari/);
-    if (!is_safari) {
-        panNode = audioCtx.createStereoPanner();
-        panNode.pan.value = 0;
-        var panStep = 2 / freqs.length;
-        var freqLen = freqs.length;
-        if (pan)
-            panNode.pan.value = -1;
-    }
+
+        if (!is_safari) {
+                panNode = audioCtx.createStereoPanner();
+                panNode.pan.value = 0;
+                var panStep = 2 / freqs.length;
+                var freqLen = freqs.length;
+            if (pan)
+                panNode.pan.value = -1;
+        }
     gainNode.gain.minValue = 0;
     gainNode.gain.maxValue = 1;
     gainNode.gain.value = 0.025;
 
+    //base oscillators
     var oscillator = audioCtx.createOscillator();
     var oscillator2 = audioCtx.createOscillator();
     var oscillator3 = audioCtx.createOscillator();
+    //ref tone oscillators
     var refToneOscillator = audioCtx.createOscillator();
     var refToneOscillator2 = audioCtx.createOscillator();
     var refToneOscillator3 = audioCtx.createOscillator();
+    //weekly oscillators
     var weekOscillator = audioCtx.createOscillator();
     var weekOscillator2 = audioCtx.createOscillator();
-    oscillator.type = 'triangle';
-    oscillator.frequency = 0;
-    oscillator2.type = 'triangle';
-    oscillator2.frequency = 0;
-    oscillator3.type = 'triangle';
-    oscillator3.frequency = 0;
-    refToneOscillator.type = 'sine';
-    refToneOscillator.frequency = 0;
-    refToneOscillator2.type = 'sine';
-    refToneOscillator2.frequency = 0;
-    refToneOscillator3.type = 'sine';
-    refToneOscillator3.frequency = 0;
-    weekOscillator.type = 'sawtooth';
-    weekOscillator.frequency = 0;
-    weekOscillator2.type = 'sawtooth';
-    weekOscillator2.frequency = 0;
-    
+
+    /**/////////////////////////////////////////////**/
+    /** ** BEN :: shortening oscillation calling ** **/
+    /**/////////////////////////////////////////////**/
+    const oscArr = [oscillator, oscillator2, oscillator3]; 
+    const refOscArr = [refToneOscillator, refToneOscillator2, refToneOscillator3];
+    const weekOscArr = [weekOscillator, weekOscillator2];
+
+    setupOscillator(oscArr, 'triangle');
+    setupOscillator(refOscArr, 'sine');
+    setupOscillator(weekOscArr, 'sawtooth');
+    /**/////////////////////////////////////////////**/
+
+
     let t0 = audioCtx.currentTime;
     let tickFreq = 500;
     var cnt = 0;
@@ -122,7 +136,6 @@ function play_pulse(freqs, pan, play_ref_tone, unison, play_tickmark, f0) {
         // if (unison)
         //     step = 1;
         for (i = 0; i < freqs.length; i++) {
-            
             gainNode.gain.setValueAtTime(0.025, t0 + sample_spacing * i * sample_length);
             oscillator.frequency.setValueAtTime(freqs[i], t0 + sample_spacing * i * sample_length);
             oscillator2.frequency.setValueAtTime(3*freqs[i], t0 + sample_spacing * i * sample_length);
@@ -137,7 +150,6 @@ function play_pulse(freqs, pan, play_ref_tone, unison, play_tickmark, f0) {
                 refToneOscillator2.frequency.setValueAtTime(3 * f0, t0 + sample_spacing * i * sample_length);
                 refToneOscillator3.frequency.setValueAtTime(2*f0, t0 + sample_spacing * i * sample_length);
             }
-            
             if (pan && !is_safari)
                 panNode.pan.setValueAtTime(panNode.pan.value + i * panStep, t0 + sample_spacing*i * sample_length);
         }
@@ -213,7 +225,6 @@ function play_pulse(freqs, pan, play_ref_tone, unison, play_tickmark, f0) {
     }
 }
 
-
 // this function handles the event triggered after getting the data
 $(document).bind('dataReadyEvent', function (e) {
     console.log('GENERATING CONTENT...');
@@ -231,24 +242,24 @@ function create_about_page(container_id) {
     var content_cell = document.createElement('div');
     var padding_cell = document.createElement('div');
     content_cell.innerHTML = `<hr>
-    <h3>About the Project</h3>
-    <p>So much of the conversation around this pandemic has been about trends: curves and how to flatten them, models, exponential growth, etc. That's usually conveyed visually, 
-    which means people who can't see graphs are excluded from the information driving our discourse,
-    even if the raw data are screen-readable.
-    Access to this data is unavailable to the roughly 39 million people around the globe who are blind. 
-    This project makes the data sourced by Johns Hopkins University accessible to people with visual impairments. 
-    The plots are automatically described to screen readers and sonified on demand.</p>
-    <h3> The Author </h3>
-    I'm Giovanni Fusco, a researcher at the Rehabilitation Engineering Research Center at the Smith-Kettlewell Eye Research Institute.
-    My research focuses on developing tools to reduce accessibility barriers in the STEM field.
-    <br>
-    More info available at the <a href="https://www.ski.org" target="_blank">Smith-Kettlewell Research Institute website</a>
-    <br><br>
+        <h3>About the Project</h3>
+        <p>So much of the conversation around this pandemic has been about trends: curves and how to flatten them, models, exponential growth, etc. That's usually conveyed visually, 
+        which means people who can't see graphs are excluded from the information driving our discourse,
+        even if the raw data are screen-readable.
+        Access to this data is unavailable to the roughly 39 million people around the globe who are blind. 
+        This project makes the data sourced by Johns Hopkins University accessible to people with visual impairments. 
+        The plots are automatically described to screen readers and sonified on demand.</p>
+        <h3> The Author </h3>
+        I'm Giovanni Fusco, a researcher at the Rehabilitation Engineering Research Center at the Smith-Kettlewell Eye Research Institute.
+        My research focuses on developing tools to reduce accessibility barriers in the STEM field.
+        <br>
+        More info available at the <a href="https://www.ski.org" target="_blank">Smith-Kettlewell Research Institute website</a>
+        <br><br>
     
-    <h3> Funding </h3>
-    <p>This project was supported by NIDILRR grant number 90RE5024-01-00 from the U.S. Administration for Community Living, Department of Health and Human Services, Washington, D.C. 20201.  </p>
-    <br><br><small> Disclaimer: Grantees undertaking projects with government sponsorship are encouraged to express freely 
-    their findings and conclusions. Points of view or opinions do not, therefore, necessarily represent official ACL policy. </small></p>
+        <h3> Funding </h3>
+        <p>This project was supported by NIDILRR grant number 90RE5024-01-00 from the U.S. Administration for Community Living, Department of Health and Human Services, Washington, D.C. 20201.  </p>
+        <br><br><small> Disclaimer: Grantees undertaking projects with government sponsorship are encouraged to express freely 
+        their findings and conclusions. Points of view or opinions do not, therefore, necessarily represent official ACL policy. </small></p>
     `;
     
     row1.appendChild(content_cell);
@@ -268,11 +279,11 @@ function create_feedback_page(container_id) {
     var padding_cell = document.createElement('div');
     // padding_cell.className = 'col'
     content_cell.innerHTML = `<hr>
-    <h2>Let me know!</h2>
-    <p>To report bugs, ask for help, request features or for general feedback,  
-    email support at <a href="mailto:info-covid@ski.org">info-covid@ski.org</a> <br>
-    or leave a feedback using the form below.</p><br>
-    <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSdbAGLbN2nays3Txrb9Re4VizraACZAhrcMeSMwRGwLjGZIqw/viewform?embedded=true" width="640" height="900" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>`
+        <h2>Let me know!</h2>
+        <p>To report bugs, ask for help, request features or for general feedback,  
+        email support at <a href="mailto:info-covid@ski.org">info-covid@ski.org</a> <br>
+        or leave a feedback using the form below.</p><br>
+        <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSdbAGLbN2nays3Txrb9Re4VizraACZAhrcMeSMwRGwLjGZIqw/viewform?embedded=true" width="640" height="900" frameborder="0" marginheight="0" marginwidth="0" style="margin: auto auto">Loading…</iframe>`
     section.appendChild(content_cell);
     container.appendChild(section);
 }
@@ -478,7 +489,6 @@ function create_country_name_label(country_name, state_name, country_code, count
 }
 
 function create_active_plot_cell(country_code, country_name, country_name_label) {
-
     var canvas_active = document.createElement('canvas');
     canvas_active.width = window.innerWidth;
     canvas_active.height = window.innerHeight;
@@ -602,8 +612,7 @@ function display_country_content(country_code, country_name, country_name_label,
     row1.appendChild(active_plot_cell);
     section.appendChild(row1);
 
-    if (country_name !== 'World') {
-        
+    if (country_name !== 'World') { 
         var confirmed_plot_cell = create_confirmed_plot_cell(country_code, country_name, country_name_label); 
         var deaths_plot_cell = create_deaths_plot_cell(country_code, country_name, country_name_label); 
         row2.appendChild(confirmed_plot_cell);
@@ -1402,8 +1411,8 @@ function parse_reports_regions(res) {
         if (typeof (data[d]['Country_Region']) !== 'undefined') {
             // setup data structure the first time we encounter a country
             if (typeof (daily_report_regions[data[d]['Country_Region']]) === 'undefined') {
-                daily_report_regions[data[d]['Country_Region']] = [];
-                daily_report_regions[data[d]['Country_Region']]['Province_State'] = [];
+                        daily_report_regions[data[d]['Country_Region']] = [];
+                        daily_report_regions[data[d]['Country_Region']]['Province_State'] = [];
             }
             // insert data into structure 
             //first, make distinction between US and not to handle counties vs regions
@@ -1418,13 +1427,13 @@ function parse_reports_regions(res) {
                 if (typeof (daily_report_regions[country].Province_State[state].County[county]) === 'undefined') 
                     daily_report_regions[country].Province_State[state].County[county] = [];
                     
-                daily_report_regions[country].Province_State[state].County[county]['active'] = data[d].Active;
-                daily_report_regions[country].Province_State[state].County[county]['recovered'] = data[d].Recovered;
-                daily_report_regions[country].Province_State[state].County[county]['deaths'] = data[d].Deaths;
-                daily_report_regions[country].Province_State[state].County[county]['case_fatality_ratio'] = data[d]['Case-Fatality_Ratio'];
-                daily_report_regions[country].Province_State[state].County[county]['incidence_rate'] = data[d].Incidence_Rate;
-                daily_report_regions[country].Province_State[state].County[county]['confirmed'] = data[d].Confirmed;
-                daily_report_regions[country].Province_State[state].County[county]['last_update'] = data[d].Last_Update;
+                    daily_report_regions[country].Province_State[state].County[county]['active'] = data[d].Active;
+                    daily_report_regions[country].Province_State[state].County[county]['recovered'] = data[d].Recovered;
+                    daily_report_regions[country].Province_State[state].County[county]['deaths'] = data[d].Deaths;
+                    daily_report_regions[country].Province_State[state].County[county]['case_fatality_ratio'] = data[d]['Case-Fatality_Ratio'];
+                    daily_report_regions[country].Province_State[state].County[county]['incidence_rate'] = data[d].Incidence_Rate;
+                    daily_report_regions[country].Province_State[state].County[county]['confirmed'] = data[d].Confirmed;
+                    daily_report_regions[country].Province_State[state].County[county]['last_update'] = data[d].Last_Update;
 
             }
             else {
@@ -1433,13 +1442,13 @@ function parse_reports_regions(res) {
                 if (typeof (daily_report_regions[country].Province_State[state]) === 'undefined') 
                     daily_report_regions[country].Province_State[state] = [];
                 
-                daily_report_regions[country].Province_State[state]['active'] = data[d].Active;
-                daily_report_regions[country].Province_State[state]['recovered'] = data[d].Recovered;
-                daily_report_regions[country].Province_State[state]['deaths'] = data[d].Deaths;
-                daily_report_regions[country].Province_State[state]['case_fatality_ratio'] = data[d]['Case-Fatality_Ratio'];
-                daily_report_regions[country].Province_State[state]['incidence_rate'] = data[d].Incidence_Rate;
-                daily_report_regions[country].Province_State[state]['confirmed'] = data[d].Confirmed;
-                daily_report_regions[country].Province_State[state]['last_update'] = data[d].Last_Update;
+                    daily_report_regions[country].Province_State[state]['active'] = data[d].Active;
+                    daily_report_regions[country].Province_State[state]['recovered'] = data[d].Recovered;
+                    daily_report_regions[country].Province_State[state]['deaths'] = data[d].Deaths;
+                    daily_report_regions[country].Province_State[state]['case_fatality_ratio'] = data[d]['Case-Fatality_Ratio'];
+                    daily_report_regions[country].Province_State[state]['incidence_rate'] = data[d].Incidence_Rate;
+                    daily_report_regions[country].Province_State[state]['confirmed'] = data[d].Confirmed;
+                    daily_report_regions[country].Province_State[state]['last_update'] = data[d].Last_Update;
             }
         }
     }
@@ -1458,25 +1467,25 @@ function parse_reports_us_states(res) {
             if (typeof (daily_report_us_states[state]) === 'undefined')
                 daily_report_us_states[state] = [];
                 
-            daily_report_us_states[state]['active'] = data[d].Active;
-            daily_report_us_states[state]['recovered'] = data[d].Recovered;
-            daily_report_us_states[state]['deaths'] = data[d].Deaths;
-            daily_report_us_states[state]['case_fatality_ratio'] = data[d]['Case-Fatality_Ratio'];
-            daily_report_us_states[state]['incidence_rate'] = data[d].Incident_Rate; // ahhh inconsistencies in the data source
-            daily_report_us_states[state]['confirmed'] = data[d].Confirmed;
-            daily_report_us_states[state]['last_update'] = data[d].Last_Update;
-            daily_report_us_states[state]['people_tested'] = data[d].People_Tested;
-            daily_report_us_states[state]['people_hospitalized'] = data[d].People_Hospitalized;
-            daily_report_us_states[state]['mortality_rate'] = data[d].Mortality_Rate;
-            daily_report_us_states[state]['testing_rate'] = data[d].Testing_Rate;
-            daily_report_us_states[state]['hospitalization_rate'] = data[d].Hospitalization_Rate;
+                daily_report_us_states[state]['active'] = data[d].Active;
+                daily_report_us_states[state]['recovered'] = data[d].Recovered;
+                daily_report_us_states[state]['deaths'] = data[d].Deaths;
+                daily_report_us_states[state]['case_fatality_ratio'] = data[d]['Case-Fatality_Ratio'];
+                daily_report_us_states[state]['incidence_rate'] = data[d].Incident_Rate; // ahhh inconsistencies in the data source
+                daily_report_us_states[state]['confirmed'] = data[d].Confirmed;
+                daily_report_us_states[state]['last_update'] = data[d].Last_Update;
+                daily_report_us_states[state]['people_tested'] = data[d].People_Tested;
+                daily_report_us_states[state]['people_hospitalized'] = data[d].People_Hospitalized;
+                daily_report_us_states[state]['mortality_rate'] = data[d].Mortality_Rate;
+                daily_report_us_states[state]['testing_rate'] = data[d].Testing_Rate;
+                daily_report_us_states[state]['hospitalization_rate'] = data[d].Hospitalization_Rate;
 
            
         }
     }
 }
 
-// /////////////////////////////////////////////////////////////////////////////////////// \\
+// /////////////////////////////////////////////////////////////////////////////////////// \\>
 // /////////////////////////////////////////////////////////////////////////////////////// \\
 // /////////////////////////////////////////////////////////////////////////////////////// \\
 // /////////////////////////////////////////////////////////////////////////////////////// \\
@@ -1509,17 +1518,24 @@ function formatAMPM(date) {
     var ampm = hours >= 12 ? 'pm' : 'am';
     hours = hours % 12;
     hours = hours ? hours : 12; // the hour '0' should be '12'
-    minutes = minutes < 10 ? '0'+minutes : minutes;
+    minutes = minutes < 10 ? '0'+ minutes : minutes;
     var strTime = hours + ':' + minutes + ' ' + ampm;
     return strTime;
   }
 
+
 const isToday = (in_date) => {
     const today = new Date()
     return (in_date.getDate() == today.getDate() &&
-        in_date.getMonth() == today.getMonth() &&
-        in_date.getFullYear() == today.getFullYear());
-  }
+            in_date.getMonth() == today.getMonth() &&
+            in_date.getFullYear() == today.getFullYear());
+}
+
+function getYesterdayDate() {
+    var date = new Date();
+    date.setDate(date.getDate() - 1);
+    return date;
+}
 
 const date2DDMMYYYY = (date, separator) => {
     day = date.getDate();
@@ -1531,13 +1547,6 @@ const date2DDMMYYYY = (date, separator) => {
     var s_date = month + separator + day + separator + date.getFullYear();
     return s_date;
 }
-  
-function getYesterdayDate(){
-    var date = new Date();
-    date.setDate(date.getDate() - 1);
-    return date;
-}
-
 
 //moving average
 function moving_average(data, n) {
@@ -1656,63 +1665,51 @@ function sortKeys(obj_1) {
 // /////////////////////////////////////////////////////////////////////////////////////// \\
 
 
-function get_daily_report_regions(filename) {
-    var progress = document.getElementById('fetching_progress');
-    var in_url = daily_reports_base_url_local + filename;
-    // retrieve daily reports for US states, counties and regions in other nations
-    var settings = {
-        "crossDomain": true,
-        "url": in_url,
-        "method": "GET",
-        "dataType" : "text"
-    }
-    $.ajax(settings).then(
-        function (res) {
-            // progress.value += 1;
-            console.log("[OK] JHU DAILY REPORTS FOUND");
-            // do something with the response
-            parse_reports_regions(res);
-            console.log(daily_report_regions)
-            njobs--;
-            progress.value += 1;
-            if (njobs == 0) // all the async calls returned successfully
-                prepare_data();
-        }, function () {
-            console.log("[X] NO " + in_url);
-            date_string = date2DDMMYYYY(getYesterdayDate(), '-');
-            let filename = date_string + ".csv";
-            get_daily_report_regions(filename)
-    });
-}
+/**///////////////////////////////////////////////////////////**/
+/* *********** BEN :: separator for data fetch *************** */
+/**///////////////////////////////////////////////////////////**/
+//temporarily also transporting 'res' param to still use the 2 functions available for parsing
+const stringRuler = (string, res) => {
+    if (string.length === 112) { console.log("[OK] JHU DAILY REPORTS FOUND"); parse_reports_regions(res); /*console.log(daily_report_regions);*/ }      //BEN :: spared regions array from output but left it in place
+    else { console.log("[OK] JHU DAILY REPORTS US STATES FOUND"); parse_reports_us_states(res); /*console.log(daily_report_us_states);*/ }              //BEN :: spared regions array from output but left it in place
+};
+const stringRuler_NO = (string) => {
+    if (string.length === 112) { console.log("[X] NO - JHU DAILY REPORTS FOUND " + string); }
+    else { console.log("[X] NO - JHU DAILY REPORTS US STATES FOUND " + string); }
+};
 
-function get_daily_report_us_state(filename) {
+function get_daily_reports(filename) {
     var progress = document.getElementById('fetching_progress');
-    var in_url = daily_reports_base_url_US_states + filename;
-    // retrieve daily reports for US states, counties and regions in other nations
-    var settings = {
-        "crossDomain": true,
-        "url": in_url,
-        "method": "GET",
-        "dataType" : "text"
+    const daily_reports = daily_reports_base_URL.values();
+    for (let item of daily_reports) {
+        var in_url = item + filename;
+        var settings = {
+            "crossDomain": true,
+            "url": in_url,
+            "method": "GET",
+            "dataType": "text"
+        }
+        $.ajax(settings).then(                                                                  
+            function (res) {                                                                    
+                stringRuler(item, res);
+                // do something with the response
+                // parse_reports_regions(res);                                                   // BEN :: !!!! make it 1 function for both !!!! meanwhile controlled by stringRuler(), line 22
+                njobs--;                                                                        
+                progress.value += 1;                                                            
+                if (njobs == 0) // all the async calls returned successfully                    
+                    prepare_data();                                                             // BEN :: see line 1066!
+            },
+            function () {
+                //console.log("[X] NO " + in_url);                                              // BEN :: set off for testing func() solution
+                stringRuler_NO(item);
+                date_string = date2DDMMYYYY(getYesterdayDate(), '-');
+                let filename = date_string + ".csv";
+                get_daily_reports(filename)
+            }
+        );
     }
-    $.ajax(settings).then(
-        function (res) {
-            // progress.value += 1;
-            console.log("[OK] JHU DAILY REPORTS US STATES FOUND");
-            // do something with the response
-            parse_reports_us_states(res);
-            njobs--;
-            progress.value++;
-            if (njobs == 0) // all the async calls returned successfully
-                prepare_data();
-        }, function () {
-            console.log("[X] NO " + in_url);
-            date_string = date2DDMMYYYY(getYesterdayDate(), '-');
-            let filename = date_string + ".csv";
-            get_daily_report_us_state(filename)
-    });
-}
-
+};
+/**///////////////////////////////////////////////////////////**/
 
 function fetch_and_prepare_data_JHU() {
     
@@ -1720,9 +1717,13 @@ function fetch_and_prepare_data_JHU() {
     progress.max = njobs;
     progress.value = 0;
    
-    var date_string = date2DDMMYYYY(new Date(), '-');
-    get_daily_report_regions(date_string + ".csv");
-    get_daily_report_us_state(date_string + ".csv");
+    /* var date_string = date2DDMMYYYY(new Date(), '-'); */                                      // BEN :: timezone clipping - i doubt there's a report for actually 'today', should be more like getYesterdayDate()
+    var date_string = date2DDMMYYYY(getYesterdayDate(), '-');
+
+    // // // // BEN :: turn request functions on and off
+    //get_daily_report_regions(date_string + ".csv");
+    //get_daily_report_us_state(date_string + ".csv");
+    get_daily_reports(date_string + ".csv");
 
     var settings = {
         "crossDomain": true,
