@@ -18,11 +18,11 @@ var daily_report_regions = [];
 const daily_reports_base_URL = ['https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/', 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports_us/'];
 
 // oscillator setup
-let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+let audioCtx = new(window.AudioContext || window.webkitAudioContext)();
 let gainNode = audioCtx.createGain() || audioCtx.createGainNode();
 var panNode;
 // for cross browser compatibility
-var is_safari = !!navigator.userAgent.match(/Version\/[\d\.]+.*Safari/);            // BEN :: hello little friend enlarging code since 4 ever having a 3% market share worldwide
+var is_safari = !!navigator.userAgent.match(/Version\/[\d\.]+.*Safari/); // BEN :: hello little friend enlarging code since 4 ever having a 3% market share worldwide
 
 // how long to play a single data point (in secs)
 let sample_length = 0.1;
@@ -32,11 +32,11 @@ function sonify(form_id, caller_id, data, f0, n_octaves) {
     var d_max = -1;
     var d_min = 1e9;
     var values = Object.values(data);
-    
+
     for (v = 0; v < values.length - 1; v++) {
-        if (values[v] > d_max) 
+        if (values[v] > d_max)
             d_max = values[v];
-        if (values[v] < d_min) 
+        if (values[v] < d_min)
             d_min = values[v];
     }
     var play_ref_tone = document.getElementById(form_id).querySelector("#play_reference_tone").checked;
@@ -50,14 +50,14 @@ function sonify(form_id, caller_id, data, f0, n_octaves) {
     play_pulse(frequencies, stereo_pan, play_ref_tone, unison, play_tickmark, f0);
 }
 
-/**///////////////////////////////////////////////////////////**/
+/**/ //////////////////////////////////////////////////////////**/
 /** ** BEN :: shortening and remodelling oscillation setup ** **/
-/**///////////////////////////////////////////////////////////**/
+/**/ //////////////////////////////////////////////////////////**/
 
 // BEN :: got isPlaying attribute, still needs handling incl. if-else-.stop() for running instances in sonify(), line 24 OR play_pulse(), line 72
 // BEN :: we may limit number of active oscillators or dumb the active nodes... tricky still.
 const setupOscillator = (array, type) => {
-    for (let item of array) {                                                                               
+    for (let item of array) {
         item.isPlaying = false;
         item.type = type;
         item.frequency = 0;
@@ -91,23 +91,23 @@ const oscArr_browser_switch = (array) => {
 };
 
 // BEN :: testing stuff and helpers
-const oscArr_reader = (array) => {    // disconnect active audioNodes?
+const oscArr_reader = (array) => { // disconnect active audioNodes?
     for (let osc of array) { console.log(osc) };
 };
 
-const oscillators_disconnect = (array) => { 
-        for (let sub_array of array) {
-            for (let osc of sub_array) {
-                if (osc.isPlaying === true) {
-                    osc.stop();
-                } else {
-                    console.log(osc);
-                    continue;
-                }
-            };
+const oscillators_disconnect = (array) => {
+    for (let sub_array of array) {
+        for (let osc of sub_array) {
+            if (osc.isPlaying === true) {
+                osc.stop();
+            } else {
+                console.log(osc);
+                continue;
+            }
         };
+    };
 };
-/**///////////////////////////////////////////////////////////**/
+/**/ //////////////////////////////////////////////////////////**/
 
 function play_pulse(freqs, pan, play_ref_tone, unison, play_tickmark, f0) {
     if (!is_safari) {
@@ -115,11 +115,11 @@ function play_pulse(freqs, pan, play_ref_tone, unison, play_tickmark, f0) {
         panNode.pan.value = 0;
         var panStep = 2 / freqs.length;
         var freqLen = freqs.length;
-            if (pan)
-                panNode.pan.value = -1;
+        if (pan)
+            panNode.pan.value = -1;
     }
 
-    gainNode.disconnect();                                                              // BEN :: I see the try, but miss the result
+    gainNode.disconnect(); // BEN :: I see the try, but miss the result
 
     gainNode.gain.minValue = 0;
     gainNode.gain.maxValue = 1;
@@ -137,17 +137,17 @@ function play_pulse(freqs, pan, play_ref_tone, unison, play_tickmark, f0) {
     var weekOscillator = audioCtx.createOscillator();
     var weekOscillator2 = audioCtx.createOscillator();
 
-    /**/////////////////////////////////////////////**/
+    /**/ ////////////////////////////////////////////**/
     /** ** BEN :: shortening oscillation calling ** **/
-    /**/////////////////////////////////////////////**/
-    const oscArr = [oscillator, oscillator2, oscillator3]; 
+    /**/ ////////////////////////////////////////////**/
+    const oscArr = [oscillator, oscillator2, oscillator3];
     const refOscArr = [refToneOscillator, refToneOscillator2, refToneOscillator3];
     const weekOscArr = [weekOscillator, weekOscillator2];
-    
+
     setupOscillator(oscArr, 'triangle');
     setupOscillator(refOscArr, 'sine');
     setupOscillator(weekOscArr, 'sawtooth');
-    /**/////////////////////////////////////////////**/
+    /**/ ////////////////////////////////////////////**/
 
 
     let t0 = audioCtx.currentTime;
@@ -162,22 +162,20 @@ function play_pulse(freqs, pan, play_ref_tone, unison, play_tickmark, f0) {
             gainNode.gain.setValueAtTime(0.025, t0 + i * sample_length);
             if (cnt == 14) {
                 weekOscillator.frequency.setValueAtTime(tickFreq, t0 + (sample_spacing * i) * sample_length);
-                weekOscillator2.frequency.setValueAtTime(.33*tickFreq, t0 + (sample_spacing * i) * sample_length);
+                weekOscillator2.frequency.setValueAtTime(.33 * tickFreq, t0 + (sample_spacing * i) * sample_length);
                 cnt++;
-            }
-            else if (cnt == 29) {
+            } else if (cnt == 29) {
                 weekOscillator.frequency.setValueAtTime(2 * tickFreq, t0 + (sample_spacing * i) * sample_length);
-                weekOscillator2.frequency.setValueAtTime(.33*tickFreq, t0 + (sample_spacing * i) * sample_length);
+                weekOscillator2.frequency.setValueAtTime(.33 * tickFreq, t0 + (sample_spacing * i) * sample_length);
                 cnt = 0;
-            }
-            else {
+            } else {
                 cnt++;
                 weekOscillator.frequency.setValueAtTime(0, t0 + (sample_spacing * i) * sample_length);
                 weekOscillator2.frequency.setValueAtTime(0, t0 + (sample_spacing * i) * sample_length);
             }
         }
     }
-    
+
     if (play_ref_tone || unison) {
         // var step = 3;
         // if (unison)
@@ -185,68 +183,66 @@ function play_pulse(freqs, pan, play_ref_tone, unison, play_tickmark, f0) {
         for (i = 0; i < freqs.length; i++) {
             gainNode.gain.setValueAtTime(0.025, t0 + sample_spacing * i * sample_length);
             oscillator.frequency.setValueAtTime(freqs[i], t0 + sample_spacing * i * sample_length);
-            oscillator2.frequency.setValueAtTime(3*freqs[i], t0 + sample_spacing * i * sample_length);
-            oscillator3.frequency.setValueAtTime(2*freqs[i], t0 + sample_spacing * i * sample_length);
+            oscillator2.frequency.setValueAtTime(3 * freqs[i], t0 + sample_spacing * i * sample_length);
+            oscillator3.frequency.setValueAtTime(2 * freqs[i], t0 + sample_spacing * i * sample_length);
             if (!unison) {
                 oscillator.frequency.setValueAtTime(f0, t0 + (sample_spacing * i + 1) * sample_length);
                 oscillator2.frequency.setValueAtTime(3 * f0, t0 + (sample_spacing * i + 1) * sample_length);
                 oscillator3.frequency.setValueAtTime(2 * f0, t0 + (sample_spacing * i + 1) * sample_length);
-            }
-            else {
+            } else {
                 refToneOscillator.frequency.setValueAtTime(f0, t0 + sample_spacing * i * sample_length);
                 refToneOscillator2.frequency.setValueAtTime(3 * f0, t0 + sample_spacing * i * sample_length);
-                refToneOscillator3.frequency.setValueAtTime(2*f0, t0 + sample_spacing * i * sample_length);
+                refToneOscillator3.frequency.setValueAtTime(2 * f0, t0 + sample_spacing * i * sample_length);
             }
             if (pan && !is_safari)
-                panNode.pan.setValueAtTime(panNode.pan.value + i * panStep, t0 + sample_spacing*i * sample_length);
+                panNode.pan.setValueAtTime(panNode.pan.value + i * panStep, t0 + sample_spacing * i * sample_length);
         }
-        
+
         gainNode.gain.exponentialRampToValueAtTime(
-            0.00001, t0 + (sample_spacing*freqLen + 1) * sample_length
+            0.00001, t0 + (sample_spacing * freqLen + 1) * sample_length
         )
 
         oscArr_browser_switch(refOscArr); //^
 
         oscArr_browser_switch(oscArr); //v
 
-        oscArr_start(oscArr);                                               // BEN ::
+        oscArr_start(oscArr); // BEN ::
 
         if (unison) {
-            oscArr_start(refOscArr);                                        // BEN ::
+            oscArr_start(refOscArr); // BEN ::
         }
         // oscillator.stop(t0 + freqs.length * 3 * sample_length);
         // refToneOscillator.stop(t0 + freqs.length * 3 * sample_length);
         oscArr_browser_switch(weekOscArr); //^
 
-        oscArr_start(weekOscArr);                                           // BEN ::
+        oscArr_start(weekOscArr); // BEN ::
         // weekOscillator.stop(t0 + freqs.length * 3 * sample_length);
-    }
-    else {
+    } else {
         for (i = 0; i < freqs.length; i++) {
             oscillator.frequency.setValueAtTime(freqs[i], t0 + i * sample_length);
             oscillator2.frequency.setValueAtTime(3 * freqs[i], t0 + i * sample_length);
-            oscillator3.frequency.setValueAtTime(0.33*freqs[i], t0 + i * sample_length);
+            oscillator3.frequency.setValueAtTime(0.33 * freqs[i], t0 + i * sample_length);
             gainNode.gain.setValueAtTime(0.025, t0 + i * sample_length);
             if (pan && !is_safari)
                 panNode.pan.setValueAtTime(panNode.pan.value + i * panStep, t0 + i * sample_length);
         }
         gainNode.gain.exponentialRampToValueAtTime(
-            0.00001, t0 +  freqs.length * sample_length
+            0.00001, t0 + freqs.length * sample_length
         )
         oscArr_browser_switch(oscArr);
 
-        oscArr_start(oscArr);                                               // BEN ::
+        oscArr_start(oscArr); // BEN ::
 
         // oscillator.stop(t0 + freqLen * sample_length);
         oscArr_browser_switch(weekOscArr); //^
 
-        oscArr_start(weekOscArr);                                           // BEN ::
+        oscArr_start(weekOscArr); // BEN ::
         // weekOscillator.stop(t0 + freqLen * sample_length);
     }
 }
 
 // this function handles the event triggered after getting the data
-$(document).bind('dataReadyEvent', function (e) {
+$(document).bind('dataReadyEvent', function(e) {
     console.log('GENERATING CONTENT...');
     document.getElementById('fetching_progress_section').remove(); // remove progress bar because we are done loading
     create_article('World', '', '', 'main_article');
@@ -281,7 +277,7 @@ function create_about_page(container_id) {
         <br><br><small> Disclaimer: Grantees undertaking projects with government sponsorship are encouraged to express freely 
         their findings and conclusions. Points of view or opinions do not, therefore, necessarily represent official ACL policy. </small></p>
     `;
-    
+
     row1.appendChild(content_cell);
     row1.appendChild(padding_cell);
     section.appendChild(row1);
@@ -309,30 +305,30 @@ function create_feedback_page(container_id) {
 
 function list_all_countries(container) {
     var section = document.createElement('section');
-    
+
     var sorted_countries = [];
     for (c in country_name2iso) {
         sorted_countries[sorted_countries.length] = c;
     }
     sorted_countries.sort();
-    
+
     var row = document.createElement('div');
     row.appendChild(document.createElement('br'))
     row.className = 'row';
 
     var link_to_main = document.createElement('a');
     link_to_main.href = '#';
-    link_to_main.addEventListener("click", function () {
+    link_to_main.addEventListener("click", function() {
         handle_selection('World', '', '');
     });
     link_to_main.innerText = 'Back to World page';
 
-   
+
     var country_table_cell = document.createElement('div');
     country_table_cell.id = 'countries_table';
     country_table_cell.appendChild(document.createElement('br'));
     country_table_cell.appendChild(document.createElement('br'));
-    
+
     var header = document.createElement('h3');
     header.innerText = 'Table of World Countries';
     country_table_cell.appendChild(header);
@@ -376,34 +372,32 @@ function create_summary_cell(country_code, country_name, country_name_label, sta
     let curr_stats = get_latest_stats(state_name, country_code, county_name);
     var summary_cell = document.createElement('div');
     summary_cell.className = 'col'
-    
+
     var summary_paragraph = document.createElement('div');
     summary_paragraph.className = "card";
-    summary_paragraph.innerHTML+=
+    summary_paragraph.innerHTML +=
         `<div class="card-header"> <h2> ${country_name_label} </h2></div>
             <div class="card-body">
               <h3>Brief</h3><small class="text-muted"> updated daily at 23:59 (UTC).</small>`;
-              
+
     // var summary_paragraph = document.createElement('p'); 
-    
+
     if (is_empty(state_name)) {
         summary_paragraph.innerHTML += `<ul class="list-group list-group-flush">`;
         if (curr_stats.active_number != 1)
             summary_paragraph.innerHTML += `<li class="list-group-item"><b>Active</b> Cases: ${curr_stats.active_number.toLocaleString()}`;
         else
             summary_paragraph.innerHTML += `<li class="list-group-item"><b>Active</b> Cases: 1`;
-    
+
         summary_paragraph.innerHTML += `</li>
                                 <li class="list-group-item">Total <b>Infections</b>: ${curr_stats.total_confirmed.toLocaleString()}</li>
                                 <li class="list-group-item">Total <b>Recoveries</b>: ${curr_stats.total_recovered.toLocaleString()}</li>
                                 <li class="list-group-item">Total <b>Deaths</b>: ${curr_stats.total_deaths.toLocaleString()}</li></ul>`;
         if (('US' == country_code) || ('CN' == country_code))
             summary_paragraph.innerHTML += ` </div><p align='center'><a href="#states_table">Jump to States list</a></p>`
-    }
-    
-    else if ( is_empty(county_name) && ('US' == country_code) ) { //state
+    } else if (is_empty(county_name) && ('US' == country_code)) { //state
         summary_paragraph.innerHTML += `<ul class="list-group list-group-flush">`;
-        
+
         if (typeof daily_report_us_states[state_name] !== "undefined")
             summary_paragraph.innerHTML += `<li class="list-group-item"><b>Active</b> cases: ${parseInt(daily_report_us_states[state_name].active).toLocaleString()}`;
 
@@ -411,22 +405,20 @@ function create_summary_cell(country_code, country_name, country_name_label, sta
                                 <li class="list-group-item">Total <b>Infections</b>: ${curr_stats.total_confirmed.toLocaleString()}</li>
                                 <li class="list-group-item">Total <b>Deaths</b>: ${curr_stats.total_deaths.toLocaleString()}</li>`
 
-        if (typeof (daily_report_us_states[state_name].test_rate) === "undefined")
-            summary_paragraph.innerHTML += `<li class="list-group-item">Tests x 100,000 People: N/A</li>`;    
+        if (typeof(daily_report_us_states[state_name].test_rate) === "undefined")
+            summary_paragraph.innerHTML += `<li class="list-group-item">Tests x 100,000 People: N/A</li>`;
         else
             summary_paragraph.innerHTML += `<li class="list-group-item">Tests x 100,000 People: ${parseFloat(daily_report_us_states[state_name].test_rate).toFixed(2).toLocaleString()} </li>`;
         summary_paragraph.innerHTML += `<li class="list-group-item">Cases x 100,000 People: ${parseFloat(daily_report_us_states[state_name].incidence_rate).toLocaleString()} </li>`;
         summary_paragraph.innerHTML += `<li class="list-group-item">Mortality Rate: ${parseFloat(daily_report_us_states[state_name].mortality_rate).toFixed(2).toLocaleString()} %</li>`;
-        if (typeof (daily_report_us_states[state_name].hospitalization_rate) === "undefined" || is_empty(daily_report_us_states[state_name].hospitalization_rate))
+        if (typeof(daily_report_us_states[state_name].hospitalization_rate) === "undefined" || is_empty(daily_report_us_states[state_name].hospitalization_rate))
             summary_paragraph.innerHTML += `<li class="list-group-item">Hospitalization Rate: N/A</li></ul>`;
         else
             summary_paragraph.innerHTML += `<li class="list-group-item">Hospitalization Rate: ${parseFloat(daily_report_us_states[state_name].hospitalization_rate).toFixed(2).toLocaleString()} %</li></ul>`;
         summary_paragraph.innerHTML += `</div><ul class="list-group list-group-flush"><li class="list-group-item"><p align='center'><a href="#counties_table">Jump to Counties list</a></p></li></ul>`;
-    }
-        
-    else if ( is_empty(county_name) && ('CN' == country_code) ) { //state of china
+    } else if (is_empty(county_name) && ('CN' == country_code)) { //state of china
         summary_paragraph.innerHTML += `<ul class="list-group list-group-flush">`;
-        
+
         if (typeof daily_report_regions[country_name].Province_State[state_name] !== "undefined")
             summary_paragraph.innerHTML += `<li class="list-group-item"><b>Active</b> cases: ${parseInt(daily_report_regions[country_name].Province_State[state_name].active).toLocaleString()}`;
 
@@ -434,39 +426,37 @@ function create_summary_cell(country_code, country_name, country_name_label, sta
                                 <li class="list-group-item">Total <b>Infections</b>: ${curr_stats.total_confirmed.toLocaleString()}</li>
                                 <li class="list-group-item">Total <b>Deaths</b>: ${curr_stats.total_deaths.toLocaleString()}</li>`
 
-            if (typeof (daily_report_regions[country_name].Province_State[state_name].test_rate) === "undefined")
+        if (typeof(daily_report_regions[country_name].Province_State[state_name].test_rate) === "undefined")
             summary_paragraph.innerHTML += `<li class="list-group-item">Cases x 100,000 People: ${parseFloat(daily_report_regions[country_name].Province_State[state_name].incidence_rate).toFixed(2).toLocaleString()} </li>`;
-            summary_paragraph.innerHTML += `<li class="list-group-item">Mortality Rate: ${parseFloat(daily_report_regions[country_name].Province_State[state_name].case_fatality_ratio).toFixed(2).toLocaleString()} %</li>`;
-            
+        summary_paragraph.innerHTML += `<li class="list-group-item">Mortality Rate: ${parseFloat(daily_report_regions[country_name].Province_State[state_name].case_fatality_ratio).toFixed(2).toLocaleString()} %</li>`;
+
         summary_paragraph.innerHTML += `</div>`;
         summary_paragraph.innerHTML += `</div>`;
-            
-    }
-    
-    else { // US county summary
+
+    } else { // US county summary
         summary_paragraph.innerHTML += `<ul class="list-group list-group-flush">`;
         summary_paragraph.innerHTML += `<li class="list-group-item"><b>Active</b> Cases: ${parseInt(daily_report_regions[country_code].Province_State[state_name].County[county_name].active).toLocaleString()}`;
         summary_paragraph.innerHTML += `
                                 <li class="list-group-item">Total <strong>Infections</strong>: ${curr_stats.total_confirmed.toLocaleString()}</li>
                                 <li class="list-group-item">Total <strong>Deaths</strong>: ${curr_stats.total_deaths.toLocaleString()}</li>`;
         // if ('US' == country_code) {
-            summary_paragraph.innerHTML += `<li class="list-group-item">Incidence Rate: 
+        summary_paragraph.innerHTML += `<li class="list-group-item">Incidence Rate: 
             ${parseFloat(daily_report_regions[country_code].Province_State[state_name].County[county_name]['incidence_rate']).toFixed(2).toLocaleString()} x 100,000 people</li>`;
-        
-            if (typeof (daily_report_regions[country_code].Province_State[state_name].case_fatality_ratio) === "undefined" || is_empty(daily_report_regions[country_code].Province_State[state_name].case_fatality_ratio))
-                summary_paragraph.innerHTML += `<li class="list-group-item">Mortality Rate: N/A</li></ul>`;
-            else
-                summary_paragraph.innerHTML += `<li class="list-group-item">Mortality Rate: ${parseFloat(daily_report_regions[country_code].Province_State[state_name].case_fatality_ratio).toFixed(2).toLocaleString()} %</li></ul>`;
-        
-            summary_paragraph.innerHTML += `</div><ul class="list-group list-group-flush"><li class="list-group-item"><p align='center'><a href="#counties_table">Jump to Counties list</a></p></li></ul>`;
-            summary_paragraph.innerHTML += `</div>`;
+
+        if (typeof(daily_report_regions[country_code].Province_State[state_name].case_fatality_ratio) === "undefined" || is_empty(daily_report_regions[country_code].Province_State[state_name].case_fatality_ratio))
+            summary_paragraph.innerHTML += `<li class="list-group-item">Mortality Rate: N/A</li></ul>`;
+        else
+            summary_paragraph.innerHTML += `<li class="list-group-item">Mortality Rate: ${parseFloat(daily_report_regions[country_code].Province_State[state_name].case_fatality_ratio).toFixed(2).toLocaleString()} %</li></ul>`;
+
+        summary_paragraph.innerHTML += `</div><ul class="list-group list-group-flush"><li class="list-group-item"><p align='center'><a href="#counties_table">Jump to Counties list</a></p></li></ul>`;
+        summary_paragraph.innerHTML += `</div>`;
 
         // // }
         // summary_paragraph.innerHTML += `</ul>`;
         // if ('US' == country_code)
         //     summary_paragraph.innerHTML += `<br><br><p align='left'><a href="#counties_table">Jump to Counties list</a></p>`
     }
-    
+
     summary_cell.appendChild(summary_paragraph);
     return summary_cell;
 }
@@ -482,12 +472,10 @@ function get_latest_stats(state_name, country_code, county_name) {
         total_confirmed = countries[country_iso2name[country_code]].confirmed_timeline[countries[country_iso2name[country_code]].confirmed_timeline.length - 1]
         total_recovered = countries[country_iso2name[country_code]].recovered_timeline[countries[country_iso2name[country_code]].recovered_timeline.length - 1]
         total_deaths = countries[country_iso2name[country_code]].deaths_timeline[countries[country_iso2name[country_code]].deaths_timeline.length - 1]
-    }
-    else if (is_empty(county_name)){
+    } else if (is_empty(county_name)) {
         total_confirmed = countries[country_iso2name[country_code]].States[state_name].confirmed_timeline[countries[country_iso2name[country_code]].confirmed_timeline.length - 1]
         total_deaths = countries[country_iso2name[country_code]].States[state_name].deaths_timeline[countries[country_iso2name[country_code]].deaths_timeline.length - 1]
-    }
-    else {
+    } else {
         total_confirmed = countries[country_iso2name[country_code]].States[state_name].Counties[county_name].confirmed_timeline[countries[country_iso2name[country_code]].confirmed_timeline.length - 1]
         total_deaths = countries[country_iso2name[country_code]].States[state_name].Counties[county_name].deaths_timeline[countries[country_iso2name[country_code]].deaths_timeline.length - 1]
     }
@@ -499,10 +487,10 @@ function create_country_name_label(country_name, state_name, country_code, count
     if ((country_code == 'World' || country_code === 'US' || country_code === 'BS') && (state_name.localeCompare('') == 0))
         country_name_label = 'The ' + country_name_label;
     if (county_name.localeCompare('') != 0)
-        country_name_label = county_name + ', '+ state_name + ', ' + country_name2iso[country_name_label];
+        country_name_label = county_name + ', ' + state_name + ', ' + country_name2iso[country_name_label];
     else if (state_name.localeCompare('') != 0)
         country_name_label = state_name + ', ' + country_name;
-    
+
     return country_name_label;
 }
 
@@ -514,9 +502,9 @@ function create_active_plot_cell(country_code, country_name, country_name_label)
     var active_tml_stats = get_data_stats(countries[country_name]['active_timeline'], country_name);
     var active_tml_caption = `The values range from ${active_tml_stats.min_val.toLocaleString()} on 
         ${active_tml_stats.min_key.toLocaleString()} to ${active_tml_stats.max_val.toLocaleString()} on ${active_tml_stats.max_key.toLocaleString()}.`;
-        
+
     if (active_tml_stats.min_val != active_tml_stats.first_val)
-            active_tml_caption += `The first ${active_tml_stats.first_val.toLocaleString()} active cases were recorded on 
+        active_tml_caption += `The first ${active_tml_stats.first_val.toLocaleString()} active cases were recorded on 
                                     ${active_tml_stats.first_key.toLocaleString()}`
 
     var active_plot_cell = document.createElement('div');
@@ -529,7 +517,7 @@ function create_active_plot_cell(country_code, country_name, country_name_label)
                                 from ${countries[country_name].dates[0].toLocaleString()} to the latest update.`);
     canvas_active.innerHTML = `<p role="region" aria-live="polite"
                                 id="active_cases_chart_fallback">${active_tml_caption}}</p>`;
-    
+
     generate_plot(canvas_active, ``, 1, 'black', 'salmon', false, countries[country_name]['active_timeline']);
     active_plot_cell.appendChild(document.createElement('br'));
     active_plot_cell.appendChild(canvas_active);
@@ -538,8 +526,8 @@ function create_active_plot_cell(country_code, country_name, country_name_label)
         `sonify('active_plot_controls', 'stereo_panning_sonify_active_${country_name}_button_id', countries['${country_name}']['active_timeline'], 220, 2);`);
     active_plot_cell.appendChild(document.createElement('br'));
     active_plot_cell.appendChild(document.createElement('br'));
-    
-    return active_plot_cell;        
+
+    return active_plot_cell;
 }
 
 function create_confirmed_plot_cell(country_code, country_name, country_name_label) {
@@ -554,20 +542,20 @@ function create_confirmed_plot_cell(country_code, country_name, country_name_lab
         confirmed_caption += `The first ${confirmed_stats.first_val.toLocaleString()} infections were recorded on ${confirmed_stats.first_key.toLocaleString()}`;
     var confirmed_plot_cell = document.createElement('div');
     confirmed_plot_cell.className = 'col-sm text-center';
-    
+
     canvas_confirmed.setAttribute('aria-label', `This plot shows the total number of new COVID-19 infections
         from the beginning of the pandemic on ${countries[country_name].dates[0].toLocaleString()} to the latest update.`);
-    
+
     canvas_confirmed.innerHTML = `<p role="region" aria-live="polite"
         id="confirmed_cases_chart_fallback"> ${confirmed_caption} </p>`;
-    
+
     generate_plot(canvas_confirmed, ``, 1, 'black', 'teal', false,
         countries[`${country_name}`]['confirmed_timeline']);
-    
+
     var plot_header_confirmed = document.createElement('h3');
     plot_header_confirmed.innerText = 'Plot - Total Confirmed Cases of COVID-19 in ' + country_name_label;
     confirmed_plot_cell.append(plot_header_confirmed);
-    
+
     confirmed_plot_cell.appendChild(canvas_confirmed);
     confirmed_plot_cell.appendChild(document.createElement('br'));
     add_button(`Sonify ${country_name_label} Total Confirmed Cases Plot`, 'confimed_plot_controls', confirmed_plot_cell, `sonify_confirmed_${country_name}_button_id`,
@@ -597,7 +585,7 @@ function create_deaths_plot_cell(country_code, country_name, country_name_label)
 
     var deaths_plot_cell = document.createElement('div');
     deaths_plot_cell.className = 'col-sm text-center';
-    
+
     canvas_deaths.setAttribute('aria-label', `This plot shows the total number of COVID-19 
     deaths from the beginning of the pandemic on ${countries[country_name].dates[0].toLocaleString()} to the latest update.`);
     canvas_deaths.innerHTML = `<p role="region" aria-live="polite"
@@ -613,7 +601,7 @@ function create_deaths_plot_cell(country_code, country_name, country_name_label)
     deaths_plot_cell.appendChild(document.createElement('br'));
     add_button(`Sonify ${country_name} Total Deaths Plot`, 'deaths_plot_controls', deaths_plot_cell, `sonify_deaths_${country_name}_button_id`,
         `sonify('deaths_plot_controls', 'stereo_panning_sonify_deaths_${country_name}_button_id', countries['${country_name}']['deaths_timeline'],220, 2);`);
-    
+
     return deaths_plot_cell;
 }
 
@@ -625,14 +613,14 @@ function display_country_content(country_code, country_name, country_name_label,
     row2.className = 'row';
     var row3 = document.createElement('div');
     row3.className = 'row';
-    
+
     var active_plot_cell = create_active_plot_cell(country_code, country_name, country_name_label);
     row1.appendChild(active_plot_cell);
     section.appendChild(row1);
 
-    if (country_name !== 'World') { 
-        var confirmed_plot_cell = create_confirmed_plot_cell(country_code, country_name, country_name_label); 
-        var deaths_plot_cell = create_deaths_plot_cell(country_code, country_name, country_name_label); 
+    if (country_name !== 'World') {
+        var confirmed_plot_cell = create_confirmed_plot_cell(country_code, country_name, country_name_label);
+        var deaths_plot_cell = create_deaths_plot_cell(country_code, country_name, country_name_label);
         row2.appendChild(confirmed_plot_cell);
         row3.appendChild(deaths_plot_cell);
         section.appendChild(row2);
@@ -645,7 +633,7 @@ function display_country_content(country_code, country_name, country_name_label,
         link_cell.innerHTML = `<p align='center'><a href="#" onClick="handle_selection('World', '', '')" title="jump to">Table of Countries</a></p>`;
         if (country_code.localeCompare('US') != 0)
             section.appendChild(link_cell);
-        
+
         if ('US' == country_code || 'CN' == country_code) {
             var padding_cell = document.createElement('div');
             padding_cell.className = 'col-2 text-center';
@@ -656,8 +644,7 @@ function display_country_content(country_code, country_name, country_name_label,
             create_states_table(country_name, states_cell);
             section.appendChild(states_cell);
         }
-    }
-    else {
+    } else {
         var padding_cell = document.createElement('div');
         padding_cell.className = 'col-2 text-center';
         section.appendChild(padding_cell);
@@ -675,7 +662,7 @@ function create_state_confirmed_cumulative_plot_cell(state_name, country_name, c
     canvas_daily_new.height = window.innerHeight;
 
     var daily_new_tml_stats = get_data_stats(countries[country_name].States[state_name]['confirmed_timeline'], country_name);
-        var daily_new_tml_caption = `The values on tha vertical axis range from ${daily_new_tml_stats.min_val.toLocaleString()} recorded on 
+    var daily_new_tml_caption = `The values on tha vertical axis range from ${daily_new_tml_stats.min_val.toLocaleString()} recorded on 
                                     ${daily_new_tml_stats.min_key.toLocaleString()} 
         to ${daily_new_tml_stats.max_val.toLocaleString()} on ${daily_new_tml_stats.max_key.toLocaleString()}.`;
 
@@ -689,7 +676,7 @@ function create_state_confirmed_cumulative_plot_cell(state_name, country_name, c
                                 from the beginning of the pandemic on ${countries[country_name].dates[0].toLocaleString()} to the latest update.`);
     canvas_daily_new.innerHTML = `<p role="region" aria-live="polite"
                                 id="daily_new_cases_chart_fallback">${daily_new_tml_caption}}</p>`;
-    
+
     generate_plot(canvas_daily_new, ``, 1, 'black', 'rgba(125, 100, 45, 0.9)', false, countries[country_name].States[state_name]['confirmed_timeline']);
     daily_new_plot_cell.appendChild(document.createElement('br'));
     daily_new_plot_cell.appendChild(canvas_daily_new);
@@ -698,7 +685,7 @@ function create_state_confirmed_cumulative_plot_cell(state_name, country_name, c
         `sonify('daily_new_plot_controls', 'stereo_panning_sonify_daily_new_${country_name}_button_id', moving_average(countries['${country_name}'].States['${state_name}']['confirmed_timeline'], 3),220, 2);`);
     daily_new_plot_cell.appendChild(document.createElement('br'));
     daily_new_plot_cell.appendChild(document.createElement('br'));
-    
+
     return daily_new_plot_cell;
 }
 
@@ -712,19 +699,19 @@ function create_state_confirmed_daily_plot_cell(state_name, country_name, countr
         confirmed_caption += `The first ${confirmed_stats.first_val.toLocaleString()} infections were recorded on ${confirmed_stats.first_key.toLocaleString()}`;
     var confirmed_plot_cell = document.createElement('div');
     confirmed_plot_cell.className = 'col-sm text-center';
-    
+
     canvas_confirmed.setAttribute('aria-label', `This plot shows the daily number of new COVID-19 infections
     from ${countries[country_name].dates[0].toLocaleString()} to the latest update.`);
-    
+
     canvas_confirmed.innerHTML = `<p role="region" aria-live="polite"
         id="confirmed_cases_chart_fallback"> ${confirmed_caption} </p>`;
     generate_plot(canvas_confirmed, ``, 1, 'black', 'teal', false,
         countries[`${country_name}`].States[state_name]['confirmed_daily']);
-    
+
     var plot_header_confirmed = document.createElement('h3');
     plot_header_confirmed.innerText = 'Plot - Daily New Cases of COVID-19 in ' + country_name_label;
     confirmed_plot_cell.append(plot_header_confirmed);
-    
+
     confirmed_plot_cell.appendChild(canvas_confirmed);
     confirmed_plot_cell.appendChild(document.createElement('br'));
     add_button(`Sonify Daily New Cases Plot`, 'confirmed_plot_controls', confirmed_plot_cell, `sonify_confirmed_${country_name}_button_id`,
@@ -742,10 +729,10 @@ function create_state_deaths_plot_cell(state_name, country_name, country_name_la
     var deaths_stats = get_data_stats(countries[country_name].States[state_name]['deaths_daily'], country_name);
     var deaths_caption = `The values range from ${deaths_stats.min_val.toLocaleString()} on ${deaths_stats.min_key.toLocaleString()} 
     to ${deaths_stats.max_val.toLocaleString()} on ${deaths_stats.max_key.toLocaleString()}.}`;
-    
+
     if (deaths_stats.min_val != deaths_stats.first_val)
         deaths_caption += `The first ${deaths_stats.first_val.toLocaleString()} deaths were recorded on ${deaths_stats.first_key.toLocaleString()}`;
-    
+
     var deaths_plot_cell = document.createElement('div');
     deaths_plot_cell.className = 'col-sm text-center';
     canvas_deaths.setAttribute('aria-label', `This plot shows the total number of COVID-19 
@@ -753,7 +740,7 @@ function create_state_deaths_plot_cell(state_name, country_name, country_name_la
     canvas_deaths.innerHTML = `<p role="region" aria-live="polite"
         id="confirmed_cases_chart_fallback">${deaths_caption}</p>`;
     generate_plot(canvas_deaths, ``, 1, 'black', 'gray', false, countries[country_name].States[state_name]['deaths_timeline']);
-    
+
     var plot_header_deaths = document.createElement('h3');
     plot_header_deaths.innerText = 'Plot - Total COVID-19 Deaths in ' + country_name_label;
     deaths_plot_cell.append(plot_header_deaths);
@@ -768,9 +755,9 @@ function create_county_confirmed_cumulative_plot_cell(county_name, state_name, c
     var canvas_daily_new = document.createElement('canvas');
     canvas_daily_new.width = window.innerWidth;
     canvas_daily_new.height = window.innerHeight;
-    
+
     var daily_new_tml_stats = get_data_stats(countries[country_name].States[state_name].Counties[county_name]['confirmed_timeline'], country_name);
-        var daily_new_tml_caption = `The values on tha vertical axis range from ${daily_new_tml_stats.min_val.toLocaleString()} recorded on 
+    var daily_new_tml_caption = `The values on tha vertical axis range from ${daily_new_tml_stats.min_val.toLocaleString()} recorded on 
                                     ${daily_new_tml_stats.min_key.toLocaleString()} 
         to ${daily_new_tml_stats.max_val.toLocaleString()} on ${daily_new_tml_stats.max_key.toLocaleString()}.`;
 
@@ -784,7 +771,7 @@ function create_county_confirmed_cumulative_plot_cell(county_name, state_name, c
                                 from the beginning of the pandemic on ${countries[country_name].dates[0].toLocaleString()} to the latest update.`);
     canvas_daily_new.innerHTML = `<p role="region" aria-live="polite"
                                 id="daily_new_cases_chart_fallback">${daily_new_tml_caption}}</p>`;
-    
+
     generate_plot(canvas_daily_new, ``, 1, 'black', 'rgba(125, 100, 45, 0.9)', false, countries[country_name].States[state_name].Counties[county_name]['confirmed_timeline']);
     daily_new_plot_cell.appendChild(document.createElement('br'));
     daily_new_plot_cell.appendChild(canvas_daily_new);
@@ -793,7 +780,7 @@ function create_county_confirmed_cumulative_plot_cell(county_name, state_name, c
         `sonify('daily_new_plot_controls', 'stereo_panning_sonify_daily_new_${country_name}_button_id', moving_average(countries['${country_name}'].States['${state_name}'].Counties['${county_name}']['confirmed_timeline'], 3),220, 2);`);
     daily_new_plot_cell.appendChild(document.createElement('br'));
     daily_new_plot_cell.appendChild(document.createElement('br'));
-    
+
     return daily_new_plot_cell;
 }
 
@@ -808,19 +795,19 @@ function create_county_confirmed_daily_plot_cell(county_name, state_name, countr
         confirmed_caption += `The first ${confirmed_stats.first_val.toLocaleString()} infections were recorded on ${confirmed_stats.first_key.toLocaleString()}`;
     var confirmed_plot_cell = document.createElement('div');
     confirmed_plot_cell.className = 'col-sm text-center';
-    
+
     canvas_confirmed.setAttribute('aria-label', `This plot shows the daily number of new COVID-19 infections
     from ${countries[country_name].dates[0].toLocaleString()} to the latest update.`);
-    
+
     canvas_confirmed.innerHTML = `<p role="region" aria-live="polite"
         id="confirmed_cases_chart_fallback"> ${confirmed_caption} </p>`;
     generate_plot(canvas_confirmed, ``, 1, 'black', 'teal', false,
         countries[`${country_name}`].States[state_name].Counties[county_name]['confirmed_daily']);
-    
+
     var plot_header_confirmed = document.createElement('h3');
     plot_header_confirmed.innerText = 'Plot - Daily New Cases of COVID-19 in ' + country_name_label;
     confirmed_plot_cell.append(plot_header_confirmed);
-    
+
     confirmed_plot_cell.appendChild(canvas_confirmed);
     confirmed_plot_cell.appendChild(document.createElement('br'));
     add_button(`Sonify Daily New Cases Plot`, 'confirmed_plot_controls', confirmed_plot_cell, `sonify_confirmed_${country_name}_button_id`,
@@ -838,10 +825,10 @@ function create_county_deaths_plot_cell(county_name, state_name, country_name, c
     var deaths_stats = get_data_stats(countries[country_name].States[state_name].Counties[county_name]['deaths_daily'], country_name);
     var deaths_caption = `The values range from ${deaths_stats.min_val.toLocaleString()} on ${deaths_stats.min_key.toLocaleString()} 
     to ${deaths_stats.max_val.toLocaleString()} on ${deaths_stats.max_key.toLocaleString()}.}`;
-    
+
     if (deaths_stats.min_val != deaths_stats.first_val)
         deaths_caption += `The first ${deaths_stats.first_val.toLocaleString()} deaths were recorded on ${deaths_stats.first_key.toLocaleString()}`;
-    
+
     var deaths_plot_cell = document.createElement('div');
     deaths_plot_cell.className = 'col-sm text-center';
     canvas_deaths.setAttribute('aria-label', `This plot shows the total number of COVID-19 
@@ -849,7 +836,7 @@ function create_county_deaths_plot_cell(county_name, state_name, country_name, c
     canvas_deaths.innerHTML = `<p role="region" aria-live="polite"
         id="confirmed_cases_chart_fallback">${deaths_caption}</p>`;
     generate_plot(canvas_deaths, ``, 1, 'black', 'gray', false, countries[country_name].States[state_name].Counties[county_name]['deaths_timeline']);
-    
+
     var plot_header_deaths = document.createElement('h3');
     plot_header_deaths.innerText = 'Plot - Total COVID-19 Deaths in ' + country_name_label;
     deaths_plot_cell.append(plot_header_deaths);
@@ -861,7 +848,7 @@ function create_county_deaths_plot_cell(county_name, state_name, country_name, c
 }
 
 function display_state_content(state_name, country_code, country_name, country_name_label, section) {
-    
+
     var row1 = document.createElement('div');
     row1.className = 'row';
     var row2 = document.createElement('div');
@@ -895,8 +882,7 @@ function display_state_content(state_name, country_code, country_name, country_n
         // row4.appendChild(padding_cell);
         // row4.appendChild(counties_table_cell);
         section.appendChild(counties_cell);
-    }
-    else {
+    } else {
         // create table of states
         var padding_cell = document.createElement('div');
         padding_cell.className = 'col-2 text-center';
@@ -909,7 +895,7 @@ function display_state_content(state_name, country_code, country_name, country_n
     }
 }
 
-function display_county_content(county_name, state_name, country_code, country_name, country_name_label, section){
+function display_county_content(county_name, state_name, country_code, country_name, country_name_label, section) {
     var row1 = document.createElement('div');
     row1.className = 'row';
     var row2 = document.createElement('div');
@@ -929,7 +915,7 @@ function display_county_content(county_name, state_name, country_code, country_n
     section.appendChild(row3);
 
     countries[country_name].States[state_name].Counties
-    // create table of counties
+        // create table of counties
     var padding_cell = document.createElement('div');
     padding_cell.className = 'col-2 text-center';
     section.appendChild(padding_cell);
@@ -948,7 +934,7 @@ function create_article(country_code, state_name, county_name, container_id) {
 
     // set up page title
     var country_name_label = create_country_name_label(country_name, state_name, country_code, county_name);
-        // section.innerHTML = `  <hr><h2 id='${country_code}'>${country_name_label}</h2><br>`;
+    // section.innerHTML = `  <hr><h2 id='${country_code}'>${country_name_label}</h2><br>`;
 
     // row 1 - Here goes the Brief
     var summary_row = document.createElement('div');
@@ -959,7 +945,7 @@ function create_article(country_code, state_name, county_name, container_id) {
     section.appendChild(summary_row);
     section.appendChild(document.createElement('br'))
     section.appendChild(document.createElement('br'))
-    // end brief
+        // end brief
 
     if (is_empty(state_name))
         display_country_content(country_code, country_name, country_name_label, section);
@@ -967,8 +953,8 @@ function create_article(country_code, state_name, county_name, container_id) {
         display_state_content(state_name, country_code, country_name, country_name_label, section);
     else
         display_county_content(county_name, state_name, country_code, country_name, country_name_label, section);
-    
-    section.id = `${country_code}_summary`;   
+
+    section.id = `${country_code}_summary`;
     container.appendChild(section);
     container.appendChild(document.createElement('br'));
     container.appendChild(document.createElement('br'));
@@ -980,18 +966,18 @@ function create_counties_table(country_code, country_name, state_name, container
     row.appendChild(document.createElement('br'))
     row.className = 'row';
     var link_to_main = document.createElement('a');
-        link_to_main.href = '#';
-        link_to_main.addEventListener("click", function () {
-            handle_selection(country_code, '', '');
-        });
-        link_to_main.innerText = `Back to ${country_name} main page`;
+    link_to_main.href = '#';
+    link_to_main.addEventListener("click", function() {
+        handle_selection(country_code, '', '');
+    });
+    link_to_main.innerText = `Back to ${country_name} main page`;
     var states_table_cell = document.createElement('div');
     states_table_cell.id = 'counties_table';
     states_table_cell.appendChild(document.createElement('br'));
     states_table_cell.appendChild(link_to_main);
     states_table_cell.appendChild(document.createElement('br'));
     states_table_cell.appendChild(document.createElement('br'));
-    
+
     var header = document.createElement('h3');
     header.innerText = `Table of Counties in ${state_name}, ${country_name}`;
     states_table_cell.appendChild(header);
@@ -1028,20 +1014,20 @@ function create_states_table(country_name, container) {
     row.appendChild(document.createElement('br'))
     row.className = 'row';
     var link_to_main = document.createElement('a');
-        link_to_main.href = '#';
-        link_to_main.addEventListener("click", function () {
-            handle_selection(country_name2iso[country_name], '', '');
-        });
-        link_to_main.innerText = `Back to ${country_name} main page`;
-    
-    
+    link_to_main.href = '#';
+    link_to_main.addEventListener("click", function() {
+        handle_selection(country_name2iso[country_name], '', '');
+    });
+    link_to_main.innerText = `Back to ${country_name} main page`;
+
+
     var states_table_cell = document.createElement('div');
     states_table_cell.id = 'states_table';
     states_table_cell.appendChild(document.createElement('br'));
     states_table_cell.appendChild(link_to_main);
     states_table_cell.appendChild(document.createElement('br'));
     states_table_cell.appendChild(document.createElement('br'));
-    
+
     var header = document.createElement('h3');
     header.innerText = 'Table of States';
     states_table_cell.appendChild(header);
@@ -1049,7 +1035,7 @@ function create_states_table(country_name, container) {
     var states_table = document.createElement('table');
     var caption = document.createElement('caption');
     caption.innerText = `This table presents the list of all the states in ${country_name}. For each state, we report new COVID-19 ` +
-                        `infections and deaths since the last update, together with the total number of infections and deaths since the beginning of the pandemic.`;
+        `infections and deaths since the last update, together with the total number of infections and deaths since the beginning of the pandemic.`;
     states_table.appendChild(caption);
     var table_header = document.createElement('tr');
     table_header.innerHTML = `<th scope='col'> State </th> <th scope='col'>Total Infections</th><th scope='col'>Daily New Infections</th><th scope='col'>Total Deaths</th><th scope='col'>Daily New Deaths</th>`
@@ -1109,7 +1095,7 @@ function prepare_data() {
             for (i = 0; i < confirmed.length; i++) {
                 var keys = (countries[c]['dates']);
                 for (k in keys) {
-                
+
                     countries[c]['confirmed_timeline'][k] += Number(confirmed[i][keys[k]]);
                     countries[c]['deaths_timeline'][k] += Number(deaths[i][keys[k]]);
                     if (recovered[i] != undefined)
@@ -1154,8 +1140,7 @@ function prepare_data() {
                         countries[c]['confirmed_daily'][i] = countries[c]['confirmed_timeline'][i];
                         countries[c]['deaths_daily'][i] = countries[c]['deaths_timeline'][i];
                         countries[c]['recovered_daily'][i] = countries[c]['recovered_timeline'][i];
-                    }
-                    else {
+                    } else {
                         countries[c]['confirmed_daily'][i] = clip_to_zero(countries[c]['confirmed_timeline'][i] - countries[c]['confirmed_timeline'][i - 1]);
                         countries[c]['deaths_daily'][i] = clip_to_zero(countries[c]['deaths_timeline'][i] - countries[c]['deaths_timeline'][i - 1]);
                         countries[c]['recovered_daily'][i] = clip_to_zero(countries[c]['recovered_timeline'][i] - countries[c]['recovered_timeline'][i - 1]);
@@ -1223,13 +1208,13 @@ function prepare_states(country_code) {
                 // create timeline and daily for each county
                 let confirmed = countries[country_code].States[s].Counties[county_name].confirmed;
                 let deaths = countries[country_code].States[s].Counties[county_name].deaths;
-                
+
                 for (i = 0; i < countries[country_code].dates.length; i++) {
                     // for (k in keys) {
-                        countries[country_code].States[s].Counties[county_name]['confirmed_timeline'][i] += Number(confirmed[keys[i]]);
-                        countries[country_code].States[s].Counties[county_name]['deaths_timeline'][i] += Number(deaths[keys[i]]);
-                        countries[country_code].States[s]['confirmed_timeline'][i] += Number(confirmed[keys[i]]);
-                        countries[country_code].States[s]['deaths_timeline'][i] += Number(deaths[keys[i]]);
+                    countries[country_code].States[s].Counties[county_name]['confirmed_timeline'][i] += Number(confirmed[keys[i]]);
+                    countries[country_code].States[s].Counties[county_name]['deaths_timeline'][i] += Number(deaths[keys[i]]);
+                    countries[country_code].States[s]['confirmed_timeline'][i] += Number(confirmed[keys[i]]);
+                    countries[country_code].States[s]['deaths_timeline'][i] += Number(deaths[keys[i]]);
                     // }
                     if (i == 0) {
                         // console.log(countries[c]['confirmed_daily'])
@@ -1237,8 +1222,7 @@ function prepare_states(country_code) {
                         countries[country_code].States[s].Counties[county_name]['deaths_daily'][i] = countries[country_code].States[s].Counties[county_name]['deaths_timeline'][i];
                         countries[country_code].States[s]['confirmed_daily'][i] = countries[country_code].States[s].Counties[county_name]['confirmed_timeline'][i];
                         countries[country_code].States[s]['deaths_daily'][i] = countries[country_code].States[s].Counties[county_name]['deaths_timeline'][i];
-                    }
-                    else {
+                    } else {
                         countries[country_code].States[s].Counties[county_name]['confirmed_daily'][i] += clip_to_zero(countries[country_code].States[s].Counties[county_name]['confirmed_timeline'][i] - countries[country_code].States[s].Counties[county_name]['confirmed_timeline'][i - 1]);
                         countries[country_code].States[s].Counties[county_name]['deaths_daily'][i] += clip_to_zero(countries[country_code].States[s].Counties[county_name]['deaths_timeline'][i] - countries[country_code].States[s].Counties[county_name]['deaths_timeline'][i - 1]);
                         countries[country_code].States[s]['confirmed_daily'][i] += clip_to_zero(countries[country_code].States[s].Counties[county_name]['confirmed_timeline'][i] - countries[country_code].States[s].Counties[county_name]['confirmed_timeline'][i - 1]);
@@ -1246,25 +1230,23 @@ function prepare_states(country_code) {
                     }
                 }
             }
-                // sum up timelines and assign to state
-        }
-        else {
+            // sum up timelines and assign to state
+        } else {
             let confirmed = countries[country_code].States[s].confirmed;
             // console.log(confirmed)
             let deaths = countries[country_code].States[s].deaths;
             for (i = 0; i < countries[country_code].dates.length; i++) {
                 // console.log("XX " + i);
-                
+
                 // for (i = 0; i < countries[country_code].dates.length; i++) {
-                    countries[country_code].States[s]['confirmed_timeline'][i] += Number(confirmed[0][keys[i]]);
-                    countries[country_code].States[s]['deaths_timeline'][i] += Number(deaths[0][keys[i]]);
+                countries[country_code].States[s]['confirmed_timeline'][i] += Number(confirmed[0][keys[i]]);
+                countries[country_code].States[s]['deaths_timeline'][i] += Number(deaths[0][keys[i]]);
                 // }
                 if (i == 0) {
                     // console.log(countries[c]['confirmed_daily'])
                     countries[country_code].States[s]['confirmed_daily'][i] = countries[country_code].States[s]['confirmed_timeline'][i];
                     countries[country_code].States[s]['deaths_daily'][i] = countries[country_code].States[s]['deaths_timeline'][i];
-                }
-                else {
+                } else {
                     countries[country_code].States[s]['confirmed_daily'][i] += clip_to_zero(countries[country_code].States[s]['confirmed_timeline'][i] - countries[country_code].States[s]['confirmed_timeline'][i - 1]);
                     countries[country_code].States[s]['deaths_daily'][i] += clip_to_zero(countries[country_code].States[s]['deaths_timeline'][i] - countries[country_code].States[s]['deaths_timeline'][i - 1]);
                 }
@@ -1281,24 +1263,23 @@ function generate_plot(canvas_elem, title, thickness, color, bgcolor, fill, mdat
     var gradientFill = ctx.createLinearGradient(1000, 1000, 0, 0);
     gradientFill.addColorStop(1, "rgba(0, 0, 0, 0.6)");
     gradientFill.addColorStop(0, bgcolor);
-    
-   
+
+
     var data = {
         labels: countries.World['dates'],
-        datasets: [
-            {
-                label: title,
-                data: mdata,
-                // backgroundColor: bgcolor,
-                borderColor: color,
-                borderWidth: 3,
-                fill: fill,
-                lineTension: 0,
-                radius: 5,
-                fill: 'origin',
-                backgroundColor: gradientFill,
-                pointStyle: 'line'
-            }]
+        datasets: [{
+            label: title,
+            data: mdata,
+            // backgroundColor: bgcolor,
+            borderColor: color,
+            borderWidth: 3,
+            fill: fill,
+            lineTension: 0,
+            radius: 5,
+            fill: 'origin',
+            backgroundColor: gradientFill,
+            pointStyle: 'line'
+        }]
     };
     //options
     var options = {
@@ -1318,7 +1299,7 @@ function generate_plot(canvas_elem, title, thickness, color, bgcolor, fill, mdat
                 fontSize: 16
             }
         },
-        
+
         tooltips: {
             mode: 'nearest'
         },
@@ -1335,7 +1316,7 @@ function generate_plot(canvas_elem, title, thickness, color, bgcolor, fill, mdat
                 ticks: {
                     autoSkip: true,
                     fontSize: 22,
-                    callback: function (value, index, values) {
+                    callback: function(value, index, values) {
                         new_value = value;
                         if (value >= 1e3 && value < 1e6)
                             new_value = value / 1e3 + 'K';
@@ -1352,15 +1333,13 @@ function generate_plot(canvas_elem, title, thickness, color, bgcolor, fill, mdat
         }
     };
 
-
-
     var chart = new Chart(canvas_elem, {
         type: "line",
         data: data,
         options: options,
         ticks: [autoSkip = true]
     });
-    
+
 }
 
 // /////////////////////////////////////////////////////////////////////////////////////// \\
@@ -1395,7 +1374,7 @@ function add_button(text, form_id, container_elem, button_id, callback_string) {
       </li>
     </ul>
     `;
-    
+
     var b = document.createElement('button');
     b.id = button_id;
     b.innerHTML = text
@@ -1430,11 +1409,11 @@ const daily_report_RAW_reader = (array) => {
 function parse_reports_regions(res) {
     var data = d3.csvParse(res);
     for (d = 0; d < data.length; d++) {
-        if (typeof (data[d]['Country_Region']) !== 'undefined') {
+        if (typeof(data[d]['Country_Region']) !== 'undefined') {
             // setup data structure the first time we encounter a country
-            if (typeof (daily_report_regions[data[d]['Country_Region']]) === 'undefined') {
-                        daily_report_regions[data[d]['Country_Region']] = [];
-                        daily_report_regions[data[d]['Country_Region']]['Province_State'] = [];
+            if (typeof(daily_report_regions[data[d]['Country_Region']]) === 'undefined') {
+                daily_report_regions[data[d]['Country_Region']] = [];
+                daily_report_regions[data[d]['Country_Region']]['Province_State'] = [];
             }
             // insert data into structure 
             //first, make distinction between US and not to handle counties vs regions
@@ -1442,35 +1421,34 @@ function parse_reports_regions(res) {
                 let country = data[d]['Country_Region'];
                 let state = data[d]['Province_State'];
                 let county = data[d]['Admin2'];
-                if (typeof (daily_report_regions[country].Province_State[state]) === 'undefined') {
+                if (typeof(daily_report_regions[country].Province_State[state]) === 'undefined') {
                     daily_report_regions[country].Province_State[state] = [];
                     daily_report_regions[country].Province_State[state]['County'] = [];
                 }
-                if (typeof (daily_report_regions[country].Province_State[state].County[county]) === 'undefined') 
+                if (typeof(daily_report_regions[country].Province_State[state].County[county]) === 'undefined')
                     daily_report_regions[country].Province_State[state].County[county] = [];
-                    
-                    daily_report_regions[country].Province_State[state].County[county]['active'] = data[d].Active;
-                    daily_report_regions[country].Province_State[state].County[county]['recovered'] = data[d].Recovered;
-                    daily_report_regions[country].Province_State[state].County[county]['deaths'] = data[d].Deaths;
-                    daily_report_regions[country].Province_State[state].County[county]['case_fatality_ratio'] = data[d]['Case-Fatality_Ratio'];
-                    daily_report_regions[country].Province_State[state].County[county]['incidence_rate'] = data[d].Incidence_Rate;
-                    daily_report_regions[country].Province_State[state].County[county]['confirmed'] = data[d].Confirmed;
-                    daily_report_regions[country].Province_State[state].County[county]['last_update'] = data[d].Last_Update;
 
-            }
-            else {
+                daily_report_regions[country].Province_State[state].County[county]['active'] = data[d].Active;
+                daily_report_regions[country].Province_State[state].County[county]['recovered'] = data[d].Recovered;
+                daily_report_regions[country].Province_State[state].County[county]['deaths'] = data[d].Deaths;
+                daily_report_regions[country].Province_State[state].County[county]['case_fatality_ratio'] = data[d]['Case-Fatality_Ratio'];
+                daily_report_regions[country].Province_State[state].County[county]['incidence_rate'] = data[d].Incidence_Rate;
+                daily_report_regions[country].Province_State[state].County[county]['confirmed'] = data[d].Confirmed;
+                daily_report_regions[country].Province_State[state].County[county]['last_update'] = data[d].Last_Update;
+
+            } else {
                 let country = data[d]['Country_Region'];
                 let state = data[d]['Province_State'];
-                if (typeof (daily_report_regions[country].Province_State[state]) === 'undefined') 
+                if (typeof(daily_report_regions[country].Province_State[state]) === 'undefined')
                     daily_report_regions[country].Province_State[state] = [];
-                
-                    daily_report_regions[country].Province_State[state]['active'] = data[d].Active;
-                    daily_report_regions[country].Province_State[state]['recovered'] = data[d].Recovered;
-                    daily_report_regions[country].Province_State[state]['deaths'] = data[d].Deaths;
-                    daily_report_regions[country].Province_State[state]['case_fatality_ratio'] = data[d]['Case-Fatality_Ratio'];
-                    daily_report_regions[country].Province_State[state]['incidence_rate'] = data[d].Incidence_Rate;
-                    daily_report_regions[country].Province_State[state]['confirmed'] = data[d].Confirmed;
-                    daily_report_regions[country].Province_State[state]['last_update'] = data[d].Last_Update;
+
+                daily_report_regions[country].Province_State[state]['active'] = data[d].Active;
+                daily_report_regions[country].Province_State[state]['recovered'] = data[d].Recovered;
+                daily_report_regions[country].Province_State[state]['deaths'] = data[d].Deaths;
+                daily_report_regions[country].Province_State[state]['case_fatality_ratio'] = data[d]['Case-Fatality_Ratio'];
+                daily_report_regions[country].Province_State[state]['incidence_rate'] = data[d].Incidence_Rate;
+                daily_report_regions[country].Province_State[state]['confirmed'] = data[d].Confirmed;
+                daily_report_regions[country].Province_State[state]['last_update'] = data[d].Last_Update;
             }
             daily_report_RAW_reader(data);
         }
@@ -1480,28 +1458,28 @@ function parse_reports_regions(res) {
 function parse_reports_us_states(res) {
     var data = d3.csvParse(res);
     for (d = 0; d < data.length; d++) {
-        if (typeof (data[d]['Country_Region']) !== 'undefined') {
+        if (typeof(data[d]['Country_Region']) !== 'undefined') {
             // setup data structure the first time we encounter a country
-            if (typeof (daily_report_us_states[data[d]['Province_State']]) === 'undefined') {
+            if (typeof(daily_report_us_states[data[d]['Province_State']]) === 'undefined') {
                 daily_report_us_states[data[d]['Province_State']] = [];
             }
 
             let state = data[d]['Province_State'];
-            if (typeof (daily_report_us_states[state]) === 'undefined')
+            if (typeof(daily_report_us_states[state]) === 'undefined')
                 daily_report_us_states[state] = [];
-                
-                daily_report_us_states[state]['active'] = data[d].Active;
-                daily_report_us_states[state]['recovered'] = data[d].Recovered;
-                daily_report_us_states[state]['deaths'] = data[d].Deaths;
-                daily_report_us_states[state]['case_fatality_ratio'] = data[d]['Case-Fatality_Ratio'];
-                daily_report_us_states[state]['incidence_rate'] = data[d].Incident_Rate; // ahhh inconsistencies in the data source
-                daily_report_us_states[state]['confirmed'] = data[d].Confirmed;
-                daily_report_us_states[state]['last_update'] = data[d].Last_Update; // BEN :: regions and us perfectly match to this point
-                daily_report_us_states[state]['people_tested'] = data[d].People_Tested;
-                daily_report_us_states[state]['people_hospitalized'] = data[d].People_Hospitalized;
-                daily_report_us_states[state]['mortality_rate'] = data[d].Mortality_Rate;
-                daily_report_us_states[state]['testing_rate'] = data[d].Testing_Rate;
-                daily_report_us_states[state]['hospitalization_rate'] = data[d].Hospitalization_Rate;           
+
+            daily_report_us_states[state]['active'] = data[d].Active;
+            daily_report_us_states[state]['recovered'] = data[d].Recovered;
+            daily_report_us_states[state]['deaths'] = data[d].Deaths;
+            daily_report_us_states[state]['case_fatality_ratio'] = data[d]['Case-Fatality_Ratio'];
+            daily_report_us_states[state]['incidence_rate'] = data[d].Incident_Rate; // ahhh inconsistencies in the data source
+            daily_report_us_states[state]['confirmed'] = data[d].Confirmed;
+            daily_report_us_states[state]['last_update'] = data[d].Last_Update; // BEN :: regions and us perfectly match to this point
+            daily_report_us_states[state]['people_tested'] = data[d].People_Tested;
+            daily_report_us_states[state]['people_hospitalized'] = data[d].People_Hospitalized;
+            daily_report_us_states[state]['mortality_rate'] = data[d].Mortality_Rate;
+            daily_report_us_states[state]['testing_rate'] = data[d].Testing_Rate;
+            daily_report_us_states[state]['hospitalization_rate'] = data[d].Hospitalization_Rate;
         }
     }
 }
@@ -1516,7 +1494,7 @@ function parse_reports_us_states(res) {
 // /////////////////////////////////////////////////////////////////////////////////////// \\
 // /////////////////////////////////////////////////////////////////////////////////////// \\
 
-function is_empty(name){
+function is_empty(name) {
     return (name.localeCompare('') == 0 || name == undefined);
 }
 
@@ -1538,21 +1516,27 @@ function formatAMPM(date) {
     var ampm = hours >= 12 ? 'pm' : 'am';
     hours = hours % 12;
     hours = hours ? hours : 12; // the hour '0' should be '12'
-    minutes = minutes < 10 ? '0'+ minutes : minutes;
+    minutes = minutes < 10 ? '0' + minutes : minutes;
     var strTime = hours + ':' + minutes + ' ' + ampm;
     return strTime;
-  }
+}
 
 const isToday = (in_date) => {
     const today = new Date()
     return (in_date.getDate() == today.getDate() &&
-            in_date.getMonth() == today.getMonth() &&
-            in_date.getFullYear() == today.getFullYear());
+        in_date.getMonth() == today.getMonth() &&
+        in_date.getFullYear() == today.getFullYear());
 }
 
 function getYesterdayDate() {
     var date = new Date();
     date.setDate(date.getDate() - 1);
+    return date;
+}
+
+function getDate(dayOffset) {
+    var date = new Date();
+    date.setDate(date.getDate() - offset);
     return date;
 }
 
@@ -1570,9 +1554,9 @@ const date2DDMMYYYY = (date, separator) => {
 //moving average
 function moving_average(data, n) {
     var out_data = [];
-    for (i = 0; i < n-1; i++)
+    for (i = 0; i < n - 1; i++)
         out_data[i] = 0;
-    for (i = n - 1; i < data.length; i++){
+    for (i = n - 1; i < data.length; i++) {
         out_data[i] = 0.33 * (data[i] + data[i - 1] + data[i - 2]);
     }
     return out_data;
@@ -1588,7 +1572,7 @@ function get_data_stats(data, country_name) {
     var min_key;
     var max_key;
     var values = Object.values(data);
-    
+
     for (v = 0; v < values.length - 1; v++) {
         if (values[v] > 0 && first_non_zero) {
             first_non_zero = false;
@@ -1614,87 +1598,90 @@ function get_data_stats(data, country_name) {
 }
 
 //Comparer Function, sorts collection by property prop
-function get_sort_order(prop) {  
-    return function(a, b) {  
-        if (a[prop] > b[prop]) {  
-            return 1;  
-        } 
-        else if (a[prop] < b[prop]) {  
-            return -1;  
-        }  
-        return 0;  
-    }  
+function get_sort_order(prop) {
+    return function(a, b) {
+        if (a[prop] > b[prop]) {
+            return 1;
+        } else if (a[prop] < b[prop]) {
+            return -1;
+        }
+        return 0;
+    }
 }
 
-function get_sort_order_active_cases() {  
-    return function(a, b) {  
+function get_sort_order_active_cases() {
+    return function(a, b) {
         if (a.TotalConfirmed - (a.TotalRecovered + a.TotalDeaths) >
-            b.TotalConfirmed - (b.TotalRecovered + b.TotalDeaths)) {  
-            return 1;  
-        } 
-        else if (a.TotalConfirmed - (a.TotalRecovered + a.TotalDeaths) >
-                b.TotalConfirmed - (b.TotalRecovered + b.TotalDeaths)) {  
-            return -1;  
-        }  
-        return 0;  
-    }  
-}  
+            b.TotalConfirmed - (b.TotalRecovered + b.TotalDeaths)) {
+            return 1;
+        } else if (a.TotalConfirmed - (a.TotalRecovered + a.TotalDeaths) >
+            b.TotalConfirmed - (b.TotalRecovered + b.TotalDeaths)) {
+            return -1;
+        }
+        return 0;
+    }
+}
 
-function timestamp_to_date(tstamp){
+function timestamp_to_date(tstamp) {
     var d = new Date(tstamp);
     return d;
 }
 
 // Sorted keys are obtained in 'key' array 
-function sortKeys(obj_1) { 
-    var key = Object.keys(obj_1) 
-    .sort(function order(key1, key2) { 
-        if (key1 < key2) return -1; 
-        else if (key1 > key2) return +1; 
-        else return 0; 
-    });  
-      
+function sortKeys(obj_1) {
+    var key = Object.keys(obj_1)
+        .sort(function order(key1, key2) {
+            if (key1 < key2) return -1;
+            else if (key1 > key2) return +1;
+            else return 0;
+        });
+
     // Taking the object in 'temp' object 
     // and deleting the original object. 
-    var temp = {}; 
-      
-    for (var i = 0; i < key.length; i++) { 
-        temp[key[i]] = obj_1[key[i]]; 
-        delete obj_1[key[i]]; 
-    }  
+    var temp = {};
+
+    for (var i = 0; i < key.length; i++) {
+        temp[key[i]] = obj_1[key[i]];
+        delete obj_1[key[i]];
+    }
 
     // Copying the object from 'temp' to  
     // 'original object'. 
-    for (var i = 0; i < key.length; i++) { 
-        obj_1[key[i]] = temp[key[i]]; 
-    }  
-    return obj_1; 
-} 
+    for (var i = 0; i < key.length; i++) {
+        obj_1[key[i]] = temp[key[i]];
+    }
+    return obj_1;
+}
 
 // /////////////////////////////////////////////////////////////////////////////////////// \\
 // /////////////////////////////////////////////////////////////////////////////////////// \\
 // /////////////////////////////////////////////////////////////////////////////////////// \\
 // /////////////////////////////////////////////////////////////////////////////////////// \\
 // ******************************** DATA FETCHING **************************************** \\
-/ //////////////////////////////////////////////////////////////////////////////////////// \\
+/ / /////////////////////////////////////////////////////////////////////////////////////// \\
 // /////////////////////////////////////////////////////////////////////////////////////// \\
 // /////////////////////////////////////////////////////////////////////////////////////// \\
 // /////////////////////////////////////////////////////////////////////////////////////// \\
 
-/**///////////////////////////////////////////////////////////**/
+/**/ //////////////////////////////////////////////////////////**/
 /* *********** BEN :: separator for data fetch *************** */
-/**///////////////////////////////////////////////////////////**/
+/**/ //////////////////////////////////////////////////////////**/
 //temporarily also transporting 'res' param to still use the 2 functions available for parsing
 const stringRuler = (string, res) => {
-    if (string.length === 112) { console.log("[OK] JHU DAILY REPORTS FOUND"); parse_reports_regions(res); /*console.log(daily_report_regions);*/ }      //BEN :: spared regions array from output but left it in place
-    else { console.log("[OK] JHU DAILY REPORTS US STATES FOUND"); parse_reports_us_states(res); /*console.log(daily_report_us_states);*/}              //BEN :: spared regions array from output but left it in place
+    if (string.length === 112) {
+        console.log("[OK] JHU DAILY REPORTS FOUND");
+        parse_reports_regions(res); /*console.log(daily_report_regions);*/
+    } //BEN :: spared regions array from output but left it in place
+    else {
+        console.log("[OK] JHU DAILY REPORTS US STATES FOUND");
+        parse_reports_us_states(res); /*console.log(daily_report_us_states);*/
+    } //BEN :: spared regions array from output but left it in place
 };
 const stringRuler_NO = (string) => {
-    if (string.length === 112) { console.log("[X] NO - JHU DAILY REPORTS FOUND " + string); }
-    else { console.log("[X] NO - JHU DAILY REPORTS US STATES FOUND " + string); }
+    if (string.length === 112) { console.log("[X] NO - JHU DAILY REPORTS FOUND " + string); } else { console.log("[X] NO - JHU DAILY REPORTS US STATES FOUND " + string); }
 };
 
-function get_daily_reports(filename) {
+function get_daily_reports(filename, dayOffset) {
     var progress = document.getElementById('fetching_progress');
     const daily_reports = daily_reports_base_URL.values();
     for (let item of daily_reports) {
@@ -1705,38 +1692,39 @@ function get_daily_reports(filename) {
             "method": "GET",
             "dataType": "text"
         }
-        $.ajax(settings).then(                                                                  
-            function (res) {                                                                    
+        $.ajax(settings).then(
+            function(res) {
                 stringRuler(item, res);
                 // do something with the response
                 // parse_reports_regions(res);                                                  // BEN :: !!!! make it 1 function for both !!!! meanwhile controlled by stringRuler(), line 22
-                njobs--;                                                                        
-                progress.value += 1;                                                            
+                njobs--;
+                progress.value += 1;
                 if (njobs == 0) // all the async calls returned successfully                    
-                    prepare_data();                                                             // BEN :: see line 1066!
+                    prepare_data(); // BEN :: see line 1066!
             },
-            function () {
-                //console.log("[X] NO " + in_url);                                              // BEN :: set off for testing func() solution
+            function() {
+                console.log("[X] day offset " + in_url); // BEN :: set off for testing func() solution
                 stringRuler_NO(item);
-                date_string = date2DDMMYYYY(getYesterdayDate(), '-');
+                date_string = date2DDMMYYYY(getDate(dayOffset + 1), '-');
                 let filename = date_string + ".csv";
-                get_daily_reports(filename)
+                if (dayOffset < 5)
+                    get_daily_reports(filename, dayOffset + 1)
             }
         );
     }
 };
-/**///////////////////////////////////////////////////////////**/
+/**/ //////////////////////////////////////////////////////////**/
 
 function fetch_and_prepare_data_JHU() {
-    
+
     var progress = document.getElementById('fetching_progress');
     progress.max = njobs;
     progress.value = 0;
-   
-    /* var date_string = date2DDMMYYYY(new Date(), '-'); */                                      // BEN :: timezone clipping - i doubt there's a report for actually 'today', should be more like getYesterdayDate()
-    var date_string = date2DDMMYYYY(getYesterdayDate(), '-');
 
-    get_daily_reports(date_string + ".csv");                                                    // BEN :: new function used
+    var date_string = date2DDMMYYYY(new Date(), '-'); // BEN :: timezone clipping - i doubt there's a report for actually 'today', should be more like getYesterdayDate()
+    // var date_string = date2DDMMYYYY(getYesterdayDate(), '-');
+
+    get_daily_reports(date_string + ".csv", 0); // BEN :: new function used
 
     var settings = {
         "crossDomain": true,
@@ -1745,99 +1733,101 @@ function fetch_and_prepare_data_JHU() {
         "dataType": "text",
     }
     $.ajax(settings).then(
-        function (res) {
+        function(res) {
             var data = d3.csvParse(res);
             country_name2iso['World'] = 'World';
             country_iso2name['World'] = 'World';
-            for (i = 0; i < data.length; i++){
+            for (i = 0; i < data.length; i++) {
                 country_name2iso[data[i]['Country_Region']] = data[i]['iso2'];
                 country_iso2name[data[i]['iso2']] = data[i]['Country_Region'];
             }
 
             progress.value += 1;
             console.log("[OK] JHU ISO_TABLE")
-            
+
             njobs--;
             if (njobs == 0)
                 prepare_data();
-        }, function() {
+        },
+        function() {
             console.log("[!] JHU ISO_TABLE")
-    });
-    
+        });
+
 
     var settings = {
         "crossDomain": true,
         "url": "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv",
         "method": "GET",
-        "dataType" : "text"
+        "dataType": "text"
     }
     $.ajax(settings).then(
-        function (res) {
+        function(res) {
             var data = d3.csvParse(res);
-            
+
             for (d = 0; d < data.length; d++) {
-                if (typeof (data[d]['Country/Region']) !== 'undefined') {
+                if (typeof(data[d]['Country/Region']) !== 'undefined') {
                     // is it the first time we see this country? if so, initialize the array
-                    if (typeof (countries[data[d]['Country/Region']]) === 'undefined') {
+                    if (typeof(countries[data[d]['Country/Region']]) === 'undefined') {
                         countries[data[d]['Country/Region']] = [];
                         countries[data[d]['Country/Region']]['States'] = [];
                     }
-                    
+
                     // country-wide data
-                    if (typeof(countries[data[d]['Country/Region']]['confirmed']) === 'undefined'){
+                    if (typeof(countries[data[d]['Country/Region']]['confirmed']) === 'undefined') {
                         countries[data[d]['Country/Region']]["confirmed"] = [];
                     }
-                    if (data[d]['Province/State'] !== ''){
+                    if (data[d]['Province/State'] !== '') {
                         if ((countries[data[d]['Country/Region']]['States'][data[d]['Province/State']] === undefined)) {
                             // console.log(countries[data[d]['Country/Region']]['States'][data[d]['Province/State']].length)
                             countries[data[d]['Country/Region']]['States'][data[d]['Province/State']] = [];
                         }
-                        if (typeof (countries[data[d]['Country/Region']]['States'][data[d]['Province/State']]['confirmed'] === 'undefined')) {
+                        if (typeof(countries[data[d]['Country/Region']]['States'][data[d]['Province/State']]['confirmed'] === 'undefined')) {
                             countries[data[d]['Country/Region']]['States'][data[d]['Province/State']]['confirmed'] = [];
                         }
                     }
 
                     countries[data[d]['Country/Region']]['confirmed'][countries[data[d]['Country/Region']]["confirmed"].length] = data[d];
-                    
-                    if ( (data[d]['Province/State']) !== '') {
+
+                    if ((data[d]['Province/State']) !== '') {
                         countries[data[d]['Country/Region']]['States'][data[d]['Province/State']]['confirmed'][countries[data[d]['Country/Region']]['States'][data[d]['Province/State']]['confirmed'].length] = data[d];
                     }
                 }
             }
             progress.value += 1;
             console.log("[OK] JHU CONFIRMED_GLOBAL")
-            
+
             njobs--;
             if (njobs == 0)
                 prepare_data();
-        }, function() {
+        },
+        function() {
             console.log("[!] JHU CONFIRMED_GLOBAL")
-    });
+        });
 
     var settings = {
         "crossDomain": true,
         "url": "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv",
         "method": "GET",
-        "dataType" : "text"
+        "dataType": "text"
     }
     $.ajax(settings).then(
-        function (res) {
+        function(res) {
             var data = d3.csvParse(res);
-            
+
             for (d = 0; d < data.length; d++) {
-                if (typeof (data[d]['Country/Region']) !== 'undefined') {
+                if (typeof(data[d]['Country/Region']) !== 'undefined') {
                     // is it the first time we see this country? if so, initialize the array
-                    if (typeof (countries[data[d]['Country/Region']]) === 'undefined') {
+                    if (typeof(countries[data[d]['Country/Region']]) === 'undefined') {
                         countries[data[d]['Country/Region']] = [];
                         countries[data[d]['Country/Region']]['States'] = [];
                     }
-                    
+
                     // country-wide data
-                    if (typeof(countries[data[d]['Country/Region']]['deaths']) === 'undefined'){
+                    if (typeof(countries[data[d]['Country/Region']]['deaths']) === 'undefined') {
                         countries[data[d]['Country/Region']]["deaths"] = [];
                     }
-                    if (data[d]['Province/State'] !== ''){
-                        if ( (countries[data[d]['Country/Region']]['States'][data[d]['Province/State']] === undefined)) {
+                    if (data[d]['Province/State'] !== '') {
+                        if ((countries[data[d]['Country/Region']]['States'][data[d]['Province/State']] === undefined)) {
                             countries[data[d]['Country/Region']]['States'][data[d]['Province/State']] = [];
                         }
                         if ((countries[data[d]['Country/Region']]['States'][data[d]['Province/State']]['deaths'] === undefined)) {
@@ -1846,47 +1836,48 @@ function fetch_and_prepare_data_JHU() {
                     }
 
                     countries[data[d]['Country/Region']]['deaths'][countries[data[d]['Country/Region']]["deaths"].length] = data[d];
-                    
-                    if ( (data[d]['Province/State']) !== '') {
+
+                    if ((data[d]['Province/State']) !== '') {
                         countries[data[d]['Country/Region']]['States'][data[d]['Province/State']]['deaths'][countries[data[d]['Country/Region']]['States'][data[d]['Province/State']]['deaths'].length] = data[d];
                     }
                 }
             }
             progress.value += 1;
             console.log("[OK] JHU DEATHS_GLOBAL")
-            
+
             njobs--;
             if (njobs == 0)
                 prepare_data();
-        }, function() {
+        },
+        function() {
             console.log("[!] JHU DEATHS_GLOBAL")
-    });
-    
-    
+        });
+
+
     var settings = {
         "crossDomain": true,
         "url": "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv",
         "method": "GET",
-        "dataType" : "text"
+        "dataType": "text"
     }
-    
+
     $.ajax(settings).then(
-        function (res) {
+        function(res) {
             var data = d3.csvParse(res);
             for (d = 0; d < data.length; d++) {
-                if (typeof (data[d]['Country/Region']) !== 'undefined') {
+                if (typeof(data[d]['Country/Region']) !== 'undefined') {
                     // is it the first time we see this country? if so, initialize the array
-                    if (typeof (countries[data[d]['Country/Region']]) === 'undefined') {
+                    if (typeof(countries[data[d]['Country/Region']]) === 'undefined') {
                         countries[data[d]['Country/Region']] = [];
                         countries[data[d]['Country/Region']]['States'] = [];
                     }
-                    
+
                     // country-wide data
-                    if (typeof(countries[data[d]['Country/Region']]['recovered']) === 'undefined'){
+                    if (typeof(countries[data[d]['Country/Region']]['recovered']) === 'undefined') {
                         countries[data[d]['Country/Region']]["recovered"] = [];
                     }
-                    if (data[d]['Province/State'] !== ''){
-                        if ( (countries[data[d]['Country/Region']]['States'][data[d]['Province/State']] === undefined)) {
+                    if (data[d]['Province/State'] !== '') {
+                        if ((countries[data[d]['Country/Region']]['States'][data[d]['Province/State']] === undefined)) {
                             countries[data[d]['Country/Region']]['States'][data[d]['Province/State']] = [];
                         }
                         if ((countries[data[d]['Country/Region']]['States'][data[d]['Province/State']]['recovered'] === undefined)) {
@@ -1895,8 +1886,8 @@ function fetch_and_prepare_data_JHU() {
                     }
 
                     countries[data[d]['Country/Region']]['recovered'][countries[data[d]['Country/Region']]["recovered"].length] = data[d];
-                    
-                    if ( (data[d]['Province/State']) !== '') {
+
+                    if ((data[d]['Province/State']) !== '') {
                         countries[data[d]['Country/Region']]['States'][data[d]['Province/State']]['recovered'][countries[data[d]['Country/Region']]['States'][data[d]['Province/State']]['recovered'].length] = data[d];
                     }
                 }
@@ -1906,9 +1897,10 @@ function fetch_and_prepare_data_JHU() {
             njobs--;
             if (njobs == 0)
                 prepare_data();
-        }, function() {
-          console.log( "[!] JHU RECOVERED_GLOBAL" );
-    });
+        },
+        function() {
+            console.log("[!] JHU RECOVERED_GLOBAL");
+        });
 
 
     ///// ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| \\\\\\
@@ -1919,21 +1911,21 @@ function fetch_and_prepare_data_JHU() {
         "crossDomain": true,
         "url": "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv",
         "method": "GET",
-        "dataType" : "text"
+        "dataType": "text"
     }
     $.ajax(settings).then(
-        function (res) {
+        function(res) {
             var data = d3.csvParse(res);
             // console.log(data)
             for (d = 0; d < data.length; d++) {
                 if (typeof(data[d]['Country_Region']) !== 'undefined') {
-                    if (typeof (countries[data[d]['Country_Region']]) === 'undefined') {
+                    if (typeof(countries[data[d]['Country_Region']]) === 'undefined') {
                         countries[data[d]['Country_Region']] = [];
                         countries[data[d]['Country_Region']]['States'] = [];
                         countries[data[d]['Country_Region']]['States']['Counties'] = [];
                     }
 
-                    if (typeof (countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]) === 'undefined') {
+                    if (typeof(countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]) === 'undefined') {
                         countries[data[d]['Country_Region']]['States'][data[d]['Province_State']] = [];
                         countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]['confirmed'] = [];
                         if (countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]['Counties'] == undefined) {
@@ -1941,39 +1933,39 @@ function fetch_and_prepare_data_JHU() {
                         }
                     }
                     let county = data[d]['Admin2'];
-                    if (county.substring(0, 6).localeCompare('Out of')!=0 && county.localeCompare('Unassigned') != 0 &&  county.localeCompare('') != 0) {
+                    if (county.substring(0, 6).localeCompare('Out of') != 0 && county.localeCompare('Unassigned') != 0 && county.localeCompare('') != 0) {
                         if (countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]['Counties'][data[d]['Admin2']] == undefined) {
                             countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]['Counties'][data[d]['Admin2']] = [];
                         }
                         countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]['Counties'][data[d]['Admin2']]['confirmed'] = data[d];
-                    }
-                    else if (county.localeCompare('') == 0) {
+                    } else if (county.localeCompare('') == 0) {
                         countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]['confirmed'] = data[d];
                     }
                 }
             }
             progress.value += 1;
             console.log("[OK] JHU CONFIRMED_US")
-            
+
             njobs--;
             if (njobs == 0)
                 prepare_data();
-        }, function() {
+        },
+        function() {
             console.log("[!] JHU CONFIRMED_US")
-    });
+        });
 
     var settings = {
         "crossDomain": true,
         "url": "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv",
         "method": "GET",
-        "dataType" : "text"
+        "dataType": "text"
     }
     $.ajax(settings).then(
-        function (res) {
+        function(res) {
             var data = d3.csvParse(res);
             for (d = 0; d < data.length; d++) {
                 if (typeof(data[d]['Country_Region']) !== 'undefined') {
-                    if (typeof (countries[data[d]['Country_Region']]) === 'undefined') {
+                    if (typeof(countries[data[d]['Country_Region']]) === 'undefined') {
                         countries[data[d]['Country_Region']] = [];
                         countries[data[d]['Country_Region']]['deaths'] = [];
                         countries[data[d]['Country_Region']]['States'] = [];
@@ -1984,33 +1976,33 @@ function fetch_and_prepare_data_JHU() {
                         countries[data[d]['Country_Region']]['States'][data[d]['Province_State']] = [];
                     if (countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]['deaths'] == undefined)
                         countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]['deaths'] = [];
-                
+
                     if (countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]['Counties'] == undefined)
-                            countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]['Counties'] = [];
-                
+                        countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]['Counties'] = [];
+
 
                     let county = data[d]['Admin2'];
                     // console.log('Data: ' + county)
-                    if (county.substring(0, 6).localeCompare('Out of')!=0 && county.localeCompare('Unassigned') != 0 &&  county.localeCompare('') != 0) {
+                    if (county.substring(0, 6).localeCompare('Out of') != 0 && county.localeCompare('Unassigned') != 0 && county.localeCompare('') != 0) {
                         // console.log('Insert county ' + county)
                         if (countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]['Counties'][data[d]['Admin2']] == undefined) {
                             countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]['Counties'][data[d]['Admin2']] = [];
                         }
                         countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]['Counties'][data[d]['Admin2']]['deaths'] = data[d];
-                    }
-                    else if (county.localeCompare('') == 0) {
+                    } else if (county.localeCompare('') == 0) {
                         countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]['deaths'] = data[d];
                     }
                 }
             }
             progress.value += 1;
             console.log("[OK] JHU DEATHS_US")
-            
+
             njobs--;
             if (njobs == 0)
                 prepare_data();
-        }, function() {
+        },
+        function() {
             console.log("[!] JHU DEATHS_US")
-    });
+        });
 }
-/* the end */ 
+/* the end */
