@@ -3,8 +3,11 @@
 <meta charset="UTF-8">
 
 <head>
-    <script>var clicky_site_ids = clicky_site_ids || []; clicky_site_ids.push(101267620);</script>
-    <!--<script async src="//static.getclicky.com/js"></script> -->
+    <script>
+        var clicky_site_ids = clicky_site_ids || [];
+        clicky_site_ids.push(101267620);
+    </script>
+    <script async src="//static.getclicky.com/js"></script>
 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 
@@ -12,7 +15,8 @@
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
     <!-- <script src="https://d3js.org/d3-dsv.v1.min.js"></script> -->
-    <script src="https://d3js.org/d3.v6.min.js"></script> <!-- see changelog -->
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <!-- see changelog -->
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
     <script src="./scripts/covid_utils.js"></script>
@@ -25,99 +29,102 @@
 </head>
 
 <body>
-  
-<script type="text/javascript">
-    window.onload = function() {
-       fetch_and_prepare_data_JHU();
-    }
 
-    function handle_selection(country_code, state_name, county){
-      if (country_code == undefined){
-          country_code = document.country_form['country_select'].value;
-          state_name = '';
-          county = '';
-      }
-      document.getElementById('main_article').innerHTML = '';
-  
-      if (country_code.localeCompare('ALL') == 0)
-        list_all_countries('main_article');
-      else if (country_code.localeCompare('About') == 0)
-        create_about_page('main_article');
-      else if (country_code.localeCompare('Feedback') == 0)
-        create_feedback_page('main_article');
-      else
-        create_article(country_code, state_name, county, 'main_article');
+    <script type="text/javascript">
+        window.onload = function() {
+            fetch_and_prepare_data_JHU();
+        }
 
-      return false;
-    }
-</script>
+        function handle_selection(country_code, state_name, county) {
+            if (country_code == undefined) {
+                country_code = document.country_form['country_select'].value;
+                state_name = '';
+                county = '';
+            }
+            document.getElementById('main_article').innerHTML = '';
 
-<header>
-  <h1>Accessible COVID-19 Pandemic Data</h1>
-  <ul>
-    <li class='no-dot'>
-    <p><a class='skip-main' href="#main_article">Main Content</a></p></li>
-    <li class='no-dot'>
-    <p align='center'>Sonified Pandemic Data Bulletin</p></li>
-    <li class='no-dot'>
-    <p align='center'>by Giovanni Fusco © The Smith-Kettlewell Eye Research Institute, April 2020</p>
-    </li>
-  </ul>
-</header>
+            if (country_code.localeCompare('ALL') == 0)
+                list_all_countries('main_article');
+            else if (country_code.localeCompare('About') == 0)
+                create_about_page('main_article');
+            else if (country_code.localeCompare('Feedback') == 0)
+                create_feedback_page('main_article');
+            else
+                create_article(country_code, state_name, county, 'main_article');
+
+            return false;
+        }
+    </script>
+
+    <header>
+        <h1>Accessible COVID-19 Pandemic Data</h1>
+        <ul>
+            <li class='no-dot'>
+                <p><a class='skip-main' href="#main_article">Main Content</a></p>
+            </li>
+            <li class='no-dot'>
+                <p align='center'>Sonified Pandemic Data Bulletin</p>
+            </li>
+            <li class='no-dot'>
+                <p align='center'>by Giovanni Fusco © The Smith-Kettlewell Eye Research Institute, April 2020</p>
+            </li>
+        </ul>
+    </header>
 
 
-<nav>
-            <ul class="breadcrumb justify-content-center">
-                <li class="breadcrumb-item"><a href="#" onClick="handle_selection('Feedback', '', '')" title="jump to contacs">Contacts</a></li>
-                <li class="breadcrumb-item"><a href="#" onClick="handle_selection('About', '', '')" title="jump to">About</a></li>
-                <li class="breadcrumb-item"><a href="#" onClick="handle_selection('US', '', '')" title="jump to">USA</a></li>
-                <li class="breadcrumb-item"><a href="#" onClick="handle_selection('IT', '', '')" title="jump to">Italy</a></li>
-                <li class="breadcrumb-item"><a href="#" onClick="handle_selection('NZ', '', '')" title="jump to">New Zealand</a></li>
-                <li class="breadcrumb-item"><a href="#" onClick="handle_selection('SE', '', '')" title="jump to">Sweden</a></li>
-                <li class="breadcrumb-item"><a href="#" onClick="handle_selection('CN', '', '')" title="jump to">China</a></li>
-                <li class="breadcrumb-item"><a href="#" onClick="handle_selection('World', '', '')" title="jump to">All Countries</a></li>
-                <li class="breadcrumb-item"><a href="https://www.cdc.gov/coronavirus/2019-ncov/prevent-getting-sick/prevention.html" target="_blank">CDC Safety Guidelines</a></li>
-            </ul>
+    <nav>
+        <ul class="breadcrumb justify-content-center">
+            <li class="breadcrumb-item"><a href="#" onClick="handle_selection('Feedback', '', '')" title="jump to contacs">Contacts</a></li>
+            <li class="breadcrumb-item"><a href="#" onClick="handle_selection('About', '', '')" title="jump to">About</a></li>
+            <li class="breadcrumb-item"><a href="#" onClick="handle_selection('US', '', '')" title="jump to">USA</a></li>
+            <li class="breadcrumb-item"><a href="#" onClick="handle_selection('IT', '', '')" title="jump to">Italy</a></li>
+            <li class="breadcrumb-item"><a href="#" onClick="handle_selection('NZ', '', '')" title="jump to">New Zealand</a></li>
+            <li class="breadcrumb-item"><a href="#" onClick="handle_selection('SE', '', '')" title="jump to">Sweden</a></li>
+            <li class="breadcrumb-item"><a href="#" onClick="handle_selection('CN', '', '')" title="jump to">China</a></li>
+            <li class="breadcrumb-item"><a href="#" onClick="handle_selection('World', '', '')" title="jump to">All Countries</a></li>
+            <li class="breadcrumb-item"><a href="https://www.cdc.gov/coronavirus/2019-ncov/prevent-getting-sick/prevention.html" target="_blank">CDC Safety Guidelines</a></li>
+        </ul>
 
-  <div align='right'>
-  <form name="country_form" id="country_form" onSubmit="return handle_selection()">
-      <label for="country_select"><!--Jump to Country:--></label>
-      <select id="country_select" aria-controls="country" name="country_select">
+        <div align='right'>
+            <form name="country_form" id="country_form" onSubmit="return handle_selection()">
+                <label for="country_select"><!--Jump to Country:--></label>
+                <select id="country_select" aria-controls="country" name="country_select">
           <option value="">Select a country&hellip;</option>
       </select>
-      <input type="submit" value="Go">
-    </form>
-  </div>
-</nav>
+                <input type="submit" value="Go">
+            </form>
+        </div>
+    </nav>
 
     <div class="container">
-      <div class="row" >
-        <div class="col-md-12">
+        <div class="row">
+            <div class="col-md-12">
 
-            <main id="main" role="main">
-                <article id='main_article'>
-                      <p id='update_timestamp'></p>
-                          <section id="progress_section">
-                             <!-- progress bar -->
-                                  <div id="fetching_progress_section" align='center'>
-                                      <label for="fetching_progress">Fetching data, please wait... If this takes too long, try refreshing the page.</label>
-                                      <progress id="fetching_progress" max="1" value="0" style="width: 50%;"></progress>
-                                  </div>
-                          </section>
-                </article>
+                <main id="main" role="main">
+                    <article id='main_article'>
+                        <p id='update_timestamp'></p>
+                        <section id="progress_section">
+                            <!-- progress bar -->
+                            <div id="fetching_progress_section" align='center'>
+                                <label for="fetching_progress">Fetching data, please wait... If this takes too long, try refreshing the page.</label>
+                                <progress id="fetching_progress" max="1" value="0" style="width: 50%;"></progress>
+                            </div>
+                        </section>
+                    </article>
                 </main>
 
+            </div>
         </div>
-      </div>
     </div>
 
-<footer>
-  <small>
+    <footer>
+        <small>
     <hr>
     <!-- <p align='center'>by Giovanni Fusco © The Smith-Kettlewell Eye Research Institute, April 2020</p> -->
     <p align='center'> This project was supported by NIDILRR grant number 90RE5024-01-00 from the U.S. Administration for Community Living, Department of Health and Human Services, Washington, D.C. 20201. </p>
     <p align='center'> Powered by JHU CSSE COVID-19 Data @ https://github.com/CSSEGISandData/COVID-19</p>  
 </small>
-</footer>
+    </footer>
 </body>
+
 </html>
