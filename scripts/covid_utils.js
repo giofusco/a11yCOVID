@@ -673,7 +673,7 @@ function create_state_confirmed_cumulative_plot_cell(state_name, country_name, c
     daily_new_plot_cell.appendChild(canvas_daily_new);
     daily_new_plot_cell.appendChild(document.createElement('br'));
     add_button(`Sonify Total Cases Plot`, 'daily_new_plot_controls', daily_new_plot_cell, `sonify_daily_new_${country_name}_button_id`,
-        `sonify('daily_new_plot_controls', 'stereo_panning_sonify_daily_new_${country_name}_button_id', moving_average(countries['${country_name}'].States['${state_name}']['confirmed_timeline'], 3),220, 2);`);
+        `sonify('daily_new_plot_controls', 'stereo_panning_sonify_daily_new_${country_name}_button_id', countries['${country_name}'].States['${state_name}']['confirmed_timeline'],220, 2);`);
     daily_new_plot_cell.appendChild(document.createElement('br'));
     daily_new_plot_cell.appendChild(document.createElement('br'));
 
@@ -706,7 +706,7 @@ function create_state_confirmed_daily_plot_cell(state_name, country_name, countr
     confirmed_plot_cell.appendChild(canvas_confirmed);
     confirmed_plot_cell.appendChild(document.createElement('br'));
     add_button(`Sonify Daily New Cases Plot`, 'confirmed_plot_controls', confirmed_plot_cell, `sonify_confirmed_${country_name}_button_id`,
-        `sonify('confirmed_plot_controls', 'stereo_panning_sonify_confirmed_${country_name}_button_id', countries['${country_name}'].States['${state_name}']['confirmed_daily'], 220, 1);`);
+        `sonify('confirmed_plot_controls', 'stereo_panning_sonify_confirmed_${country_name}_button_id', moving_average(countries['${country_name}'].States['${state_name}']['confirmed_daily'], 14), 220, 1);`);
     confirmed_plot_cell.appendChild(document.createElement('br'));
     confirmed_plot_cell.appendChild(document.createElement('br'));
     return confirmed_plot_cell;
@@ -768,7 +768,7 @@ function create_county_confirmed_cumulative_plot_cell(county_name, state_name, c
     daily_new_plot_cell.appendChild(canvas_daily_new);
     daily_new_plot_cell.appendChild(document.createElement('br'));
     add_button(`Sonify Total Cases Plot`, 'daily_new_plot_controls', daily_new_plot_cell, `sonify_daily_new_${country_name}_button_id`,
-        `sonify('daily_new_plot_controls', 'stereo_panning_sonify_daily_new_${country_name}_button_id', moving_average(countries['${country_name}'].States['${state_name}'].Counties['${county_name}']['confirmed_timeline'], 3),220, 2);`);
+        `sonify('daily_new_plot_controls', 'stereo_panning_sonify_daily_new_${country_name}_button_id', (countries['${country_name}'].States['${state_name}'].Counties['${county_name}']['confirmed_timeline'],220, 2);`);
     daily_new_plot_cell.appendChild(document.createElement('br'));
     daily_new_plot_cell.appendChild(document.createElement('br'));
 
@@ -802,7 +802,7 @@ function create_county_confirmed_daily_plot_cell(county_name, state_name, countr
     confirmed_plot_cell.appendChild(canvas_confirmed);
     confirmed_plot_cell.appendChild(document.createElement('br'));
     add_button(`Sonify Daily New Cases Plot`, 'confirmed_plot_controls', confirmed_plot_cell, `sonify_confirmed_${country_name}_button_id`,
-        `sonify('confirmed_plot_controls', 'stereo_panning_sonify_confirmed_${country_name}_button_id', countries['${country_name}'].States['${state_name}'].Counties['${county_name}']['confirmed_daily'], 220, 1);`);
+        `sonify('confirmed_plot_controls', 'stereo_panning_sonify_confirmed_${country_name}_button_id', moving_average(countries['${country_name}'].States['${state_name}'].Counties['${county_name}']['confirmed_daily'], 14), 220, 1);`);
     confirmed_plot_cell.appendChild(document.createElement('br'));
     confirmed_plot_cell.appendChild(document.createElement('br'));
     return confirmed_plot_cell;
@@ -1546,10 +1546,15 @@ const date2DDMMYYYY = (date, separator) => {
 //moving average
 function moving_average(data, n) {
     var out_data = [];
-    for (i = 0; i < n - 1; i++)
+    for (i = 0; i < data.length; i++)
         out_data[i] = 0;
-    for (i = n - 1; i < data.length; i++) {
-        out_data[i] = 0.33 * (data[i] + data[i - 1] + data[i - 2]);
+    cnt = Math.floor(n / 2);
+    for (i = Math.floor(n / 2); i < data.length - n; i++) {
+        acc = 0;
+        for (j = i; j < i + n; j++)
+            acc += data[j]
+        out_data[cnt] = (1 / n) * acc;
+        cnt++;
     }
     return out_data;
 }
