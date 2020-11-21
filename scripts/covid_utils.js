@@ -19,7 +19,7 @@ var daily_report_regions = [];
 const daily_reports_base_URL = ['https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/', 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports_us/'];
 
 // how long to play a single data point (in secs)
-let sample_length = 0.1;
+let sample_length = 0.05;
 
 function sonify(form_id, caller_id, data, f0, n_octaves) {
     let f_max = f0 * 2 ** n_octaves;
@@ -113,7 +113,7 @@ function play_pulse(freqs, pan, play_ref_tone, unison, play_tickmark, f0) {
     var cnt = 0;
     var sample_spacing = 1;
     if (play_ref_tone)
-        sample_spacing = 3;
+        sample_spacing = 2;
 
     if (play_tickmark) {
         for (i = 0; i < freqs.length; i++) {
@@ -185,10 +185,12 @@ function play_pulse(freqs, pan, play_ref_tone, unison, play_tickmark, f0) {
         }
         // oscillator.stop(t0 + freqs.length * 3 * sample_length);
         // refToneOscillator.stop(t0 + freqs.length * 3 * sample_length);
-        weekOscillator.connect(gainNode).connect(audioCtx.destination);
-        weekOscillator2.connect(gainNode).connect(audioCtx.destination);
-        weekOscillator.start();
-        weekOscillator2.start();
+        if (play_tickmark) {
+            weekOscillator.connect(gainNode).connect(audioCtx.destination);
+            weekOscillator2.connect(gainNode).connect(audioCtx.destination);
+            weekOscillator.start();
+            weekOscillator2.start();
+        }
         // weekOscillator.stop(t0 + freqs.length * 3 * sample_length);
     } else {
         for (i = 0; i < freqs.length; i++) {
@@ -216,10 +218,12 @@ function play_pulse(freqs, pan, play_ref_tone, unison, play_tickmark, f0) {
         oscillator2.start();
         oscillator3.start();
         // oscillator.stop(t0 + freqLen * sample_length);
-        weekOscillator.connect(gainNode).connect(audioCtx.destination);
-        weekOscillator2.connect(gainNode).connect(audioCtx.destination);
-        weekOscillator.start();
-        weekOscillator2.start();
+        if (play_tickmark) {
+            weekOscillator.connect(gainNode).connect(audioCtx.destination);
+            weekOscillator2.connect(gainNode).connect(audioCtx.destination);
+            weekOscillator.start();
+            weekOscillator2.start();
+        }
         // weekOscillator.stop(t0 + freqLen * sample_length);
     }
 }
