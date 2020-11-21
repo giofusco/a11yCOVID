@@ -16,7 +16,9 @@ var country_iso2name = [];
 var data_ready = false;
 var daily_report_us_states = [];
 var daily_report_regions = [];
-const daily_reports_base_URL = ['https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/', 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports_us/'];
+// const daily_reports_base_URL = ['https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/', 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports_us/'];
+const daily_reports_base_url_local = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/";
+const daily_reports_base_url_US_states = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports_us/";
 
 // how long to play a single data point (in secs)
 let sample_length = 0.05;
@@ -1650,62 +1652,77 @@ function sortKeys(obj_1) {
 // /////////////////////////////////////////////////////////////////////////////////////// \\
 // /////////////////////////////////////////////////////////////////////////////////////// \\
 // ******************************** DATA FETCHING **************************************** \\
-/ / /////////////////////////////////////////////////////////////////////////////////////// \\
+// /////////////////////////////////////////////////////////////////////////////////////// \\
 // /////////////////////////////////////////////////////////////////////////////////////// \\
 // /////////////////////////////////////////////////////////////////////////////////////// \\
 // /////////////////////////////////////////////////////////////////////////////////////// \\
 
 
-/**/ //////////////////////////////////////////////////////////**/
-/* *********** BEN :: separator for data fetch *************** */
-/**/ //////////////////////////////////////////////////////////**/
-//temporarily also transporting 'res' param to still use the 2 functions available for parsing
-const stringRuler = (string, res) => {
-    if (string.length === 112) {
-        console.log("[OK] JHU DAILY REPORTS FOUND");
-        parse_reports_regions(res); /*console.log(daily_report_regions);*/
-    } //BEN :: spared regions array from output but left it in place
-    else {
-        console.log("[OK] JHU DAILY REPORTS US STATES FOUND");
-        parse_reports_us_states(res); /*console.log(daily_report_us_states);*/
-    } //BEN :: spared regions array from output but left it in place
-};
-const stringRuler_NO = (string) => {
-    if (string.length === 112) { console.log("[X] NO - JHU DAILY REPORTS FOUND " + string); } else { console.log("[X] NO - JHU DAILY REPORTS US STATES FOUND " + string); }
-};
 
-function get_daily_reports(filename, dayOffset) {
+
+function get_daily_report_regions(filename, dayOffset) {
     var progress = document.getElementById('fetching_progress');
-    const daily_reports = daily_reports_base_URL.values();
-    for (let item of daily_reports) {
-        var in_url = item + filename;
-        var settings = {
-            "crossDomain": true,
-            "url": in_url,
-            "method": "GET",
-            "dataType": "text"
-        }
-        $.ajax(settings).then(
-            function(res) {
-                stringRuler(item, res);
-                // do something with the response
-                // parse_reports_regions(res);                                                   // BEN :: !!!! make it 1 function for both !!!! meanwhile controlled by stringRuler(), line 22
-                njobs--;
-                progress.value += 1;
-                if (njobs == 0) // all the async calls returned successfully                    
-                    prepare_data(); // BEN :: see line 1066!
-            },
-            function() {
-                // console.log("[III]  offset " + dayOffset); // BEN :: set off for testing func() solution
-                stringRuler_NO(item);
-                date_string = date2DDMMYYYY(getDate(dayOffset + 1), '-');
-                let filename = date_string + ".csv";
-                get_daily_reports(filename, dayOffset + 1)
-            }
-        );
+    var in_url = daily_reports_base_url_local + filename;
+    // retrieve daily reports for US states, counties and regions in other nations
+    var settings = {
+        "crossDomain": true,
+        "url": in_url,
+        "method": "GET",
+        "dataType": "text"
     }
-};
-/**/ //////////////////////////////////////////////////////////**/
+    $.ajax(settings).then(
+        function(res) {
+            // progress.value += 1;
+            console.log("[OK] JHU DAILY REPORTS FOUND");
+            // do something with the response
+            parse_reports_regions(res);
+            console.log(daily_report_regions)
+            njobs--;
+            progress.value += 1;
+            if (njobs == 0) // all the async calls returned successfully
+                prepare_data();
+        },
+        function() {
+            console.log("[X] NO " + in_url);
+            // date_string = date2DDMMYYYY(getYesterdayDate(), '-');
+            date_string = date2DDMMYYYY(getDate(dayOffset + 1), '-');
+            let filename = date_string + ".csv";
+            get_daily_report_regions(filename, dayOffset)
+        });
+}
+
+function get_daily_report_us_state(filename, dayOffset) {
+    var progress = document.getElementById('fetching_progress');
+    var in_url = daily_reports_base_url_US_states + filename;
+    // retrieve daily reports for US states, counties and regions in other nations
+    var settings = {
+        "crossDomain": true,
+        "url": in_url,
+        "method": "GET",
+        "dataType": "text"
+    }
+    $.ajax(settings).then(
+        function(res) {
+            // progress.value += 1;
+            console.log("[OK] JHU DAILY REPORTS US STATES FOUND");
+            // do something with the response
+            parse_reports_us_states(res);
+            njobs--;
+            progress.value++;
+            if (njobs == 0) // all the async calls returned successfully
+                prepare_data();
+        },
+        function() {
+            console.log("[X] NO " + in_url);
+            // date_string = date2DDMMYYYY(getYesterdayDate(), '-');
+            // let filename = date_string + ".csv";
+            // get_daily_report_us_state(filename)
+            date_string = date2DDMMYYYY(getDate(dayOffset + 1), '-');
+            let filename = date_string + ".csv";
+            get_daily_report_us_state(filename, dayOffset + 1)
+        });
+}
+
 
 function fetch_and_prepare_data_JHU() {
 
@@ -1713,13 +1730,9 @@ function fetch_and_prepare_data_JHU() {
     progress.max = njobs;
     progress.value = 0;
 
-    var date_string = date2DDMMYYYY(new Date(), '-'); // BEN :: timezone clipping - i doubt there's a report for actually 'today', should be more like getYesterdayDate()
-    // var date_string = date2DDMMYYYY(getYesterdayDate(), '-');
-
-    // // // // BEN :: turn request functions on and off
-    //get_daily_report_regions(date_string + ".csv");
-    //get_daily_report_us_state(date_string + ".csv");
-    get_daily_reports(date_string + ".csv", 0);
+    var date_string = date2DDMMYYYY(new Date(), '-');
+    get_daily_report_regions(date_string + ".csv", 0);
+    get_daily_report_us_state(date_string + ".csv", 0);
 
     var settings = {
         "crossDomain": true,
@@ -2000,3 +2013,350 @@ function fetch_and_prepare_data_JHU() {
             console.log("[!] JHU DEATHS_US")
         });
 }
+
+
+
+/**/ //////////////////////////////////////////////////////////**/
+/* *********** BEN :: separator for data fetch *************** */
+/**/ //////////////////////////////////////////////////////////**/
+//temporarily also transporting 'res' param to still use the 2 functions available for parsing
+// const stringRuler = (string, res) => {
+//     if (string.length === 112) {
+//         console.log("[OK] JHU DAILY REPORTS FOUND");
+//         parse_reports_regions(res); /*console.log(daily_report_regions);*/
+//     } //BEN :: spared regions array from output but left it in place
+//     else {
+//         console.log("[OK] JHU DAILY REPORTS US STATES FOUND");
+//         parse_reports_us_states(res); /*console.log(daily_report_us_states);*/
+//     } //BEN :: spared regions array from output but left it in place
+// };
+// const stringRuler_NO = (string) => {
+//     if (string.length === 112) { console.log("[X] NO - JHU DAILY REPORTS FOUND " + string); } else { console.log("[X] NO - JHU DAILY REPORTS US STATES FOUND " + string); }
+// };
+
+// function get_daily_reports(filename, dayOffset) {
+//     var progress = document.getElementById('fetching_progress');
+//     const daily_reports = daily_reports_base_URL.values();
+//     for (let item of daily_reports) {
+//         var in_url = item + filename;
+//         var settings = {
+//             "crossDomain": true,
+//             "url": in_url,
+//             "method": "GET",
+//             "dataType": "text"
+//         }
+//         $.ajax(settings).then(
+//             function(res) {
+//                 // stringRuler(item, res);
+//                 // do something with the response
+//                 parse_reports_regions(res); // BEN :: !!!! make it 1 function for both !!!! meanwhile controlled by stringRuler(), line 22
+//                 njobs--;
+//                 progress.value += 1;
+//                 if (njobs == 0) // all the async calls returned successfully                    
+//                     prepare_data(); // BEN :: see line 1066!
+//             },
+//             function() {
+//                 // console.log("[III]  offset " + dayOffset); // BEN :: set off for testing func() solution
+//                 // stringRuler_NO(item);
+//                 date_string = date2DDMMYYYY(getDate(dayOffset + 1), '-');
+//                 let filename = date_string + ".csv";
+//                 get_daily_reports(filename, dayOffset + 1)
+//             }
+//         );
+//     }
+// };
+// /**/ //////////////////////////////////////////////////////////**/
+
+// function fetch_and_prepare_data_JHU() {
+
+//     var progress = document.getElementById('fetching_progress');
+//     progress.max = njobs;
+//     progress.value = 0;
+
+//     var date_string = date2DDMMYYYY(new Date(), '-'); // BEN :: timezone clipping - i doubt there's a report for actually 'today', should be more like getYesterdayDate()
+//     // var date_string = date2DDMMYYYY(getYesterdayDate(), '-');
+
+//     // // // // BEN :: turn request functions on and off
+//     //get_daily_report_regions(date_string + ".csv");
+//     //get_daily_report_us_state(date_string + ".csv");
+//     get_daily_reports(date_string + ".csv", 0);
+
+//     var settings = {
+//         "crossDomain": true,
+//         "url": "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/UID_ISO_FIPS_LookUp_Table.csv",
+//         "method": "GET",
+//         "dataType": "text",
+//     }
+//     $.ajax(settings).then(
+//         function(res) {
+//             var data = d3.csvParse(res);
+//             country_name2iso['World'] = 'World';
+//             country_iso2name['World'] = 'World';
+//             for (i = 0; i < data.length; i++) {
+//                 country_name2iso[data[i]['Country_Region']] = data[i]['iso2'];
+//                 country_iso2name[data[i]['iso2']] = data[i]['Country_Region'];
+//             }
+
+//             progress.value += 1;
+//             console.log("[OK] JHU ISO_TABLE")
+
+//             njobs--;
+//             if (njobs == 0)
+//                 prepare_data();
+//         },
+//         function() {
+//             console.log("[!] JHU ISO_TABLE")
+//         });
+
+
+//     var settings = {
+//         "crossDomain": true,
+//         "url": "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv",
+//         "method": "GET",
+//         "dataType": "text"
+//     }
+//     $.ajax(settings).then(
+//         function(res) {
+//             var data = d3.csvParse(res);
+
+//             for (d = 0; d < data.length; d++) {
+//                 if (typeof(data[d]['Country/Region']) !== 'undefined') {
+//                     // is it the first time we see this country? if so, initialize the array
+//                     if (typeof(countries[data[d]['Country/Region']]) === 'undefined') {
+//                         countries[data[d]['Country/Region']] = [];
+//                         countries[data[d]['Country/Region']]['States'] = [];
+//                     }
+
+//                     // country-wide data
+//                     if (typeof(countries[data[d]['Country/Region']]['confirmed']) === 'undefined') {
+//                         countries[data[d]['Country/Region']]["confirmed"] = [];
+//                     }
+//                     if (data[d]['Province/State'] !== '') {
+//                         if ((countries[data[d]['Country/Region']]['States'][data[d]['Province/State']] === undefined)) {
+//                             // console.log(countries[data[d]['Country/Region']]['States'][data[d]['Province/State']].length)
+//                             countries[data[d]['Country/Region']]['States'][data[d]['Province/State']] = [];
+//                         }
+//                         if (typeof(countries[data[d]['Country/Region']]['States'][data[d]['Province/State']]['confirmed'] === 'undefined')) {
+//                             countries[data[d]['Country/Region']]['States'][data[d]['Province/State']]['confirmed'] = [];
+//                         }
+//                     }
+
+//                     countries[data[d]['Country/Region']]['confirmed'][countries[data[d]['Country/Region']]["confirmed"].length] = data[d];
+
+//                     if ((data[d]['Province/State']) !== '') {
+//                         countries[data[d]['Country/Region']]['States'][data[d]['Province/State']]['confirmed'][countries[data[d]['Country/Region']]['States'][data[d]['Province/State']]['confirmed'].length] = data[d];
+//                     }
+//                 }
+//             }
+//             progress.value += 1;
+//             console.log("[OK] JHU CONFIRMED_GLOBAL")
+
+//             njobs--;
+//             if (njobs == 0)
+//                 prepare_data();
+//         },
+//         function() {
+//             console.log("[!] JHU CONFIRMED_GLOBAL")
+//         });
+
+//     var settings = {
+//         "crossDomain": true,
+//         "url": "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv",
+//         "method": "GET",
+//         "dataType": "text"
+//     }
+//     $.ajax(settings).then(
+//         function(res) {
+//             var data = d3.csvParse(res);
+
+//             for (d = 0; d < data.length; d++) {
+//                 if (typeof(data[d]['Country/Region']) !== 'undefined') {
+//                     // is it the first time we see this country? if so, initialize the array
+//                     if (typeof(countries[data[d]['Country/Region']]) === 'undefined') {
+//                         countries[data[d]['Country/Region']] = [];
+//                         countries[data[d]['Country/Region']]['States'] = [];
+//                     }
+
+//                     // country-wide data
+//                     if (typeof(countries[data[d]['Country/Region']]['deaths']) === 'undefined') {
+//                         countries[data[d]['Country/Region']]["deaths"] = [];
+//                     }
+//                     if (data[d]['Province/State'] !== '') {
+//                         if ((countries[data[d]['Country/Region']]['States'][data[d]['Province/State']] === undefined)) {
+//                             countries[data[d]['Country/Region']]['States'][data[d]['Province/State']] = [];
+//                         }
+//                         if ((countries[data[d]['Country/Region']]['States'][data[d]['Province/State']]['deaths'] === undefined)) {
+//                             countries[data[d]['Country/Region']]['States'][data[d]['Province/State']]['deaths'] = [];
+//                         }
+//                     }
+
+//                     countries[data[d]['Country/Region']]['deaths'][countries[data[d]['Country/Region']]["deaths"].length] = data[d];
+
+//                     if ((data[d]['Province/State']) !== '') {
+//                         countries[data[d]['Country/Region']]['States'][data[d]['Province/State']]['deaths'][countries[data[d]['Country/Region']]['States'][data[d]['Province/State']]['deaths'].length] = data[d];
+//                     }
+//                 }
+//             }
+//             progress.value += 1;
+//             console.log("[OK] JHU DEATHS_GLOBAL")
+
+//             njobs--;
+//             if (njobs == 0)
+//                 prepare_data();
+//         },
+//         function() {
+//             console.log("[!] JHU DEATHS_GLOBAL")
+//         });
+
+
+//     var settings = {
+//         "crossDomain": true,
+//         "url": "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv",
+//         "method": "GET",
+//         "dataType": "text"
+//     }
+
+//     $.ajax(settings).then(
+//         function(res) {
+//             var data = d3.csvParse(res);
+//             for (d = 0; d < data.length; d++) {
+//                 if (typeof(data[d]['Country/Region']) !== 'undefined') {
+//                     // is it the first time we see this country? if so, initialize the array
+//                     if (typeof(countries[data[d]['Country/Region']]) === 'undefined') {
+//                         countries[data[d]['Country/Region']] = [];
+//                         countries[data[d]['Country/Region']]['States'] = [];
+//                     }
+
+//                     // country-wide data
+//                     if (typeof(countries[data[d]['Country/Region']]['recovered']) === 'undefined') {
+//                         countries[data[d]['Country/Region']]["recovered"] = [];
+//                     }
+//                     if (data[d]['Province/State'] !== '') {
+//                         if ((countries[data[d]['Country/Region']]['States'][data[d]['Province/State']] === undefined)) {
+//                             countries[data[d]['Country/Region']]['States'][data[d]['Province/State']] = [];
+//                         }
+//                         if ((countries[data[d]['Country/Region']]['States'][data[d]['Province/State']]['recovered'] === undefined)) {
+//                             countries[data[d]['Country/Region']]['States'][data[d]['Province/State']]['recovered'] = [];
+//                         }
+//                     }
+
+//                     countries[data[d]['Country/Region']]['recovered'][countries[data[d]['Country/Region']]["recovered"].length] = data[d];
+
+//                     if ((data[d]['Province/State']) !== '') {
+//                         countries[data[d]['Country/Region']]['States'][data[d]['Province/State']]['recovered'][countries[data[d]['Country/Region']]['States'][data[d]['Province/State']]['recovered'].length] = data[d];
+//                     }
+//                 }
+//             }
+//             progress.value += 1;
+//             console.log("[OK] JHU RECOVERED_GLOBAL")
+//             njobs--;
+//             if (njobs == 0)
+//                 prepare_data();
+//         },
+//         function() {
+//             console.log("[!] JHU RECOVERED_GLOBAL");
+//         });
+
+
+//     ///// ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| \\\\\\
+//     ///// **********************  US data fetching starts here *********************************  \\\\\\\
+//     ///// ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| \\\\\\\\
+
+//     var settings = {
+//         "crossDomain": true,
+//         "url": "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv",
+//         "method": "GET",
+//         "dataType": "text"
+//     }
+//     $.ajax(settings).then(
+//         function(res) {
+//             var data = d3.csvParse(res);
+//             // console.log(data)
+//             for (d = 0; d < data.length; d++) {
+//                 if (typeof(data[d]['Country_Region']) !== 'undefined') {
+//                     if (typeof(countries[data[d]['Country_Region']]) === 'undefined') {
+//                         countries[data[d]['Country_Region']] = [];
+//                         countries[data[d]['Country_Region']]['States'] = [];
+//                         countries[data[d]['Country_Region']]['States']['Counties'] = [];
+//                     }
+
+//                     if (typeof(countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]) === 'undefined') {
+//                         countries[data[d]['Country_Region']]['States'][data[d]['Province_State']] = [];
+//                         countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]['confirmed'] = [];
+//                         if (countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]['Counties'] == undefined) {
+//                             countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]['Counties'] = [];
+//                         }
+//                     }
+//                     let county = data[d]['Admin2'];
+//                     if (county.substring(0, 6).localeCompare('Out of') != 0 && county.localeCompare('Unassigned') != 0 && county.localeCompare('') != 0) {
+//                         if (countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]['Counties'][data[d]['Admin2']] == undefined) {
+//                             countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]['Counties'][data[d]['Admin2']] = [];
+//                         }
+//                         countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]['Counties'][data[d]['Admin2']]['confirmed'] = data[d];
+//                     } else if (county.localeCompare('') == 0) {
+//                         countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]['confirmed'] = data[d];
+//                     }
+//                 }
+//             }
+//             progress.value += 1;
+//             console.log("[OK] JHU CONFIRMED_US")
+
+//             njobs--;
+//             if (njobs == 0)
+//                 prepare_data();
+//         },
+//         function() {
+//             console.log("[!] JHU CONFIRMED_US")
+//         });
+
+//     var settings = {
+//         "crossDomain": true,
+//         "url": "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv",
+//         "method": "GET",
+//         "dataType": "text"
+//     }
+//     $.ajax(settings).then(
+//         function(res) {
+//             var data = d3.csvParse(res);
+//             for (d = 0; d < data.length; d++) {
+//                 if (typeof(data[d]['Country_Region']) !== 'undefined') {
+//                     if (typeof(countries[data[d]['Country_Region']]) === 'undefined') {
+//                         countries[data[d]['Country_Region']] = [];
+//                         countries[data[d]['Country_Region']]['deaths'] = [];
+//                         countries[data[d]['Country_Region']]['States'] = [];
+//                         countries[data[d]['Country_Region']]['States']['Counties'] = [];
+//                     }
+
+//                     if ((countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]) == undefined)
+//                         countries[data[d]['Country_Region']]['States'][data[d]['Province_State']] = [];
+//                     if (countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]['deaths'] == undefined)
+//                         countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]['deaths'] = [];
+
+//                     if (countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]['Counties'] == undefined)
+//                         countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]['Counties'] = [];
+
+
+//                     let county = data[d]['Admin2'];
+//                     // console.log('Data: ' + county)
+//                     if (county.substring(0, 6).localeCompare('Out of') != 0 && county.localeCompare('Unassigned') != 0 && county.localeCompare('') != 0) {
+//                         // console.log('Insert county ' + county)
+//                         if (countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]['Counties'][data[d]['Admin2']] == undefined) {
+//                             countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]['Counties'][data[d]['Admin2']] = [];
+//                         }
+//                         countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]['Counties'][data[d]['Admin2']]['deaths'] = data[d];
+//                     } else if (county.localeCompare('') == 0) {
+//                         countries[data[d]['Country_Region']]['States'][data[d]['Province_State']]['deaths'] = data[d];
+//                     }
+//                 }
+//             }
+//             progress.value += 1;
+//             console.log("[OK] JHU DEATHS_US")
+
+//             njobs--;
+//             if (njobs == 0)
+//                 prepare_data();
+//         },
+//         function() {
+//             console.log("[!] JHU DEATHS_US")
+//         });
+// }
