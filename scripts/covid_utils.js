@@ -768,7 +768,7 @@ function create_county_confirmed_cumulative_plot_cell(county_name, state_name, c
     daily_new_plot_cell.appendChild(canvas_daily_new);
     daily_new_plot_cell.appendChild(document.createElement('br'));
     add_button(`Sonify Total Cases Plot`, 'daily_new_plot_controls', daily_new_plot_cell, `sonify_daily_new_${country_name}_button_id`,
-        `sonify('daily_new_plot_controls', 'stereo_panning_sonify_daily_new_${country_name}_button_id', (countries['${country_name}'].States['${state_name}'].Counties['${county_name}']['confirmed_timeline'],220, 2);`);
+        `sonify('daily_new_plot_controls', 'stereo_panning_sonify_daily_new_${country_name}_button_id', countries['${country_name}'].States['${state_name}'].Counties['${county_name}']['confirmed_timeline'],220, 2);`);
     daily_new_plot_cell.appendChild(document.createElement('br'));
     daily_new_plot_cell.appendChild(document.createElement('br'));
 
