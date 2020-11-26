@@ -1692,7 +1692,7 @@ function get_daily_report_regions(filename, dayOffset) {
             // date_string = date2DDMMYYYY(getYesterdayDate(), '-');
             date_string = date2DDMMYYYY(getDate(dayOffset + 1), '-');
             let filename = date_string + ".csv";
-            get_daily_report_regions(filename, dayOffset)
+            get_daily_report_regions(filename, dayOffset + 1)
         });
 }
 
