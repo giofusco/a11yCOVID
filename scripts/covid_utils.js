@@ -296,13 +296,13 @@ function create_feedback_page(container_id) {
 
 function list_all_countries(container) {
     var section = document.createElement('section');
-
+    console.log(country_name2iso)
     var sorted_countries = [];
     for (c in country_name2iso) {
         sorted_countries[sorted_countries.length] = c;
     }
     sorted_countries.sort();
-
+    console.log(sorted_countries)
     var row = document.createElement('div');
     row.appendChild(document.createElement('br'))
     row.className = 'row';
@@ -334,14 +334,16 @@ function list_all_countries(container) {
     table_header.innerHTML = `<th scope='col'> State </th> <th scope='col'>Total Infections</th><th scope='col'>Daily New Infections</th><th scope='col'>Total Deaths</th><th scope='col'>Daily New Deaths</th>`
     country_table.appendChild(table_header);
     for (s in sorted_countries) {
-        if (sorted_countries[s].localeCompare('World') != 0) {
-            var country_row = document.createElement('tr');
-            country_row.innerHTML = `<th scope='row'><a href="#" onClick="handle_selection('${country_name2iso[sorted_countries[s]]}', '', '')" title="jump to">${sorted_countries[s]}</a></th>
+        if (!(countries[sorted_countries[s]] == undefined)) {
+            if (sorted_countries[s].localeCompare('World') != 0) {
+                var country_row = document.createElement('tr');
+                country_row.innerHTML = `<th scope='row'><a href="#" onClick="handle_selection('${country_name2iso[sorted_countries[s]]}', '', '')" title="jump to">${sorted_countries[s]}</a></th>
                                                         <td>${countries[sorted_countries[s]].confirmed_timeline.slice(-1)[0].toLocaleString()}</td>
                                                         <td>${countries[sorted_countries[s]].confirmed_daily.slice(-1)[0].toLocaleString()}</td>
                                                         <td>${countries[sorted_countries[s]].deaths_timeline.slice(-1)[0].toLocaleString()}</td>
                                                         <td>${countries[sorted_countries[s]].deaths_daily.slice(-1)[0].toLocaleString()}</td>`;
-            country_table.appendChild(country_row);
+                country_table.appendChild(country_row);
+            }
         }
     }
     country_table_cell.appendChild(country_table);
@@ -1158,6 +1160,7 @@ function prepare_data() {
         delete country_iso2name['MO'];
         // delete countries['Iran'];
         console.log('CRUNCHING DATA... OK!');
+        console.log(countries)
     }
 
     // notify that the data is ready to be used
@@ -1529,6 +1532,7 @@ function getYesterdayDate() {
 function getDate(dayOffset) {
     var date = new Date();
     date.setDate(date.getDate() - dayOffset);
+    console.log(date)
     return date;
 }
 
@@ -1679,7 +1683,8 @@ function get_daily_report_regions(filename, dayOffset) {
         function(res) {
             // progress.value += 1;
             console.log("[OK] JHU DAILY REPORTS FOUND");
-            // do something with the response
+            console.log(in_url)
+                // do something with the response
             parse_reports_regions(res);
             console.log(daily_report_regions)
             njobs--;
@@ -1724,6 +1729,7 @@ function get_daily_report_us_state(filename, dayOffset) {
             // get_daily_report_us_state(filename)
             date_string = date2DDMMYYYY(getDate(dayOffset + 1), '-');
             let filename = date_string + ".csv";
+
             get_daily_report_us_state(filename, dayOffset + 1)
         });
 }
@@ -1750,6 +1756,8 @@ function fetch_and_prepare_data_JHU() {
             var data = d3.csvParse(res);
             country_name2iso['World'] = 'World';
             country_iso2name['World'] = 'World';
+            delete country_name2iso['Samoa'];
+            delete country_iso2name['WS'];
             for (i = 0; i < data.length; i++) {
                 country_name2iso[data[i]['Country_Region']] = data[i]['iso2'];
                 country_iso2name[data[i]['iso2']] = data[i]['Country_Region'];
