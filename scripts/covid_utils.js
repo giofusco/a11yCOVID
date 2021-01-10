@@ -1270,7 +1270,7 @@ function generate_plot(canvas_elem, title, thickness, color, bgcolor, fill, mdat
             data: mdata,
             // backgroundColor: bgcolor,
             // borderColor: color,
-            borderColor: "rgba(128, 0, 128, 1)",
+            borderColor: "rgba(255, 0, 255, 1)",
             borderWidth: 4,
             fill: fill,
             lineTension: 0,
