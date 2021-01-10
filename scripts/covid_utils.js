@@ -1361,13 +1361,13 @@ function add_button(text, form_id, container_elem, button_id, callback_string) {
     form.innerHTML += `
     <legend id='son_controls_legend'>Sonification Options</legend>
     <ul aria-labelledby='son_controls_legend' role='group'>
-        <li class='no-dot'>
+        <li class='controls'>
           <input id="stereo_panning" type="checkbox" name="stereo_panning" value="Enable Stereo Panning"> 
           <label for="stereo_panning">Enable Stereo Panning</label>
           <input id="play_tickmark" type="checkbox" name="play_tickmark" value="Play 14 days mark" checked> 
           <label for="play_tickmark">Play 14 days mark</label>
         </li>
-        <li class='no-dot'>
+        <li class='controls'>
         <input id="play_reference_tone" type="checkbox" name="play_reference_tone" value="Alternate Baseline Tone">           
           <label for="play_reference_tone">Alternate Baseline Tone</label>
           <input id="play_reference_tone_unison" type="checkbox" name="play_reference_tone_unison" value="Unison Baseline Tone">

@@ -1,12 +1,13 @@
 /* || General setup */
 
-html,
 body {
-    margin: 0px;
+    /* margin: 20px; */
     padding: 0;
     font-size: 20px;
     background-color: #ffffff;
-    position: sticky;
+    /* min-width: 320px; */
+    /* width: 100vw;
+    min-height: 100vh; */
 }
 
 a {
@@ -91,6 +92,12 @@ li.no-dot {
     margin-left: 30px;
 }
 
+li.controls {
+    list-style-type: none;
+    /* font-size: 30px; */
+    /* margin-left: 30px; */
+}
+
 input.large
 /*checkbox class name*/
 
@@ -140,8 +147,7 @@ input.large
 
 /*position new box*/
 
-
-/* .wrapper input+label::before {
+.wrapper input+label::before {
     border: 2px solid;
     content: "";
     height: 40px;
