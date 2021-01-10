@@ -1551,10 +1551,11 @@ const date2DDMMYYYY = (date, separator) => {
 //moving average
 function moving_average(data, n) {
     var out_data = [];
-    for (i = 0; i < data.length; i++)
+    for (i = 0; i < data.length - n; i++)
         out_data[i] = 0;
-    cnt = Math.floor(n / 2);
-    for (i = Math.floor(n / 2); i < data.length - n; i++) {
+    // cnt = Math.floor(n / 2);
+    cnt = 0;
+    for (i = 0; i < data.length - n; i++) {
         acc = 0;
         for (j = i; j < i + n; j++)
             acc += data[j]

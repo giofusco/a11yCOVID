@@ -11,13 +11,10 @@
     <script async src="//static.getclicky.com/js"></script>
 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
-    <!-- <script src="https://d3js.org/d3-dsv.v1.min.js"></script> -->
     <script src="https://d3js.org/d3.v6.min.js"></script>
-    <!-- see changelog -->
     <link href="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/css/bootstrap4-toggle.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/js/bootstrap4-toggle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
@@ -31,7 +28,6 @@
 </head>
 
 <body>
-
     <script type="text/javascript">
         window.onload = function() {
             fetch_and_prepare_data_JHU();
@@ -61,19 +57,47 @@
     <header>
         <h1>Accessible COVID-19 Pandemic Data</h1>
         <ul>
-            <li class='no-dot'>
-                <p><a class='skip-main' href="#main_article">Main Content</a></p>
+            <li class="no-dot">
+                <p><a class="skip-main" href="#main_article">Main Content</a></p>
             </li>
-            <li class='no-dot'>
-                <p align='center'>Sonified Pandemic Data Bulletin</p>
+            <li class="no-dot">
+                <p align="center">Sonified Pandemic Data Bulletin</p>
             </li>
-            <li class='no-dot'>
-                <p align='center'>by Giovanni Fusco © The Smith-Kettlewell Eye Research Institute, April 2020</p>
+            <li class="no-dot">
+                <p align="center">by Giovanni Fusco © The Smith-Kettlewell Eye Research Institute, April 2020</p>
             </li>
-            <li class='no-dot'>
-                <p align='center'>
+            <li class="no-dot">
+                <p align="center">
                     last release on 01/10/2021
                 </p>
+            </li>
+            <li class="no-dot">
+                <div align="center">
+                    <hr>
+                    <input type="checkbox" id="toggle-two" data-offstyle="outline-dark" data-onstyle="dark" size="sm">
+                    <script>
+                        $(function() {
+                            $('#toggle-two').bootstrapToggle({
+                                on: 'Light Theme',
+                                off: 'Dark Theme'
+                            });
+                            $('#toggle-two').change(function() {
+                                // $('#console-event').html('Toggle: ' + $(this).prop('checked'))
+                                if ($('#toggle-two').prop('checked')) {
+                                    document.body.style.background = "black";
+                                    document.body.style.color = "white";
+                                    $('.card').css('background-color', 'black');
+                                    $('#brief_list').css('background-color', 'black');
+                                } else {
+                                    document.body.style.background = "white";
+                                    document.body.style.color = "black";
+                                    $('.card').css('background-color', 'white');
+                                    $('#brief_list').css('background-color', 'white');
+                                }
+                            })
+                        })
+                    </script>
+                </div>
             </li>
         </ul>
     </header>
@@ -82,20 +106,21 @@
     <nav>
         <ul class="breadcrumb justify-content-center">
 
-            <li class="breadcrumb-item"><a href="#" onClick="handle_selection('US', '', '')" title="jump to">USA</a></li>
-            <li class="breadcrumb-item"><a href="#" onClick="handle_selection('IT', '', '')" title="jump to">Italy</a></li>
-            <li class="breadcrumb-item"><a href="#" onClick="handle_selection('AT', '', '')" title="jump to">Austria</a></li>
-            <li class="breadcrumb-item"><a href="#" onClick="handle_selection('AI', '', '')" title="jump to">UK</a></li>
-            <li class="breadcrumb-item"><a href="#" onClick="handle_selection('CN', '', '')" title="jump to">China</a></li>
-            <li class="breadcrumb-item"><a href="#" onClick="handle_selection('World', '', '')" title="jump to">All Countries</a></li>
+            <li class="breadcrumb-item"><a href="#" onclick="handle_selection('US', '', '')" title="jump to">USA</a></li>
+            <li class="breadcrumb-item"><a href="#" onclick="handle_selection('IT', '', '')" title="jump to">Italy</a></li>
+            <li class="breadcrumb-item"><a href="#" onclick="handle_selection('AT', '', '')" title="jump to">Austria</a></li>
+            <li class="breadcrumb-item"><a href="#" onclick="handle_selection('AI', '', '')" title="jump to">UK</a></li>
+            <li class="breadcrumb-item"><a href="#" onclick="handle_selection('CN', '', '')" title="jump to">China</a></li>
+            <li class="breadcrumb-item"><a href="#" onclick="handle_selection('World', '', '')" title="jump to">All Countries</a></li>
             <li class="breadcrumb-item"><a href="https://www.cdc.gov/coronavirus/2019-ncov/prevent-getting-sick/prevention.html" target="_blank">CDC Safety Guidelines</a></li>
-            <li class="breadcrumb-item"><a href="#" onClick="handle_selection('Feedback', '', '')" title="jump to contacs">Contacts</a></li>
-            <li class="breadcrumb-item"><a href="#" onClick="handle_selection('About', '', '')" title="jump to">About</a></li>
+            <li class="breadcrumb-item"><a href="#" onclick="handle_selection('Feedback', '', '')" title="jump to contacs">Contacts</a></li>
+            <li class="breadcrumb-item"><a href="#" onclick="handle_selection('About', '', '')" title="jump to">About</a></li>
+
         </ul>
 
 
         <div align="center">
-            <form name="country_form" id="country_form" onSubmit="return handle_selection()">
+            <form name="country_form" id="country_form" onsubmit="return handle_selection()">
                 <label for="country_select"><!--Jump to Country:--></label>
                 <select id="country_select" aria-controls="country" name="country_select">
                         <option value="">Select a country&hellip;</option>
@@ -103,7 +128,7 @@
                 <input type="submit" value="Go" style="margin-right: 20px; min-width: 100px;">
             </form>
         </div>
-        <div align="center">
+        <!-- <div align="center">
             <input type="checkbox" id="toggle-two" data-offstyle="outline-dark" data-onstyle="dark" style="margin-right: 20px;">
             <script>
                 $(function() {
@@ -127,7 +152,7 @@
                     })
                 })
             </script>
-        </div>
+        </div> -->
 
         <hr>
 
@@ -138,11 +163,11 @@
             <div class="col-md-12">
 
                 <main id="main" role="main">
-                    <article id='main_article'>
-                        <p id='update_timestamp'></p>
+                    <article id="main_article">
+                        <p id="update_timestamp"></p>
                         <section id="progress_section">
                             <!-- progress bar -->
-                            <div id="fetching_progress_section" align='center'>
+                            <div id="fetching_progress_section" align="center">
                                 <label for="fetching_progress">Fetching data, please wait... If this takes too long, try refreshing the page.</label>
                                 <progress id="fetching_progress" max="1" value="0" style="width: 50%;"></progress>
                             </div>
@@ -158,8 +183,8 @@
         <small>
     <hr>
     <!-- <p align='center'>by Giovanni Fusco © The Smith-Kettlewell Eye Research Institute, April 2020</p> -->
-    <p align='center'> This project was supported by NIDILRR grant number 90RE5024-01-00 from the U.S. Administration for Community Living, Department of Health and Human Services, Washington, D.C. 20201. </p>
-    <p align='center'> Powered by JHU CSSE COVID-19 Data @ https://github.com/CSSEGISandData/COVID-19</p>  
+    <p align="center"> This project was supported by NIDILRR grant number 90RE5024-01-00 from the U.S. Administration for Community Living, Department of Health and Human Services, Washington, D.C. 20201. </p>
+    <p align="center"> Powered by JHU CSSE COVID-19 Data @ https://github.com/CSSEGISandData/COVID-19</p>  
 </small>
     </footer>
 </body>

@@ -3,9 +3,10 @@
 html,
 body {
     margin: 0px;
-    padding: 20;
+    padding: 0;
     font-size: 20px;
     background-color: #ffffff;
+    position: sticky;
 }
 
 a {
@@ -139,7 +140,8 @@ input.large
 
 /*position new box*/
 
-.wrapper input+label::before {
+
+/* .wrapper input+label::before {
     border: 2px solid;
     content: "";
     height: 40px;
@@ -179,7 +181,7 @@ input.large
     outline: 3px solid transparent;
 }
 
-
+*/
 /*** BEN :: little helpers ***/
 
 .spacer {
