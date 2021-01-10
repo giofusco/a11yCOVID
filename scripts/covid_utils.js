@@ -367,7 +367,7 @@ function create_summary_cell(country_code, country_name, country_name_label, sta
     summary_cell.className = 'col'
 
     var summary_paragraph = document.createElement('div');
-    summary_paragraph.className = "card";
+    // summary_paragraph.className = "card";
     summary_paragraph.innerHTML +=
         `<div class="card-header"> <h2> ${country_name_label} </h2></div>
             <div class="card-body">
@@ -376,72 +376,72 @@ function create_summary_cell(country_code, country_name, country_name_label, sta
     // var summary_paragraph = document.createElement('p'); 
 
     if (is_empty(state_name)) {
-        summary_paragraph.innerHTML += `<ul class="list-group list-group-flush">`;
+        summary_paragraph.innerHTML += `<ul id='brief_list'>`;
         if (curr_stats.active_number != 1)
-            summary_paragraph.innerHTML += `<li class="list-group-item"><b>Active</b> Cases: ${curr_stats.active_number.toLocaleString()}`;
+            summary_paragraph.innerHTML += `<li class="no-dot"><b>Active</b> Cases: ${curr_stats.active_number.toLocaleString()}`;
         else
-            summary_paragraph.innerHTML += `<li class="list-group-item"><b>Active</b> Cases: 1`;
+            summary_paragraph.innerHTML += `<li class="no-dot"><b>Active</b> Cases: 1`;
 
         summary_paragraph.innerHTML += `</li>
-                                <li class="list-group-item">Total <b>Infections</b>: ${curr_stats.total_confirmed.toLocaleString()}</li>
-                                <li class="list-group-item">Total <b>Recoveries</b>: ${curr_stats.total_recovered.toLocaleString()}</li>
-                                <li class="list-group-item">Total <b>Deaths</b>: ${curr_stats.total_deaths.toLocaleString()}</li></ul>`;
+                                <li class="no-dot">Total <b>Infections</b>: ${curr_stats.total_confirmed.toLocaleString()}</li>
+                                <li class="no-dot">Total <b>Recoveries</b>: ${curr_stats.total_recovered.toLocaleString()}</li>
+                                <li class="no-dot">Total <b>Deaths</b>: ${curr_stats.total_deaths.toLocaleString()}</li></ul>`;
         if (('US' == country_code) || ('CN' == country_code))
             summary_paragraph.innerHTML += ` </div><p align='center'><a href="#states_table">Jump to States list</a></p>`
     } else if (is_empty(county_name) && ('US' == country_code)) { //state
-        summary_paragraph.innerHTML += `<ul class="list-group list-group-flush">`;
+        summary_paragraph.innerHTML += `<ul class="list-group list-group-flush" id='brief_list'>`;
 
         if (typeof daily_report_us_states[state_name] !== "undefined")
-            summary_paragraph.innerHTML += `<li class="list-group-item"><b>Active</b> cases: ${parseInt(daily_report_us_states[state_name].active).toLocaleString()}`;
+            summary_paragraph.innerHTML += `<li class="no-dot"><b>Active</b> cases: ${parseInt(daily_report_us_states[state_name].active).toLocaleString()}`;
 
         summary_paragraph.innerHTML += `
-                                <li class="list-group-item">Total <b>Infections</b>: ${curr_stats.total_confirmed.toLocaleString()}</li>
-                                <li class="list-group-item">Total <b>Deaths</b>: ${curr_stats.total_deaths.toLocaleString()}</li>`
+                                <li class="no-dot">Total <b>Infections</b>: ${curr_stats.total_confirmed.toLocaleString()}</li>
+                                <li class="no-dot">Total <b>Deaths</b>: ${curr_stats.total_deaths.toLocaleString()}</li>`
 
         if (typeof(daily_report_us_states[state_name].test_rate) === "undefined")
-            summary_paragraph.innerHTML += `<li class="list-group-item">Tests x 100,000 People: N/A</li>`;
+            summary_paragraph.innerHTML += `<li class="no-dot">Tests x 100,000 People: N/A</li>`;
         else
-            summary_paragraph.innerHTML += `<li class="list-group-item">Tests x 100,000 People: ${parseFloat(daily_report_us_states[state_name].test_rate).toFixed(2).toLocaleString()} </li>`;
-        summary_paragraph.innerHTML += `<li class="list-group-item">Cases x 100,000 People: ${parseFloat(daily_report_us_states[state_name].incidence_rate).toLocaleString()} </li>`;
-        summary_paragraph.innerHTML += `<li class="list-group-item">Mortality Rate: ${parseFloat(daily_report_us_states[state_name].mortality_rate).toFixed(2).toLocaleString()} %</li>`;
+            summary_paragraph.innerHTML += `<li class="no-dot">Tests x 100,000 People: ${parseFloat(daily_report_us_states[state_name].test_rate).toFixed(2).toLocaleString()} </li>`;
+        summary_paragraph.innerHTML += `<li class="no-dot">Cases x 100,000 People: ${parseFloat(daily_report_us_states[state_name].incidence_rate).toLocaleString()} </li>`;
+        summary_paragraph.innerHTML += `<li class="no-dot">Mortality Rate: ${parseFloat(daily_report_us_states[state_name].mortality_rate).toFixed(2).toLocaleString()} %</li>`;
         if (typeof(daily_report_us_states[state_name].hospitalization_rate) === "undefined" || is_empty(daily_report_us_states[state_name].hospitalization_rate))
-            summary_paragraph.innerHTML += `<li class="list-group-item">Hospitalization Rate: N/A</li></ul>`;
+            summary_paragraph.innerHTML += `<li class="no-dot">Hospitalization Rate: N/A</li></ul>`;
         else
-            summary_paragraph.innerHTML += `<li class="list-group-item">Hospitalization Rate: ${parseFloat(daily_report_us_states[state_name].hospitalization_rate).toFixed(2).toLocaleString()} %</li></ul>`;
-        summary_paragraph.innerHTML += `</div><ul class="list-group list-group-flush"><li class="list-group-item"><p align='center'><a href="#counties_table">Jump to Counties list</a></p></li></ul>`;
+            summary_paragraph.innerHTML += `<li class="no-dot">Hospitalization Rate: ${parseFloat(daily_report_us_states[state_name].hospitalization_rate).toFixed(2).toLocaleString()} %</li></ul>`;
+        summary_paragraph.innerHTML += `</div><ul class="list-group list-group-flush"><li class="no-dot"><p align='center'><a href="#counties_table">Jump to Counties list</a></p></li></ul>`;
     } else if (is_empty(county_name) && ('CN' == country_code)) { //state of china
-        summary_paragraph.innerHTML += `<ul class="list-group list-group-flush">`;
+        summary_paragraph.innerHTML += `<ul class="list-group list-group-flush" id='brief_list'>`;
 
         if (typeof daily_report_regions[country_name].Province_State[state_name] !== "undefined")
-            summary_paragraph.innerHTML += `<li class="list-group-item"><b>Active</b> cases: ${parseInt(daily_report_regions[country_name].Province_State[state_name].active).toLocaleString()}`;
+            summary_paragraph.innerHTML += `<li class="no-dot"><b>Active</b> cases: ${parseInt(daily_report_regions[country_name].Province_State[state_name].active).toLocaleString()}`;
 
         summary_paragraph.innerHTML += `
-                                <li class="list-group-item">Total <b>Infections</b>: ${curr_stats.total_confirmed.toLocaleString()}</li>
-                                <li class="list-group-item">Total <b>Deaths</b>: ${curr_stats.total_deaths.toLocaleString()}</li>`
+                                <li class="no-dot">Total <b>Infections</b>: ${curr_stats.total_confirmed.toLocaleString()}</li>
+                                <li class="no-dot">Total <b>Deaths</b>: ${curr_stats.total_deaths.toLocaleString()}</li>`
 
         if (typeof(daily_report_regions[country_name].Province_State[state_name].test_rate) === "undefined")
-            summary_paragraph.innerHTML += `<li class="list-group-item">Cases x 100,000 People: ${parseFloat(daily_report_regions[country_name].Province_State[state_name].incidence_rate).toFixed(2).toLocaleString()} </li>`;
-        summary_paragraph.innerHTML += `<li class="list-group-item">Mortality Rate: ${parseFloat(daily_report_regions[country_name].Province_State[state_name].case_fatality_ratio).toFixed(2).toLocaleString()} %</li>`;
+            summary_paragraph.innerHTML += `<li class="no-dot">Cases x 100,000 People: ${parseFloat(daily_report_regions[country_name].Province_State[state_name].incidence_rate).toFixed(2).toLocaleString()} </li>`;
+        summary_paragraph.innerHTML += `<li class="no-dot">Mortality Rate: ${parseFloat(daily_report_regions[country_name].Province_State[state_name].case_fatality_ratio).toFixed(2).toLocaleString()} %</li>`;
 
         summary_paragraph.innerHTML += `</div>`;
         summary_paragraph.innerHTML += `</div>`;
 
     } else { // US county summary
-        summary_paragraph.innerHTML += `<ul class="list-group list-group-flush">`;
-        summary_paragraph.innerHTML += `<li class="list-group-item"><b>Active</b> Cases: ${parseInt(daily_report_regions[country_code].Province_State[state_name].County[county_name].active).toLocaleString()}`;
+        summary_paragraph.innerHTML += `<ul class="list-group list-group-flush" id='brief_list'>`;
+        summary_paragraph.innerHTML += `<li class="no-dot"><b>Active</b> Cases: ${parseInt(daily_report_regions[country_code].Province_State[state_name].County[county_name].active).toLocaleString()}`;
         summary_paragraph.innerHTML += `
-                                <li class="list-group-item">Total <strong>Infections</strong>: ${curr_stats.total_confirmed.toLocaleString()}</li>
-                                <li class="list-group-item">Total <strong>Deaths</strong>: ${curr_stats.total_deaths.toLocaleString()}</li>`;
+                                <li class="no-dot">Total <strong>Infections</strong>: ${curr_stats.total_confirmed.toLocaleString()}</li>
+                                <li class="no-dot">Total <strong>Deaths</strong>: ${curr_stats.total_deaths.toLocaleString()}</li>`;
         // if ('US' == country_code) {
-        summary_paragraph.innerHTML += `<li class="list-group-item">Incidence Rate: 
+        summary_paragraph.innerHTML += `<li class="no-dot">Incidence Rate: 
             ${parseFloat(daily_report_regions[country_code].Province_State[state_name].County[county_name]['incidence_rate']).toFixed(2).toLocaleString()} x 100,000 people</li>`;
 
         if (typeof(daily_report_regions[country_code].Province_State[state_name].case_fatality_ratio) === "undefined" || is_empty(daily_report_regions[country_code].Province_State[state_name].case_fatality_ratio))
-            summary_paragraph.innerHTML += `<li class="list-group-item">Mortality Rate: N/A</li></ul>`;
+            summary_paragraph.innerHTML += `<li class="no-dot">Mortality Rate: N/A</li></ul>`;
         else
-            summary_paragraph.innerHTML += `<li class="list-group-item">Mortality Rate: ${parseFloat(daily_report_regions[country_code].Province_State[state_name].case_fatality_ratio).toFixed(2).toLocaleString()} %</li></ul>`;
+            summary_paragraph.innerHTML += `<li class="no-dot">Mortality Rate: ${parseFloat(daily_report_regions[country_code].Province_State[state_name].case_fatality_ratio).toFixed(2).toLocaleString()} %</li></ul>`;
 
-        summary_paragraph.innerHTML += `</div><ul class="list-group list-group-flush"><li class="list-group-item"><p align='center'><a href="#counties_table">Jump to Counties list</a></p></li></ul>`;
+        summary_paragraph.innerHTML += `</div><ul class="list-group list-group-flush"><li class="no-dot"><p align='center'><a href="#counties_table">Jump to Counties list</a></p></li></ul>`;
         summary_paragraph.innerHTML += `</div>`;
 
         // // }
@@ -1269,8 +1269,9 @@ function generate_plot(canvas_elem, title, thickness, color, bgcolor, fill, mdat
             label: title,
             data: mdata,
             // backgroundColor: bgcolor,
-            borderColor: color,
-            borderWidth: 3,
+            // borderColor: color,
+            borderColor: "rgba(128, 0, 128, 1)",
+            borderWidth: 4,
             fill: fill,
             lineTension: 0,
             radius: 1,
@@ -1308,7 +1309,6 @@ function generate_plot(canvas_elem, title, thickness, color, bgcolor, fill, mdat
                     autoSkip: true,
                     fontSize: 22
                 }
-
             }],
             yAxes: [{
                 ticks: {
@@ -1328,6 +1328,7 @@ function generate_plot(canvas_elem, title, thickness, color, bgcolor, fill, mdat
                 }
 
             }]
+
         }
     };
 
